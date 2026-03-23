@@ -31,7 +31,7 @@ export default function SignupForm() {
   // Move the navigation logic here
   useEffect(() => {
     if (userLoaded && isSignedIn) {
-      router.push("/");
+      router.push("/profile/avatar");
     }
   }, [userLoaded, isSignedIn, router]);
 
@@ -114,7 +114,7 @@ export default function SignupForm() {
         };
         addUser(userData); */
 
-        router.replace("/");
+        router.replace("/profile/avatar");
         setIsLoading(false);
       } else {
         // If the status is not complete, check why. User may need to
@@ -149,7 +149,7 @@ export default function SignupForm() {
       await signUp.authenticateWithRedirect({
         strategy: "oauth_facebook",
         redirectUrl: "/auth/sso-callback", // 👈 callback page
-        redirectUrlComplete: "/", // 👈 success → home
+        redirectUrlComplete: "/profile/avatar", // 👈 success → home
       });
     } catch (err) {
       console.error(err);

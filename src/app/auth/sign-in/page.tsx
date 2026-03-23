@@ -22,7 +22,7 @@ export default function SigninForm() {
   // Move the navigation logic here
   useEffect(() => {
     if (userLoaded && isSignedIn) {
-      router.push("/");
+      router.push("/profile/avatar");
     }
   }, [userLoaded, isSignedIn, router]);
 
@@ -43,7 +43,7 @@ export default function SigninForm() {
 
       if (signInAttempt.status === "complete") {
         await setActive({ session: signInAttempt.createdSessionId });
-        window.location.href = "/";
+        window.location.href = "/profile/avatar";
       } else {
         console.error("Incomplete sign in:", signInAttempt);
       }
@@ -79,7 +79,7 @@ export default function SigninForm() {
       await signIn.authenticateWithRedirect({
         strategy: "oauth_facebook",
         redirectUrl: "/auth/sso-callback",
-        redirectUrlComplete: "/",
+        redirectUrlComplete: "/profile/avatar",
       });
     } catch (err: any) {
       console.error("Facebook sign in error:", err);

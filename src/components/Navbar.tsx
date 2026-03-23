@@ -23,7 +23,7 @@ export default async function Navbar() {
           </div>
 
           {user ? (
-            <SignOutButton redirectUrl="/auth/sign-in">
+            <SignOutButton redirectUrl="/">
               <Button variant="ghost">Sign out</Button>
             </SignOutButton>
           ) : (
