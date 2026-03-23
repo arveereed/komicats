@@ -44,7 +44,6 @@ model Post {
   notifications Notification[]
 }
 
-
 model Comment {
   id String @id @default(cuid())
   content String
