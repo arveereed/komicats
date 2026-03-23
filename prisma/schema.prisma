@@ -17,6 +17,7 @@ model User {
   email String @unique
   clerkId String @unique
   fullname String?
+  image String?
   createdAt DateTime @default(now()) // to show something like, member since 2026
   updatedAt DateTime @updatedAt
 

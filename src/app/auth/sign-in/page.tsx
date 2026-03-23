@@ -1,18 +1,33 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import { useSignIn } from "@clerk/nextjs/legacy";
 import { AlertCircle, Eye, EyeOff, XCircle, Facebook } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function SigninForm() {
+  const router = useRouter();
+  const { isSignedIn, isLoaded: userLoaded } = useUser();
   const { isLoaded, signIn, setActive } = useSignIn();
+
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isFacebookLoading, setIsFacebookLoading] = useState(false);
+
+  // Move the navigation logic here
+  useEffect(() => {
+    if (userLoaded && isSignedIn) {
+      router.push("/");
+    }
+  }, [userLoaded, isSignedIn, router]);
+
+  // Rest of your component logic...
+  if (!userLoaded || !isLoaded) return <div>Loading...</div>;
 
   const onSignInPress = async () => {
     if (!isLoaded || !signIn || !setActive) return;

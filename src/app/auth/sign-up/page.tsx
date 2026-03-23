@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { XCircle, AlertCircle, EyeOff, Eye, Facebook } from "lucide-react"; // optional icons
-import { useSignUp } from "@clerk/nextjs/legacy";
+import { useSignIn, useSignUp } from "@clerk/nextjs/legacy";
 import VerifyEmailUI from "../components/VerifyEmailUI";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 export default function SignupForm() {
-  const { isLoaded, signUp, setActive } = useSignUp();
   const router = useRouter();
+  const { isSignedIn, isLoaded: userLoaded } = useUser();
+  const { isLoaded, signUp, setActive } = useSignUp();
 
   const [emailAddress, setEmailAddress] = useState("");
   const [fullname, setFullname] = useState("");
@@ -26,9 +28,15 @@ export default function SignupForm() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isFacebookLoading, setIsFacebookLoading] = useState(false);
 
+  // Move the navigation logic here
   useEffect(() => {
-    console.log(fullname);
-  }, [fullname]);
+    if (userLoaded && isSignedIn) {
+      router.push("/");
+    }
+  }, [userLoaded, isSignedIn, router]);
+
+  // Rest of your component logic...
+  if (!userLoaded || !isLoaded) return <div>Loading...</div>;
 
   // Handle submission of sign-up form
   const onSignUpPress = async () => {
@@ -99,13 +107,12 @@ export default function SignupForm() {
       // and redirect the user
       if (signUpAttempt.status === "complete") {
         await setActive({ session: signUpAttempt.createdSessionId });
-
-        const userData = {
+        /* const userData = {
           user_id: signUpAttempt.createdUserId as string,
           fullname: signUpAttempt.unsafeMetadata.fullname as string,
           email: signUpAttempt.emailAddress as string,
         };
-        // addUser(userData);
+        addUser(userData); */
 
         router.replace("/");
         setIsLoading(false);

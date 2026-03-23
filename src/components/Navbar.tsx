@@ -2,9 +2,12 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { currentUser } from "@clerk/nextjs/server";
 import { SignOutButton } from "@clerk/nextjs";
+import { syncUser } from "@/actions/user.action";
 
 export default async function Navbar() {
   const user = await currentUser();
+
+  if (user) await syncUser();
 
   return (
     <nav className="sticky top-0 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
