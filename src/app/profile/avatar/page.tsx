@@ -45,9 +45,10 @@ export default function ProfileSelection() {
     load();
   }, []);
 
-  const handleSelect = (profileId: string) => {
+  const handleSelect = (profileId: string, name: string) => {
+    // We still use localStorage to track which specific profile is "active" in the browser
     localStorage.setItem("komicats_active_profile", profileId);
-    router.push("/");
+    router.replace(`/profile/avatar/profile=${name}`);
   };
 
   const handleAddProfile = async () => {
@@ -104,7 +105,7 @@ export default function ProfileSelection() {
               className="group flex flex-col items-center gap-4"
             >
               <button
-                onClick={() => handleSelect(profile.id)}
+                onClick={() => handleSelect(profile.id, profile.name)}
                 className="relative w-32 h-32 md:w-40 md:h-40 rounded-md overflow-hidden ring-offset-4 ring-offset-black transition-all hover:ring-2 hover:ring-white"
               >
                 <Image
