@@ -206,14 +206,14 @@ export default function SignupForm() {
               {isFacebookLoading ? "Connecting..." : "Continue with Facebook"}
             </button>
           </div> */}
-
+          {/* 
           <div className="flex items-center gap-3 my-6">
             <div className="h-px bg-slate-200 flex-1" />
             <span className="text-xs sm:text-sm text-slate-500 uppercase tracking-wider">
               or
             </span>
             <div className="h-px bg-slate-200 flex-1" />
-          </div>
+          </div> */}
 
           <form className="mt-8">
             <div className="space-y-5">
