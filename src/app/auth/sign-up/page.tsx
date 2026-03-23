@@ -26,7 +26,7 @@ export default function SignupForm() {
 
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isFacebookLoading, setIsFacebookLoading] = useState(false);
+  // const [isFacebookLoading, setIsFacebookLoading] = useState(false);
 
   // Move the navigation logic here
   useEffect(() => {
@@ -138,7 +138,7 @@ export default function SignupForm() {
       // console.error(JSON.stringify(err, null, 2));
     }
   };
-
+  /* 
   const onFacebookSignUp = async () => {
     if (!isLoaded || !signUp) return;
 
@@ -157,7 +157,7 @@ export default function SignupForm() {
     } finally {
       setIsFacebookLoading(false);
     }
-  };
+  }; */
 
   if (pendingVerification) {
     return (
@@ -196,7 +196,7 @@ export default function SignupForm() {
           )}
 
           {/* FACEBOOK */}
-          <div className="mt-8">
+          {/*  <div className="mt-8">
             <button
               onClick={onFacebookSignUp}
               disabled={isFacebookLoading}
@@ -205,7 +205,7 @@ export default function SignupForm() {
               <Facebook size={18} />
               {isFacebookLoading ? "Connecting..." : "Continue with Facebook"}
             </button>
-          </div>
+          </div> */}
 
           <div className="flex items-center gap-3 my-6">
             <div className="h-px bg-slate-200 flex-1" />
