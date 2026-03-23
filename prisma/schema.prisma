@@ -12,6 +12,8 @@ datasource db {
   provider = "postgresql"
 }
 
+
+
 model User {
   id String @id @default(cuid())
   email String @unique
@@ -25,9 +27,20 @@ model User {
   posts Post[] // One-to-many
   comments Comment[] // One-to-many
   likes Like[] // One-to-many
+  profiles Profile[] // One-to-many
 
   notifications Notification[] @relation("userNotifications") // notifications received by a user
   notificationsCreated Notification[] @relation("notificationCreator") // notifications triggered or created by a user
+}
+
+model Profile {
+  id String  @id @default(cuid())
+  name String
+  image String
+  userId String
+  user User @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 }
 
 model Post {
