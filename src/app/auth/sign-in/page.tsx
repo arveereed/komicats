@@ -183,7 +183,7 @@ export default function SigninForm() {
 
               <div className="text-sm">
                 <Link
-                  href="/forgotpassword"
+                  href="/auth/forgot-password"
                   className="text-blue-600 hover:underline font-semibold"
                 >
                   Forgot password?
