@@ -20,7 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Input } from "./ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
-import { Bell, Loader2, Search, UserCircle2 } from "lucide-react";
+import { ArrowLeft, Bell, Loader2, Search, UserCircle2 } from "lucide-react";
 
 type SyncedUser = {
   id?: string;
@@ -85,8 +85,11 @@ export default function Navbar() {
     pathname.includes("/profile/avatar/shop") ||
     pathname.includes("/profile/avatar/downloads");
 
+  const isProfileAvatarSetting = pathname.includes("/profile/avatar/setting");
+
   const handleConfirmSwitchUser = () => {
     setOpenSwitchDialog(false);
+    localStorage.removeItem("komicats_active_profile");
     router.push("/profile/avatar");
   };
 
@@ -176,12 +179,28 @@ export default function Navbar() {
       <div className="mx-auto max-w-[1400px] px-6">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-10">
-            <Link
-              href={isSignedIn && user ? profileHref : "/"}
-              className="font-mono text-xl font-bold tracking-wider text-white"
-            >
-              Komicats
-            </Link>
+            {isProfileAvatarSetting ? (
+              <Button
+                asChild
+                variant="ghost"
+                className="group h-10 rounded-xl px-3 text-zinc-300 transition-all hover:bg-white/10 hover:text-white"
+              >
+                <Link
+                  href="/profile/avatar/profile"
+                  className="inline-flex items-center gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+                  <span>Back</span>
+                </Link>
+              </Button>
+            ) : (
+              <Link
+                href={isSignedIn && user ? profileHref : "/"}
+                className="font-mono text-xl font-bold tracking-wider text-white"
+              >
+                Komicats
+              </Link>
+            )}
 
             {isProfileAvatarPath && (
               <div className="hidden items-center gap-8 md:flex">
@@ -275,7 +294,8 @@ export default function Navbar() {
             )}
             {isSignedIn && user && isProfileAvatarPath && (
               <div className="flex items-center gap-3">
-                <div className="ml-2 flex items-center gap-3">
+                <div className="ml-2 flex items-center space-x-4">
+                  {/* SEARCH BUTTON */}
                   <Popover open={searchOpen} onOpenChange={setSearchOpen}>
                     <PopoverTrigger asChild>
                       <Button
@@ -320,6 +340,7 @@ export default function Navbar() {
                     </PopoverContent>
                   </Popover>
 
+                  {/* NOTIFICATION BUTTON */}
                   <Popover
                     open={notificationsOpen}
                     onOpenChange={setNotificationsOpen}
@@ -367,50 +388,79 @@ export default function Navbar() {
                       </div>
                     </PopoverContent>
                   </Popover>
+
+                  <Link href="/profile/avatar/setting">
+                    <Avatar className="h-9 w-9 rounded-full">
+                      <AvatarImage src={profileImage} alt={profileName} />
+                      <AvatarFallback className="rounded-lg bg-zinc-800 text-white">
+                        {typeof profileName === "string" &&
+                        profileName.length > 0 ? (
+                          profileName.slice(0, 1).toUpperCase()
+                        ) : (
+                          <UserCircle2 className="h-4 w-4" />
+                        )}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Link>
                 </div>
               </div>
             )}
-            {isSignedIn && user && !isProfileAvatarPath && (
-              <div className="flex justify-center items-center space-x-3">
-                <Link href={profileHref}>
-                  <Button
-                    variant="ghost"
-                    className="h-11 rounded-xl border border-white/10 bg-white/[0.04] px-2 hover:bg-white/[0.08]"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-9 w-9 rounded-lg">
-                        <AvatarImage src={profileImage} alt={profileName} />
-                        <AvatarFallback className="rounded-lg bg-zinc-800 text-white">
-                          {typeof profileName === "string" &&
-                          profileName.length > 0 ? (
-                            profileName.slice(0, 1).toUpperCase()
-                          ) : (
-                            <UserCircle2 className="h-4 w-4" />
-                          )}
-                        </AvatarFallback>
-                      </Avatar>
+            {isSignedIn &&
+              user &&
+              !isProfileAvatarPath &&
+              !isProfileAvatarSetting && (
+                <div className="flex justify-center items-center space-x-3">
+                  <Link href={profileHref}>
+                    <Button
+                      variant="ghost"
+                      className="h-11 rounded-xl border border-white/10 bg-white/[0.04] cursor-default px-2 hover:bg-white/[0.08]"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-9 w-9 rounded-lg">
+                          <AvatarImage src={profileImage} alt={profileName} />
+                          <AvatarFallback className="rounded-lg bg-zinc-800 text-white">
+                            {typeof profileName === "string" &&
+                            profileName.length > 0 ? (
+                              profileName.slice(0, 1).toUpperCase()
+                            ) : (
+                              <UserCircle2 className="h-4 w-4" />
+                            )}
+                          </AvatarFallback>
+                        </Avatar>
 
-                      <span className="hidden max-w-[120px] truncate text-sm font-medium text-white md:inline-block">
-                        {profileName}
-                      </span>
-                    </div>
+                        <span className="hidden max-w-[120px] truncate text-sm font-medium text-white md:inline-block">
+                          {profileName}
+                        </span>
+                      </div>
+                    </Button>
+                  </Link>
+                  <Button
+                    disabled={signingOut}
+                    onClick={handleSignOut}
+                    variant="ghost"
+                    className="rounded-xl text-white/80 hover:bg-white/10 hover:text-white"
+                  >
+                    {signingOut ? (
+                      <>
+                        <Loader2 className="animate-spin size-2" /> Loading..
+                      </>
+                    ) : (
+                      "Sign out"
+                    )}
                   </Button>
-                </Link>
-                <Button
-                  disabled={signingOut}
-                  onClick={handleSignOut}
-                  variant="ghost"
-                  className="rounded-xl text-white/80 hover:bg-white/10 hover:text-white"
-                >
-                  {signingOut ? (
-                    <>
-                      <Loader2 className="animate-spin size-2" /> Loading..
-                    </>
+                </div>
+              )}
+            {isSignedIn && user && isProfileAvatarSetting && (
+              <Avatar className="h-9 w-9 rounded-full">
+                <AvatarImage src={profileImage} alt={profileName} />
+                <AvatarFallback className="rounded-lg bg-zinc-800 text-white">
+                  {typeof profileName === "string" && profileName.length > 0 ? (
+                    profileName.slice(0, 1).toUpperCase()
                   ) : (
-                    "Sign out"
+                    <UserCircle2 className="h-4 w-4" />
                   )}
-                </Button>
-              </div>
+                </AvatarFallback>
+              </Avatar>
             )}
             {!isSignedIn && (
               /* GUEST USER */
