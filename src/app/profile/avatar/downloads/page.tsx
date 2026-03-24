@@ -1,10 +1,10 @@
 export async function generateMetadata() {
   return {
-    title: `Komicats | Profile`,
+    title: `Komicats | Downloads`,
     description: `Welcome to Komicats's profile.`,
   };
 }
 
-export default function HomePage() {
-  return <div>HomePage</div>;
+export default function DownloadsPage() {
+  return <div>DownloadsPage</div>;
 }

@@ -45,7 +45,7 @@ export default function SigninForm() {
         await setActive({ session: signInAttempt.createdSessionId });
         window.location.href = "/profile/avatar";
       } else {
-        console.error("Incomplete sign in:", signInAttempt);
+        console.error(JSON.stringify(signInAttempt, null, 2));
       }
     } catch (err: any) {
       const code = err?.errors?.[0]?.code;

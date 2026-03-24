@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "@/components/Navbar";
+import { currentUser } from "@clerk/nextjs/server";
+import { syncUser } from "@/actions/user.action";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,11 +21,15 @@ export const metadata: Metadata = {
   description: "Powered by Next JS",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await currentUser();
+
+  if (user) await syncUser();
+
   return (
     <ClerkProvider>
       <html lang="en">
