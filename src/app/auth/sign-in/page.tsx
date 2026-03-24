@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 
 export default function SigninForm() {
   const router = useRouter();
-  const { isSignedIn, isLoaded: userLoaded } = useUser();
+  const { isSignedIn, isLoaded: userLoaded, user: clerkUser } = useUser();
   const { isLoaded, signIn, setActive } = useSignIn();
 
   const [emailAddress, setEmailAddress] = useState("");
@@ -19,12 +19,19 @@ export default function SigninForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFacebookLoading, setIsFacebookLoading] = useState(false);
 
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  const isAdmin =
+    !!adminEmail && clerkUser?.emailAddresses[0].emailAddress === adminEmail;
+
   // Move the navigation logic here
   useEffect(() => {
-    if (userLoaded && isSignedIn) {
+    if (userLoaded && isSignedIn && !isAdmin) {
       router.push("/profile/avatar");
     }
-  }, [userLoaded, isSignedIn, router]);
+    if (isAdmin) {
+      router.push("/admin");
+    }
+  }, [userLoaded, isSignedIn, router, isAdmin]);
 
   // Rest of your component logic...
   if (!userLoaded || !isLoaded) return <div>Loading...</div>;
