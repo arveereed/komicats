@@ -4,7 +4,7 @@ import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-export default function AdminPage() {
+export default function ShopComponent() {
   const { isSignedIn, isLoaded: userLoaded, user: clerkUser } = useUser();
   const router = useRouter();
 
@@ -22,5 +22,5 @@ export default function AdminPage() {
     }
   }, [userLoaded, isSignedIn, router, isAdmin]);
 
-  return <div>AdminPage</div>;
+  return <div>ShopComponent</div>;
 }

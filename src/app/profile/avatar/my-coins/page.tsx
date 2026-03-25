@@ -1,3 +1,5 @@
+import MyCoinsComponent from "@/components/MyCoinsComponent";
+
 export async function generateMetadata() {
   return {
     title: `Komicats | My Coins`,
@@ -6,5 +8,5 @@ export async function generateMetadata() {
 }
 
 export default function MyCoinsPage() {
-  return <div>MyCoinsPage</div>;
+  return <MyCoinsComponent />;
 }

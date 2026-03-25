@@ -112,9 +112,11 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
       setSigningOut(false);
     }
   };
+
   return (
     <div className="hidden md:flex items-center justify-between">
       <div className="flex h-16 items-center gap-10">
+        {/* LEFT SIDE */}
         {isProfileAvatarSetting ? (
           <Button
             asChild
@@ -179,6 +181,7 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
         )}
       </div>
 
+      {/* RIGHT SIDE */}
       <div className="flex items-center gap-4">
         {!isLoaded && (
           <>

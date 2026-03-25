@@ -424,6 +424,24 @@ function MobileNavbar({ user }: { user: SyncedUserType }) {
           </AvatarFallback>
         </Avatar>
       )}
+      {isLoaded && !isSignedIn && (
+        /* GUEST USER */
+        <div className="space-x-4">
+          <Link href="/auth/sign-in">
+            <Button className="bg-white text-black hover:bg-white/90">
+              Sign in
+            </Button>
+          </Link>
+          <Link href="/auth/sign-up">
+            <Button
+              variant="ghost"
+              className="text-white hover:bg-white/10 hover:text-white"
+            >
+              Sign up
+            </Button>
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

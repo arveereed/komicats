@@ -1,3 +1,5 @@
+import ShopComponent from "@/components/ShopComponent";
+
 export async function generateMetadata() {
   return {
     title: `Komicats | Shop`,
@@ -6,5 +8,5 @@ export async function generateMetadata() {
 }
 
 export default function ShopPage() {
-  return <div>ShopPage</div>;
+  return <ShopComponent />;
 }

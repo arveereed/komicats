@@ -1,3 +1,5 @@
+import HomePageComponent from "@/components/HomeComponent";
+
 export async function generateMetadata() {
   return {
     title: `Komicats | Profile`,
@@ -6,5 +8,5 @@ export async function generateMetadata() {
 }
 
 export default function HomePage() {
-  return <div>HomePage</div>;
+  return <HomePageComponent />;
 }

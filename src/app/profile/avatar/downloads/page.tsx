@@ -1,3 +1,5 @@
+import DownloadsPageComponent from "@/components/DownloadsComponent";
+
 export async function generateMetadata() {
   return {
     title: `Komicats | Downloads`,
@@ -6,5 +8,5 @@ export async function generateMetadata() {
 }
 
 export default function DownloadsPage() {
-  return <div>DownloadsPage</div>;
+  return <DownloadsPageComponent />;
 }

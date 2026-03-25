@@ -20,11 +20,13 @@ import {
   deleteProfile,
 } from "@/actions/profile.action";
 import { ProfileListItem } from "@/components/ProfileListItem";
+import { useUser } from "@clerk/nextjs";
 
 type Profile = { id: string; name: string; image: string };
 
 export default function ProfileSelection() {
   const router = useRouter();
+
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,6 +37,24 @@ export default function ProfileSelection() {
   const [manageOpen, setManageOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [newName, setNewName] = useState("");
+
+  const { isSignedIn, isLoaded: userLoaded, user: clerkUser } = useUser();
+
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  const isAdmin =
+    !!adminEmail && clerkUser?.emailAddresses[0].emailAddress === adminEmail;
+
+  // Move the navigation logic here
+  useEffect(() => {
+    if (!userLoaded || !isSignedIn) return;
+
+    if (isAdmin) {
+      router.push("/admin");
+      return;
+    }
+
+    router.push("/profile/avatar");
+  }, [userLoaded, isSignedIn, router, isAdmin]);
 
   useEffect(() => {
     async function load() {
@@ -72,6 +92,7 @@ export default function ProfileSelection() {
 
   const handleDelete = async (id: string) => {
     if (!id) return;
+
     // FIX: Set the specific ID we are working on
     setDeletingId(id);
 
