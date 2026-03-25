@@ -7,6 +7,10 @@ export async function syncUser() {
 
   if (!userId || !user) return;
 
+  console.log("user.firstName: ", user.firstName);
+  console.log("user.lastName: ", user.lastName);
+  console.log("user.unsafeMetadata.fullname: ", user.unsafeMetadata.fullname);
+
   const existingUser = await prisma.user.findUnique({
     where: {
       clerkId: userId,
@@ -17,7 +21,9 @@ export async function syncUser() {
   const dbUser = await prisma.user.create({
     data: {
       clerkId: userId,
-      fullname: `${user.firstName || user.unsafeMetadata.fullname} ${user.lastName || user.unsafeMetadata.fullname}`,
+      fullname:
+        (user.unsafeMetadata.fullname as string) ||
+        `${user.firstName} ${user.lastName}`,
       email: user.emailAddresses[0].emailAddress,
       image: user.imageUrl,
     },
