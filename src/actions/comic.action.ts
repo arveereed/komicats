@@ -73,3 +73,54 @@ export async function createComic(formData: FormData) {
     };
   }
 }
+
+export async function getAllComics() {
+  try {
+    const comics = await prisma.comic.findMany({
+      include: {
+        user: {
+          select: {
+            fullname: true,
+            email: true,
+            clerkId: true,
+          },
+        },
+        episodes: {
+          orderBy: {
+            order: "asc",
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return comics;
+  } catch (error) {
+    console.error("GET_ALL_COMICS_ERROR", error);
+    return [];
+  }
+}
+
+export async function deleteComic(comicId: string) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  try {
+    await prisma.comic.delete({
+      where: {
+        id: comicId,
+      },
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/");
+  } catch (error) {
+    console.error("DELETE_COMIC_ERROR", error);
+    throw new Error("Failed to delete comic");
+  }
+}

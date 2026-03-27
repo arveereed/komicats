@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    // 1. Fix the deprecation warning
     remotePatterns: [
       {
         protocol: "https",
@@ -9,10 +8,14 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
-      // Keep your Clerk pattern if you have it:
       {
         protocol: "https",
         hostname: "img.clerk.com",
+      },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
       },
     ],
     // 2. Fix the SVG "dangerouslyAllowSVG" error
