@@ -111,6 +111,36 @@ export async function getAllComics() {
   }
 }
 
+export async function getComicById(comicId: string) {
+  try {
+    const comic = await prisma.comic.findUnique({
+      where: {
+        id: comicId,
+      },
+      include: {
+        user: true,
+        episodes: {
+          orderBy: {
+            order: "asc",
+          },
+          include: {
+            images: {
+              orderBy: {
+                order: "asc",
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return comic;
+  } catch (error) {
+    console.error("GET_COMIC_BY_ID_ERROR", error);
+    return null;
+  }
+}
+
 export async function deleteComic(comicId: string) {
   const { userId } = await auth();
 
