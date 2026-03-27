@@ -15,6 +15,7 @@ import {
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -27,17 +28,32 @@ import { Textarea } from "@/components/ui/textarea";
 import ImageUploadPreview from "./ImageUploadPreview";
 import { createComic } from "@/actions/comic.action";
 import { uploadFileToCloudinary } from "@/actions/cloudinary.action";
+import EpisodeImagesUpload from "./EpisodeImagesUpload";
 
 type Episode = {
   episode: string;
   description: string;
-  image: File | null;
+  images: File[];
 };
+
+const INITIAL_EPISODES: Episode[] = [
+  { episode: "", description: "", images: [] },
+];
 
 export default function AddNewComic() {
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertTitle, setAlertTitle] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
+
+  const [open, setOpen] = useState(false);
+  const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  const [title, setTitle] = useState("");
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
+  const [episodes, setEpisodes] = useState<Episode[]>(INITIAL_EPISODES);
+
+  const episodesEndRef = useRef<HTMLDivElement | null>(null);
 
   const showAlert = (title: string, message: string) => {
     setAlertTitle(title);
@@ -45,21 +61,10 @@ export default function AddNewComic() {
     setAlertOpen(true);
   };
 
-  const [open, setOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
-
-  const [title, setTitle] = useState("");
-  const [thumbnail, setThumbnail] = useState<File | null>(null);
-  const [episodes, setEpisodes] = useState<Episode[]>([
-    { episode: "", description: "", image: null },
-  ]);
-
-  const episodesEndRef = useRef<HTMLDivElement | null>(null);
-
   const addEpisode = () => {
     setEpisodes((prev) => [
       ...prev,
-      { episode: "", description: "", image: null },
+      { episode: "", description: "", images: [] },
     ]);
   };
 
@@ -67,10 +72,10 @@ export default function AddNewComic() {
     setEpisodes((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const updateEpisode = (
+  const updateEpisode = <K extends keyof Episode>(
     index: number,
-    field: keyof Episode,
-    value: string | File | null,
+    field: K,
+    value: Episode[K],
   ) => {
     setEpisodes((prev) =>
       prev.map((item, i) => (i === index ? { ...item, [field]: value } : item)),
@@ -87,7 +92,42 @@ export default function AddNewComic() {
   const resetForm = () => {
     setTitle("");
     setThumbnail(null);
-    setEpisodes([{ episode: "", description: "", image: null }]);
+    setEpisodes(INITIAL_EPISODES);
+  };
+
+  const hasUnsavedChanges = () => {
+    if (title.trim()) return true;
+    if (thumbnail) return true;
+
+    return episodes.some(
+      (item) =>
+        item.episode.trim() ||
+        item.description.trim() ||
+        item.images.length > 0,
+    );
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (isPending) return;
+
+    if (nextOpen) {
+      setOpen(true);
+      return;
+    }
+
+    if (hasUnsavedChanges()) {
+      setCloseConfirmOpen(true);
+      return;
+    }
+
+    resetForm();
+    setOpen(false);
+  };
+
+  const confirmCloseDialog = () => {
+    resetForm();
+    setCloseConfirmOpen(false);
+    setOpen(false);
   };
 
   const uploadSingleImage = async (file: File, folder: string) => {
@@ -129,7 +169,10 @@ export default function AddNewComic() {
     }
 
     const invalidEpisodeIndex = episodes.findIndex(
-      (item) => !item.episode.trim() || !item.description.trim() || !item.image,
+      (item) =>
+        !item.episode.trim() ||
+        !item.description.trim() ||
+        item.images.length === 0,
     );
 
     if (invalidEpisodeIndex !== -1) {
@@ -152,10 +195,10 @@ export default function AddNewComic() {
         return;
       }
 
-      if (!invalidEpisode.image) {
+      if (invalidEpisode.images.length === 0) {
         showAlert(
           `Episode ${episodeNumber} is incomplete`,
-          `Please upload an image for Episode ${episodeNumber}.`,
+          `Please upload at least one image for Episode ${episodeNumber}.`,
         );
         return;
       }
@@ -169,16 +212,20 @@ export default function AddNewComic() {
         );
 
         const uploadedEpisodes = await Promise.all(
-          episodes.map(async (item) => {
-            const imageUrl = await uploadSingleImage(
-              item.image as File,
-              "comics/episodes",
+          episodes.map(async (item, episodeIndex) => {
+            const imageUrls = await Promise.all(
+              item.images.map((imageFile, imageIndex) =>
+                uploadSingleImage(
+                  imageFile,
+                  `comics/episodes/episode-${episodeIndex + 1}/pages/${imageIndex + 1}`,
+                ),
+              ),
             );
 
             return {
               episode: item.episode.trim(),
               description: item.description.trim(),
-              image: imageUrl,
+              images: imageUrls,
             };
           }),
         );
@@ -215,7 +262,7 @@ export default function AddNewComic() {
 
   return (
     <>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
           <Button>
             <Plus className="mr-2 h-4 w-4" />
@@ -223,7 +270,7 @@ export default function AddNewComic() {
           </Button>
         </DialogTrigger>
 
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle>Add New Comic</DialogTitle>
           </DialogHeader>
@@ -258,7 +305,7 @@ export default function AddNewComic() {
               </div>
 
               {episodes.map((item, index) => (
-                <div key={index} className="space-y-3 rounded-xl border p-4">
+                <div key={index} className="space-y-4 rounded-xl border p-4">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium">Episode {index + 1}</p>
 
@@ -278,7 +325,7 @@ export default function AddNewComic() {
                     <Label htmlFor={`episode-${index}`}>Episode Title</Label>
                     <Input
                       id={`episode-${index}`}
-                      placeholder="e.g. You Failed"
+                      placeholder="e.g. Episode 1"
                       value={item.episode}
                       onChange={(e) =>
                         updateEpisode(index, "episode", e.target.value)
@@ -298,21 +345,27 @@ export default function AddNewComic() {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Episode Image</Label>
-                    <ImageUploadPreview
-                      label={`Episode ${index + 1} Image`}
-                      value={item.image}
-                      onChange={(file) => updateEpisode(index, "image", file)}
-                    />
-                  </div>
+                  <EpisodeImagesUpload
+                    label={`Episode ${index + 1} Pages`}
+                    value={item.images}
+                    onChange={(files) => updateEpisode(index, "images", files)}
+                  />
                 </div>
               ))}
 
               <div ref={episodesEndRef} />
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleOpenChange(false)}
+                disabled={isPending}
+              >
+                Cancel
+              </Button>
+
               <Button type="submit" disabled={isPending}>
                 {isPending ? "Saving..." : "Save Comic"}
               </Button>
@@ -320,6 +373,30 @@ export default function AddNewComic() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={closeConfirmOpen} onOpenChange={setCloseConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard this comic draft?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Closing this form will remove the comic title, thumbnail, and all
+              imported episode images that have not been saved yet.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending}>
+              Keep editing
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmCloseDialog}
+              disabled={isPending}
+            >
+              Discard and close
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
         <AlertDialogContent>

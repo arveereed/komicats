@@ -33,27 +33,39 @@ model Profile {
 }
 
 model Comic {
-  id          String    @id @default(cuid())
-  title       String
-  thumbnail   String?
-  userId      String
-  user        User      @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
-  episodes    Episode[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String    @id @default(cuid())
+  title     String
+  thumbnail String?
+  userId    String
+  user      User      @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
+  episodes  Episode[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Episode {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
   title       String
   description String
-  image       String?
   comicId     String
-  comic       Comic    @relation(fields: [comicId], references: [id], onDelete: Cascade)
+  comic       Comic          @relation(fields: [comicId], references: [id], onDelete: Cascade)
   order       Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  images      EpisodeImage[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
   @@index([comicId])
   @@unique([comicId, order])
+}
+
+model EpisodeImage {
+  id        String   @id @default(cuid())
+  episodeId String
+  episode   Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  imageUrl  String
+  order     Int
+  createdAt DateTime @default(now())
+
+  @@index([episodeId])
+  @@unique([episodeId, order])
 }

@@ -7,7 +7,7 @@ import prisma from "@/lib/prisma";
 export type EpisodeInput = {
   episode: string;
   description: string;
-  image: string | null;
+  images: string[];
 };
 
 export async function createComic(formData: FormData) {
@@ -40,24 +40,33 @@ export async function createComic(formData: FormData) {
         thumbnail: thumbnail || null,
         userId,
         episodes: {
-          create: episodes.map((item, index) => ({
+          create: episodes.map((item, episodeIndex) => ({
             title: item.episode,
             description: item.description,
-            image: item.image,
-            order: index + 1,
+            order: episodeIndex + 1,
+            images: {
+              create: item.images.map((imageUrl, imageIndex) => ({
+                imageUrl,
+                order: imageIndex + 1,
+              })),
+            },
           })),
         },
       },
       include: {
         episodes: {
-          orderBy: {
-            order: "asc",
+          orderBy: { order: "asc" },
+          include: {
+            images: {
+              orderBy: { order: "asc" },
+            },
           },
         },
       },
     });
 
     revalidatePath("/");
+    revalidatePath("/admin/comics");
 
     return {
       success: true,
@@ -73,7 +82,6 @@ export async function createComic(formData: FormData) {
     };
   }
 }
-
 export async function getAllComics() {
   try {
     const comics = await prisma.comic.findMany({
