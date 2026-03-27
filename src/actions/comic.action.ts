@@ -1,0 +1,75 @@
+"use server";
+
+import { auth } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
+import prisma from "@/lib/prisma";
+
+export type EpisodeInput = {
+  episode: string;
+  description: string;
+  image: string | null;
+};
+
+export async function createComic(formData: FormData) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return {
+      success: false,
+      message: "Unauthorized",
+    };
+  }
+
+  try {
+    const title = formData.get("title")?.toString().trim() || "";
+    const thumbnail = formData.get("thumbnail")?.toString().trim() || "";
+    const episodesRaw = formData.get("episodes")?.toString() || "[]";
+
+    if (!title) {
+      return {
+        success: false,
+        message: "Comic title is required",
+      };
+    }
+
+    const episodes = JSON.parse(episodesRaw) as EpisodeInput[];
+
+    const comic = await prisma.comic.create({
+      data: {
+        title,
+        thumbnail: thumbnail || null,
+        userId,
+        episodes: {
+          create: episodes.map((item, index) => ({
+            title: item.episode,
+            description: item.description,
+            image: item.image,
+            order: index + 1,
+          })),
+        },
+      },
+      include: {
+        episodes: {
+          orderBy: {
+            order: "asc",
+          },
+        },
+      },
+    });
+
+    revalidatePath("/");
+
+    return {
+      success: true,
+      message: "Comic created successfully",
+      comic,
+    };
+  } catch (error) {
+    console.error("CREATE_COMIC_ERROR", error);
+
+    return {
+      success: false,
+      message: "Failed to create comic",
+    };
+  }
+}
