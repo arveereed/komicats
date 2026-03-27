@@ -141,7 +141,10 @@ export default function AddNewComic() {
       throw new Error(result.message || "Image upload failed");
     }
 
-    return result.url;
+    return {
+      url: result.url,
+      publicId: result.publicId ?? null,
+    };
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -206,14 +209,14 @@ export default function AddNewComic() {
 
     startTransition(async () => {
       try {
-        const thumbnailUrl = await uploadSingleImage(
+        const thumbnailUpload = await uploadSingleImage(
           thumbnail,
           "comics/thumbnails",
         );
 
         const uploadedEpisodes = await Promise.all(
           episodes.map(async (item, episodeIndex) => {
-            const imageUrls = await Promise.all(
+            const imageUploads = await Promise.all(
               item.images.map((imageFile, imageIndex) =>
                 uploadSingleImage(
                   imageFile,
@@ -225,15 +228,15 @@ export default function AddNewComic() {
             return {
               episode: item.episode.trim(),
               description: item.description.trim(),
-              images: imageUrls,
+              images: imageUploads, // array of { url, publicId }
             };
           }),
         );
 
         const formData = new FormData();
         formData.append("title", title.trim());
-        formData.append("thumbnail", thumbnailUrl);
-        formData.append("episodes", JSON.stringify(uploadedEpisodes));
+        formData.append("thumbnail", thumbnailUpload.url); // only string
+        formData.append("episodes", JSON.stringify(uploadedEpisodes)); // stringify object array
 
         const result = await createComic(formData);
 

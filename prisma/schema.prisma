@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -9,26 +8,24 @@ datasource db {
 }
 
 model User {
-  id String @id @default(cuid())
-  email String @unique
-  clerkId String @unique
-  fullname String
-  image String?
-  createdAt DateTime @default(now()) // to show something like, member since 2026
-  updatedAt DateTime @updatedAt
+  id        String    @id @default(cuid())
+  email     String    @unique
+  clerkId   String    @unique
+  fullname  String
+  image     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-  // Relations
-  profiles Profile[] // One-to-many
-  comics   Comic[]
+  profiles  Profile[]
+  comics    Comic[]
 }
 
 model Profile {
-  id String  @id @default(cuid())
-  name String
-  image String
-  userId String
-  user User @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
-
+  id        String   @id @default(cuid())
+  name      String
+  image     String
+  userId    String
+  user      User     @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
   createdAt DateTime @default(now())
 }
 
@@ -63,9 +60,11 @@ model EpisodeImage {
   episodeId String
   episode   Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
   imageUrl  String
+  publicId  String?
   order     Int
   createdAt DateTime @default(now())
 
   @@index([episodeId])
+  @@index([publicId])
   @@unique([episodeId, order])
 }

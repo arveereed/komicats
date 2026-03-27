@@ -3,12 +3,65 @@
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
+import cloudinary from "@/lib/cloudinary";
 
-export type EpisodeInput = {
+type RawEpisodeInput = {
+  episode?: string;
+  description?: string;
+  images?: Array<
+    | string
+    | {
+        url?: string | null;
+        publicId?: string | null;
+      }
+    | null
+    | undefined
+  >;
+};
+
+type NormalizedEpisodeInput = {
   episode: string;
   description: string;
-  images: string[];
+  images: {
+    imageUrl: string;
+    publicId: string | null;
+  }[];
 };
+
+function normalizeEpisodes(input: RawEpisodeInput[]): NormalizedEpisodeInput[] {
+  return input.map((episode) => {
+    const normalizedImages = (episode.images ?? [])
+      .map((image) => {
+        if (!image) return null;
+
+        if (typeof image === "string") {
+          return {
+            imageUrl: image.trim(),
+            publicId: null,
+          };
+        }
+
+        const imageUrl = image.url?.trim() ?? "";
+        const publicId = image.publicId?.trim() ?? null;
+
+        if (!imageUrl) return null;
+
+        return {
+          imageUrl,
+          publicId,
+        };
+      })
+      .filter((image): image is { imageUrl: string; publicId: string | null } =>
+        Boolean(image?.imageUrl),
+      );
+
+    return {
+      episode: episode.episode?.trim() ?? "",
+      description: episode.description?.trim() ?? "",
+      images: normalizedImages,
+    };
+  });
+}
 
 export async function createComic(formData: FormData) {
   const { userId } = await auth();
@@ -32,7 +85,37 @@ export async function createComic(formData: FormData) {
       };
     }
 
-    const episodes = JSON.parse(episodesRaw) as EpisodeInput[];
+    let parsedEpisodes: RawEpisodeInput[] = [];
+
+    try {
+      parsedEpisodes = JSON.parse(episodesRaw) as RawEpisodeInput[];
+    } catch {
+      return {
+        success: false,
+        message: "Invalid episodes payload",
+      };
+    }
+
+    const episodes = normalizeEpisodes(parsedEpisodes);
+
+    if (episodes.length === 0) {
+      return {
+        success: false,
+        message: "At least one episode is required",
+      };
+    }
+
+    const invalidEpisode = episodes.find(
+      (episode) =>
+        !episode.episode || !episode.description || episode.images.length === 0,
+    );
+
+    if (invalidEpisode) {
+      return {
+        success: false,
+        message: "One or more episodes are incomplete",
+      };
+    }
 
     const comic = await prisma.comic.create({
       data: {
@@ -45,8 +128,9 @@ export async function createComic(formData: FormData) {
             description: item.description,
             order: episodeIndex + 1,
             images: {
-              create: item.images.map((imageUrl, imageIndex) => ({
-                imageUrl,
+              create: item.images.map((image, imageIndex) => ({
+                imageUrl: image.imageUrl,
+                publicId: image.publicId,
                 order: imageIndex + 1,
               })),
             },
@@ -66,6 +150,7 @@ export async function createComic(formData: FormData) {
     });
 
     revalidatePath("/");
+    revalidatePath("/admin");
     revalidatePath("/admin/comics");
 
     return {
@@ -82,6 +167,7 @@ export async function createComic(formData: FormData) {
     };
   }
 }
+
 export async function getAllComics() {
   try {
     const comics = await prisma.comic.findMany({
@@ -149,10 +235,33 @@ export async function deleteComic(comicId: string) {
   }
 
   try {
-    await prisma.comic.delete({
-      where: {
-        id: comicId,
+    const comic = await prisma.comic.findUnique({
+      where: { id: comicId },
+      include: {
+        episodes: {
+          include: {
+            images: true,
+          },
+        },
       },
+    });
+
+    if (!comic) {
+      throw new Error("Comic not found");
+    }
+
+    const publicIds = comic.episodes.flatMap((episode) =>
+      episode.images
+        .map((image) => image.publicId)
+        .filter((publicId): publicId is string => Boolean(publicId)),
+    );
+
+    if (publicIds.length > 0) {
+      await cloudinary.api.delete_resources(publicIds);
+    }
+
+    await prisma.comic.delete({
+      where: { id: comicId },
     });
 
     revalidatePath("/admin");

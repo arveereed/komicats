@@ -11,6 +11,7 @@ export async function uploadFileToCloudinary(formData: FormData) {
       success: false,
       message: "Unauthorized",
       url: null,
+      publicId: null,
     };
   }
 
@@ -23,6 +24,7 @@ export async function uploadFileToCloudinary(formData: FormData) {
         success: false,
         message: "No file provided",
         url: null,
+        publicId: null,
       };
     }
 
@@ -31,6 +33,7 @@ export async function uploadFileToCloudinary(formData: FormData) {
 
     const result = await new Promise<{
       secure_url: string;
+      public_id: string;
     }>((resolve, reject) => {
       cloudinary.uploader
         .upload_stream(
@@ -46,6 +49,7 @@ export async function uploadFileToCloudinary(formData: FormData) {
 
             resolve({
               secure_url: result.secure_url,
+              public_id: result.public_id, // 🔥 THIS IS IMPORTANT
             });
           },
         )
@@ -56,6 +60,7 @@ export async function uploadFileToCloudinary(formData: FormData) {
       success: true,
       message: "Image uploaded successfully",
       url: result.secure_url,
+      publicId: result.public_id, // 🔥 expose to frontend
     };
   } catch (error) {
     console.error("UPLOAD_IMAGE_ERROR", error);
@@ -64,6 +69,7 @@ export async function uploadFileToCloudinary(formData: FormData) {
       success: false,
       message: "Failed to upload image",
       url: null,
+      publicId: null,
     };
   }
 }
