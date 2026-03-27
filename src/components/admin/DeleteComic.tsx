@@ -23,7 +23,7 @@ export function DeleteComicDialog({ comicId, comicTitle, action }: Props) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button type="button" variant="destructive">
+        <Button className="w-full" type="button" variant="destructive">
           Delete
         </Button>
       </AlertDialogTrigger>

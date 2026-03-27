@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { deleteComic, getAllComics } from "@/actions/comic.action";
 import { DeleteComicDialog } from "./DeleteComic";
+import EditComicDialog from "./EditComicDialog";
 
 export default async function ComicListSection() {
   const comics = await getAllComics();
@@ -68,7 +69,11 @@ export default async function ComicListSection() {
                 </div>
               </Link>
 
-              <div className="border-t p-4 pt-3">
+              <div className="border-t p-4 pt-3 space-y-2">
+                <div className="flex-1">
+                  <EditComicDialog comic={comic} />
+                </div>
+
                 <DeleteComicDialog
                   comicId={comic.id}
                   comicTitle={comic.title}

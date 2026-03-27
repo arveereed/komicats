@@ -183,6 +183,13 @@ export async function getAllComics() {
           orderBy: {
             order: "asc",
           },
+          include: {
+            images: {
+              orderBy: {
+                order: "asc",
+              },
+            },
+          },
         },
       },
       orderBy: {
@@ -224,6 +231,80 @@ export async function getComicById(comicId: string) {
   } catch (error) {
     console.error("GET_COMIC_BY_ID_ERROR", error);
     return null;
+  }
+}
+
+export async function updateComic(formData: FormData) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return {
+      success: false,
+      message: "Unauthorized",
+    };
+  }
+
+  try {
+    const comicId = formData.get("comicId")?.toString().trim() || "";
+    const title = formData.get("title")?.toString().trim() || "";
+    const thumbnail = formData.get("thumbnail")?.toString().trim() || "";
+    const episodesRaw = formData.get("episodes")?.toString() || "[]";
+
+    if (!comicId || !title) {
+      return {
+        success: false,
+        message: "Missing required fields",
+      };
+    }
+
+    const episodes = JSON.parse(episodesRaw) as {
+      episode: string;
+      description: string;
+      images: {
+        url: string;
+        publicId: string | null;
+      }[];
+    }[];
+
+    await prisma.comic.update({
+      where: { id: comicId },
+      data: {
+        title,
+        thumbnail: thumbnail || null,
+        episodes: {
+          deleteMany: {},
+          create: episodes.map((item, episodeIndex) => ({
+            title: item.episode,
+            description: item.description,
+            order: episodeIndex + 1,
+            images: {
+              create: item.images.map((image, imageIndex) => ({
+                imageUrl: image.url,
+                publicId: image.publicId,
+                order: imageIndex + 1,
+              })),
+            },
+          })),
+        },
+      },
+    });
+
+    revalidatePath("/");
+    revalidatePath("/admin");
+    revalidatePath("/admin/comics");
+    revalidatePath(`/admin/comics/${comicId}`);
+
+    return {
+      success: true,
+      message: "Comic updated successfully",
+    };
+  } catch (error) {
+    console.error("UPDATE_COMIC_ERROR", error);
+
+    return {
+      success: false,
+      message: "Failed to update comic",
+    };
   }
 }
 
