@@ -77,7 +77,12 @@ export async function createComic(formData: FormData) {
     const title = formData.get("title")?.toString().trim() || "";
     const thumbnail = formData.get("thumbnail")?.toString().trim() || "";
     const episodesRaw = formData.get("episodes")?.toString() || "[]";
+    const thumbnailPublicId =
+      formData.get("thumbnailPublicId")?.toString().trim() || "";
+    const cloudinaryFolder =
+      formData.get("cloudinaryFolder")?.toString().trim() || "";
 
+    // start of Validation
     if (!title) {
       return {
         success: false,
@@ -116,11 +121,14 @@ export async function createComic(formData: FormData) {
         message: "One or more episodes are incomplete",
       };
     }
+    // end of Validation
 
     const comic = await prisma.comic.create({
       data: {
         title,
         thumbnail: thumbnail || null,
+        thumbnailPublicId: thumbnailPublicId || null,
+        cloudinaryFolder: cloudinaryFolder || null,
         userId,
         episodes: {
           create: episodes.map((item, episodeIndex) => ({
@@ -308,6 +316,14 @@ export async function updateComic(formData: FormData) {
   }
 }
 
+async function deleteFolderIfEmpty(path: string) {
+  try {
+    await cloudinary.api.delete_folder(path);
+  } catch (error) {
+    console.warn(`Could not delete folder: ${path}`, error);
+  }
+}
+
 export async function deleteComic(comicId: string) {
   const { userId } = await auth();
 
@@ -331,14 +347,41 @@ export async function deleteComic(comicId: string) {
       throw new Error("Comic not found");
     }
 
-    const publicIds = comic.episodes.flatMap((episode) =>
-      episode.images
-        .map((image) => image.publicId)
-        .filter((publicId): publicId is string => Boolean(publicId)),
-    );
+    const publicIds = [
+      comic.thumbnailPublicId,
+      ...comic.episodes.flatMap((episode) =>
+        episode.images.map((image) => image.publicId),
+      ),
+    ].filter((publicId): publicId is string => Boolean(publicId));
 
     if (publicIds.length > 0) {
       await cloudinary.api.delete_resources(publicIds);
+    }
+
+    if (comic.cloudinaryFolder) {
+      await cloudinary.api.delete_resources_by_prefix(comic.cloudinaryFolder);
+
+      const folderPaths = [
+        `${comic.cloudinaryFolder}/thumbnail`,
+        ...comic.episodes.map(
+          (_, episodeIndex) =>
+            `${comic.cloudinaryFolder}/episodes/episode-${episodeIndex + 1}/pages`,
+        ),
+        ...comic.episodes.map(
+          (_, episodeIndex) =>
+            `${comic.cloudinaryFolder}/episodes/episode-${episodeIndex + 1}`,
+        ),
+        `${comic.cloudinaryFolder}/episodes`,
+        comic.cloudinaryFolder,
+      ];
+
+      for (const folderPath of folderPaths) {
+        try {
+          await cloudinary.api.delete_folder(folderPath);
+        } catch (error) {
+          console.warn(`Failed to delete folder: ${folderPath}`, error);
+        }
+      }
     }
 
     await prisma.comic.delete({

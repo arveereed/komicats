@@ -47,6 +47,7 @@ type EditComicDialogProps = {
     id: string;
     title: string;
     thumbnail: string | null;
+    cloudinaryFolder?: string | null;
     episodes: {
       id: string;
       title: string;
@@ -185,9 +186,18 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
     };
   };
 
+  const toCloudinarySlug = (value: string) =>
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/['"]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // start of Validation
     if (!title.trim()) {
       showAlert("Missing comic title", "Please enter a title for your comic.");
       return;
@@ -247,15 +257,26 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
         return;
       }
     }
+    // end of Validation
 
     startTransition(async () => {
       try {
+        const comicSlug = toCloudinarySlug(title);
+
+        if (!comicSlug) {
+          showAlert("Invalid comic title", "Please enter a valid comic title.");
+          return;
+        }
+
+        const comicFolder =
+          comic.cloudinaryFolder || `comics/${comicSlug}-${comic.id}`;
+
         let thumbnailUrl = currentThumbnail;
 
         if (thumbnail) {
           const thumbnailUpload = await uploadSingleImage(
             thumbnail,
-            "comics/thumbnails",
+            `${comicFolder}/thumbnail`,
           );
           thumbnailUrl = thumbnailUpload.url;
         }
@@ -266,7 +287,7 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
               item.images.map((imageFile, imageIndex) =>
                 uploadSingleImage(
                   imageFile,
-                  `comics/episodes/episode-${episodeIndex + 1}/pages/${imageIndex + 1}`,
+                  `${comicFolder}/episodes/episode-${episodeIndex + 1}/pages/page-${imageIndex + 1}`,
                 ),
               ),
             );
@@ -289,6 +310,7 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
         formData.append("comicId", comic.id);
         formData.append("title", title.trim());
         formData.append("thumbnail", thumbnailUrl || "");
+        formData.append("cloudinaryFolder", comicFolder);
         formData.append("episodes", JSON.stringify(uploadedEpisodes));
 
         const result = await updateComic(formData);

@@ -147,9 +147,18 @@ export default function AddNewComic() {
     };
   };
 
+  const toCloudinarySlug = (value: string) =>
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/['"]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // start of Validation
     if (!title.trim()) {
       showAlert("Missing comic title", "Please enter a title for your comic.");
       return;
@@ -206,12 +215,20 @@ export default function AddNewComic() {
         return;
       }
     }
+    // end of Validation
 
     startTransition(async () => {
       try {
+        const comicSlug = toCloudinarySlug(title);
+        if (!comicSlug) {
+          showAlert("Invalid comic title", "Please enter a valid comic title.");
+          return;
+        }
+        const comicFolder = `comics/${comicSlug}-${Date.now()}`;
+
         const thumbnailUpload = await uploadSingleImage(
           thumbnail,
-          "comics/thumbnails",
+          `${comicFolder}/thumbnail`,
         );
 
         const uploadedEpisodes = await Promise.all(
@@ -220,7 +237,7 @@ export default function AddNewComic() {
               item.images.map((imageFile, imageIndex) =>
                 uploadSingleImage(
                   imageFile,
-                  `comics/episodes/episode-${episodeIndex + 1}/pages/${imageIndex + 1}`,
+                  `${comicFolder}/episodes/episode-${episodeIndex + 1}/pages/page-${imageIndex + 1}`,
                 ),
               ),
             );
@@ -228,15 +245,17 @@ export default function AddNewComic() {
             return {
               episode: item.episode.trim(),
               description: item.description.trim(),
-              images: imageUploads, // array of { url, publicId }
+              images: imageUploads,
             };
           }),
         );
 
         const formData = new FormData();
         formData.append("title", title.trim());
-        formData.append("thumbnail", thumbnailUpload.url); // only string
-        formData.append("episodes", JSON.stringify(uploadedEpisodes)); // stringify object array
+        formData.append("thumbnail", thumbnailUpload.url);
+        formData.append("thumbnailPublicId", thumbnailUpload.publicId ?? "");
+        formData.append("cloudinaryFolder", comicFolder);
+        formData.append("episodes", JSON.stringify(uploadedEpisodes));
 
         const result = await createComic(formData);
 
