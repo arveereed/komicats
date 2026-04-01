@@ -23,7 +23,7 @@ export default function SigninForm() {
   const isAdmin =
     !!adminEmail && clerkUser?.emailAddresses[0].emailAddress === adminEmail;
 
-  // Move the navigation logic here
+  // Move the navigation logic here when visit
   useEffect(() => {
     if (userLoaded && isSignedIn && !isAdmin) {
       router.push("/profile/avatar");
@@ -50,7 +50,9 @@ export default function SigninForm() {
 
       if (signInAttempt.status === "complete") {
         await setActive({ session: signInAttempt.createdSessionId });
-        window.location.href = "/profile/avatar";
+
+        if (emailAddress === adminEmail) window.location.href = "/admin";
+        else window.location.href = "/profile/avatar";
       } else {
         console.error(JSON.stringify(signInAttempt, null, 2));
       }

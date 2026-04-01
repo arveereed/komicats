@@ -50,7 +50,6 @@ export default function ProfileSelection() {
 
     if (isAdmin) {
       router.push("/admin");
-      return;
     }
 
     router.push("/profile/avatar");

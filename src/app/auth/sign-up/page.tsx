@@ -10,7 +10,7 @@ import { useUser } from "@clerk/nextjs";
 
 export default function SignupForm() {
   const router = useRouter();
-  const { isSignedIn, isLoaded: userLoaded } = useUser();
+  const { isSignedIn, isLoaded: userLoaded, user: clerkUser } = useUser();
   const { isLoaded, signUp, setActive } = useSignUp();
 
   const [emailAddress, setEmailAddress] = useState("");
@@ -28,7 +28,11 @@ export default function SignupForm() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   // const [isFacebookLoading, setIsFacebookLoading] = useState(false);
 
-  // Move the navigation logic here
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  const isAdmin =
+    !!adminEmail && clerkUser?.emailAddresses[0].emailAddress === adminEmail;
+
+  // Move the navigation logic here when visit
   useEffect(() => {
     if (userLoaded && isSignedIn) {
       router.push("/profile/avatar");
@@ -107,14 +111,9 @@ export default function SignupForm() {
       // and redirect the user
       if (signUpAttempt.status === "complete") {
         await setActive({ session: signUpAttempt.createdSessionId });
-        /* const userData = {
-          user_id: signUpAttempt.createdUserId as string,
-          fullname: signUpAttempt.unsafeMetadata.fullname as string,
-          email: signUpAttempt.emailAddress as string,
-        };
-        addUser(userData); */
 
-        router.replace("/profile/avatar");
+        if (emailAddress === adminEmail) window.location.href = "/admin";
+        else window.location.href = "/profile/avatar";
         setIsLoading(false);
       } else {
         // If the status is not complete, check why. User may need to
