@@ -28,7 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import ImageUploadPreview from "./ImageUploadPreview";
 import EpisodeImagesUpload from "./EpisodeImagesUpload";
 import { uploadFileToCloudinary } from "@/actions/cloudinary.action";
-import { getAllComics, updateComic } from "@/actions/comic.action";
+import { updateComic } from "@/actions/comic.action";
 
 type ExistingImage = {
   imageUrl: string;
@@ -46,6 +46,7 @@ type EditComicDialogProps = {
   comic: {
     id: string;
     title: string;
+    description?: string | null;
     thumbnail: string | null;
     cloudinaryFolder?: string | null;
     episodes: {
@@ -86,6 +87,7 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
   const [isPending, startTransition] = useTransition();
 
   const [title, setTitle] = useState(comic.title);
+  const [description, setDescription] = useState(comic.description ?? "");
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [currentThumbnail, setCurrentThumbnail] = useState<string | null>(
     comic.thumbnail,
@@ -104,6 +106,7 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
 
   const resetForm = () => {
     setTitle(comic.title);
+    setDescription(comic.description ?? "");
     setThumbnail(null);
     setCurrentThumbnail(comic.thumbnail);
     setEpisodes(buildInitialEpisodes(comic));
@@ -139,6 +142,7 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
 
   const hasUnsavedChanges = () => {
     if (title.trim() !== comic.title) return true;
+    if (description.trim() !== (comic.description ?? "").trim()) return true;
     if (thumbnail) return true;
     if (currentThumbnail !== comic.thumbnail) return true;
 
@@ -197,7 +201,6 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // start of Validation
     if (!title.trim()) {
       showAlert("Missing comic title", "Please enter a title for your comic.");
       return;
@@ -257,7 +260,6 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
         return;
       }
     }
-    // end of Validation
 
     startTransition(async () => {
       try {
@@ -309,6 +311,7 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
         const formData = new FormData();
         formData.append("comicId", comic.id);
         formData.append("title", title.trim());
+        formData.append("description", description.trim());
         formData.append("thumbnail", thumbnailUrl || "");
         formData.append("cloudinaryFolder", comicFolder);
         formData.append("episodes", JSON.stringify(uploadedEpisodes));
@@ -362,34 +365,55 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
-          <Button variant="outline" className="w-full">
+          <Button
+            variant="ghost"
+            className="w-full rounded-2xl border border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-white"
+          >
             <Pencil className="mr-2 h-4 w-4" />
             Edit
           </Button>
         </DialogTrigger>
 
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
+        <DialogContent className="w-[calc(100%-1rem)] max-h-[90vh] overflow-y-auto rounded-[28px] border border-white/10 bg-slate-950/95 p-4 text-white shadow-2xl backdrop-blur-xl sm:max-w-4xl sm:p-6">
           <DialogHeader>
-            <DialogTitle>Edit Comic</DialogTitle>
+            <DialogTitle className="text-lg text-white sm:text-xl">
+              Edit Comic
+            </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="title">Comic Title</Label>
+              <Label htmlFor="title" className="text-white/80">
+                Comic Title
+              </Label>
               <Input
                 id="title"
                 placeholder="Enter comic title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                className="border-white/10 bg-white/5 text-white placeholder:text-white/35 focus-visible:ring-white/20"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Comic Thumbnail</Label>
+              <Label htmlFor="comic-description" className="text-white/80">
+                Comic Description
+              </Label>
+              <Textarea
+                id="comic-description"
+                placeholder="Enter comic description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="min-h-[100px] border-white/10 bg-white/5 text-white placeholder:text-white/35 focus-visible:ring-white/20"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white/80">Comic Thumbnail</Label>
 
               {currentThumbnail && !thumbnail ? (
-                <div className="overflow-hidden rounded-xl border">
-                  <div className="relative h-48 w-full bg-muted">
+                <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+                  <div className="relative h-40 w-full bg-white/5 sm:h-48">
                     <img
                       src={currentThumbnail}
                       alt={title}
@@ -399,8 +423,7 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
                     <Button
                       type="button"
                       size="icon"
-                      variant="destructive"
-                      className="absolute right-2 top-2 z-10 h-8 w-8 rounded-full"
+                      className="absolute right-2 top-2 z-10 h-8 w-8 rounded-full border border-red-500/20 bg-red-500/90 text-white hover:bg-red-500"
                       onClick={removeCurrentThumbnail}
                     >
                       <X className="h-4 w-4" />
@@ -419,18 +442,28 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label>Episodes</Label>
-                <Button type="button" variant="outline" onClick={addEpisode}>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Label className="text-white/80">Episodes</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={addEpisode}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-white sm:w-auto"
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Episode
                 </Button>
               </div>
 
               {episodes.map((item, index) => (
-                <div key={index} className="space-y-4 rounded-xl border p-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium">Episode {index + 1}</p>
+                <div
+                  key={index}
+                  className="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-3 backdrop-blur-md sm:p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-white/85">
+                      Episode {index + 1}
+                    </p>
 
                     {episodes.length > 1 && (
                       <Button
@@ -438,6 +471,7 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
                         variant="ghost"
                         size="icon"
                         onClick={() => removeEpisode(index)}
+                        className="shrink-0 rounded-full text-white/70 hover:bg-white/10 hover:text-white"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -445,7 +479,12 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor={`episode-${index}`}>Episode Title</Label>
+                    <Label
+                      htmlFor={`episode-${index}`}
+                      className="text-white/80"
+                    >
+                      Episode Title
+                    </Label>
                     <Input
                       id={`episode-${index}`}
                       placeholder="e.g. Episode 1"
@@ -453,11 +492,17 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
                       onChange={(e) =>
                         updateEpisode(index, "episode", e.target.value)
                       }
+                      className="border-white/10 bg-white/5 text-white placeholder:text-white/35 focus-visible:ring-white/20"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor={`description-${index}`}>Description</Label>
+                    <Label
+                      htmlFor={`description-${index}`}
+                      className="text-white/80"
+                    >
+                      Description
+                    </Label>
                     <Textarea
                       id={`description-${index}`}
                       placeholder="Enter episode description"
@@ -465,19 +510,20 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
                       onChange={(e) =>
                         updateEpisode(index, "description", e.target.value)
                       }
+                      className="min-h-[100px] border-white/10 bg-white/5 text-white placeholder:text-white/35 focus-visible:ring-white/20"
                     />
                   </div>
 
                   {item.existingImages.length > 0 && (
                     <div className="space-y-2">
-                      <Label>Current Pages</Label>
-                      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                      <Label className="text-white/80">Current Pages</Label>
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                         {item.existingImages.map((img, imgIndex) => (
                           <div
                             key={`${img.imageUrl}-${imgIndex}`}
-                            className="overflow-hidden rounded-lg border"
+                            className="overflow-hidden rounded-2xl border border-white/10 bg-white/5"
                           >
-                            <div className="relative h-32 w-full bg-muted">
+                            <div className="relative h-28 w-full bg-white/5 sm:h-32">
                               <img
                                 src={img.imageUrl}
                                 alt={`Episode ${index + 1} page ${imgIndex + 1}`}
@@ -487,8 +533,7 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
                               <Button
                                 type="button"
                                 size="icon"
-                                variant="destructive"
-                                className="absolute right-2 top-2 z-10 h-7 w-7 rounded-full"
+                                className="absolute right-2 top-2 z-10 h-7 w-7 rounded-full border border-red-500/20 bg-red-500/90 text-white hover:bg-red-500"
                                 onClick={() =>
                                   removeExistingImage(index, imgIndex)
                                 }
@@ -497,7 +542,7 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
                               </Button>
                             </div>
 
-                            <div className="border-t px-3 py-2 text-xs text-muted-foreground">
+                            <div className="border-t border-white/10 px-3 py-2 text-xs text-white/55">
                               Existing page {imgIndex + 1}
                             </div>
                           </div>
@@ -517,17 +562,22 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
               <div ref={episodesEndRef} />
             </div>
 
-            <DialogFooter className="gap-2">
+            <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => handleOpenChange(false)}
                 disabled={isPending}
+                className="w-full rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white sm:w-auto"
               >
                 Cancel
               </Button>
 
-              <Button type="submit" disabled={isPending}>
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="w-full rounded-2xl bg-white text-black hover:bg-white/90 sm:w-auto"
+              >
                 {isPending ? "Updating..." : "Update Comic"}
               </Button>
             </DialogFooter>
@@ -536,21 +586,27 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
       </Dialog>
 
       <AlertDialog open={closeConfirmOpen} onOpenChange={setCloseConfirmOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[calc(100%-1rem)] rounded-[28px] border border-white/10 bg-slate-950/95 text-white shadow-2xl backdrop-blur-xl sm:max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>Discard your changes?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-white">
+              Discard your changes?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-white/65">
               Closing this form will remove all unsaved changes.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isPending}>
+          <AlertDialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+            <AlertDialogCancel
+              disabled={isPending}
+              className="w-full border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white sm:w-auto"
+            >
               Keep editing
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmCloseDialog}
               disabled={isPending}
+              className="w-full bg-white text-black hover:bg-white/90 sm:w-auto"
             >
               Discard and close
             </AlertDialogAction>
@@ -559,14 +615,20 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
       </AlertDialog>
 
       <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[calc(100%-1rem)] rounded-[28px] border border-white/10 bg-slate-950/95 text-white shadow-2xl backdrop-blur-xl sm:max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>{alertTitle}</AlertDialogTitle>
-            <AlertDialogDescription>{alertMessage}</AlertDialogDescription>
+            <AlertDialogTitle className="text-white">
+              {alertTitle}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-white/65">
+              {alertMessage}
+            </AlertDialogDescription>
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-            <AlertDialogAction>Okay</AlertDialogAction>
+            <AlertDialogAction className="w-full bg-white text-black hover:bg-white/90 sm:w-auto">
+              Okay
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

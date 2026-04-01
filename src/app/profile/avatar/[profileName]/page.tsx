@@ -7,6 +7,6 @@ export async function generateMetadata() {
   };
 }
 
-export default function HomePage() {
+export default async function HomePage() {
   return <HomePageComponent />;
 }

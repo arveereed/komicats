@@ -15,7 +15,7 @@ export default function ShopComponent() {
   // Move the navigation logic here
   useEffect(() => {
     if (userLoaded && isSignedIn && !isAdmin) {
-      router.push("/profile/avatar");
+      router.push("/profile/avatar/shop");
     }
     if (isAdmin) {
       router.push("/admin");

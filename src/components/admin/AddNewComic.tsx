@@ -36,7 +36,7 @@ type Episode = {
   images: File[];
 };
 
-const INITIAL_EPISODES: Episode[] = [
+const createInitialEpisodes = (): Episode[] => [
   { episode: "", description: "", images: [] },
 ];
 
@@ -50,8 +50,9 @@ export default function AddNewComic() {
   const [isPending, startTransition] = useTransition();
 
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [thumbnail, setThumbnail] = useState<File | null>(null);
-  const [episodes, setEpisodes] = useState<Episode[]>(INITIAL_EPISODES);
+  const [episodes, setEpisodes] = useState<Episode[]>(createInitialEpisodes());
 
   const episodesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -91,12 +92,14 @@ export default function AddNewComic() {
 
   const resetForm = () => {
     setTitle("");
+    setDescription("");
     setThumbnail(null);
-    setEpisodes(INITIAL_EPISODES);
+    setEpisodes(createInitialEpisodes());
   };
 
   const hasUnsavedChanges = () => {
     if (title.trim()) return true;
+    if (description.trim()) return true;
     if (thumbnail) return true;
 
     return episodes.some(
@@ -158,7 +161,6 @@ export default function AddNewComic() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // start of Validation
     if (!title.trim()) {
       showAlert("Missing comic title", "Please enter a title for your comic.");
       return;
@@ -215,7 +217,6 @@ export default function AddNewComic() {
         return;
       }
     }
-    // end of Validation
 
     startTransition(async () => {
       try {
@@ -224,6 +225,7 @@ export default function AddNewComic() {
           showAlert("Invalid comic title", "Please enter a valid comic title.");
           return;
         }
+
         const comicFolder = `comics/${comicSlug}-${Date.now()}`;
 
         const thumbnailUpload = await uploadSingleImage(
@@ -252,6 +254,7 @@ export default function AddNewComic() {
 
         const formData = new FormData();
         formData.append("title", title.trim());
+        formData.append("description", description.trim());
         formData.append("thumbnail", thumbnailUpload.url);
         formData.append("thumbnailPublicId", thumbnailUpload.publicId ?? "");
         formData.append("cloudinaryFolder", comicFolder);
@@ -286,30 +289,48 @@ export default function AddNewComic() {
     <>
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
-          <Button>
+          <Button className="w-full rounded-2xl border border-white/10 bg-white/10 text-white hover:bg-white/20 sm:w-auto">
             <Plus className="mr-2 h-4 w-4" />
             Add New Comic
           </Button>
         </DialogTrigger>
 
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
+        <DialogContent className="w-[calc(100%-1rem)] max-h-[90vh] overflow-y-auto rounded-[28px] border border-white/10 bg-slate-950/95 p-4 text-white shadow-2xl backdrop-blur-xl sm:max-w-4xl sm:p-6">
           <DialogHeader>
-            <DialogTitle>Add New Comic</DialogTitle>
+            <DialogTitle className="text-lg text-white sm:text-xl">
+              Add New Comic
+            </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="title">Comic Title</Label>
+              <Label htmlFor="title" className="text-white/80">
+                Comic Title
+              </Label>
               <Input
                 id="title"
                 placeholder="Enter comic title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                className="border-white/10 bg-white/5 text-white placeholder:text-white/35 focus-visible:ring-white/20"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Comic Thumbnail</Label>
+              <Label htmlFor="comic-description" className="text-white/80">
+                Comic Description
+              </Label>
+              <Textarea
+                id="comic-description"
+                placeholder="Enter comic description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="min-h-[100px] border-white/10 bg-white/5 text-white placeholder:text-white/35 focus-visible:ring-white/20"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white/80">Comic Thumbnail</Label>
               <ImageUploadPreview
                 label="Thumbnail"
                 value={thumbnail}
@@ -318,18 +339,29 @@ export default function AddNewComic() {
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label>Episodes</Label>
-                <Button type="button" variant="outline" onClick={addEpisode}>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Label className="text-white/80">Episodes</Label>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={addEpisode}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-white sm:w-auto"
+                >
                   <Plus className="mr-2 h-4 w-4" />
                   Add Episode
                 </Button>
               </div>
 
               {episodes.map((item, index) => (
-                <div key={index} className="space-y-4 rounded-xl border p-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium">Episode {index + 1}</p>
+                <div
+                  key={index}
+                  className="space-y-4 rounded-3xl border border-white/10 bg-white/5 p-3 backdrop-blur-md sm:p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-sm font-medium text-white/85">
+                      Episode {index + 1}
+                    </p>
 
                     {episodes.length > 1 && (
                       <Button
@@ -337,6 +369,7 @@ export default function AddNewComic() {
                         variant="ghost"
                         size="icon"
                         onClick={() => removeEpisode(index)}
+                        className="shrink-0 rounded-full text-white/70 hover:bg-white/10 hover:text-white"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -344,7 +377,12 @@ export default function AddNewComic() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor={`episode-${index}`}>Episode Title</Label>
+                    <Label
+                      htmlFor={`episode-${index}`}
+                      className="text-white/80"
+                    >
+                      Episode Title
+                    </Label>
                     <Input
                       id={`episode-${index}`}
                       placeholder="e.g. Episode 1"
@@ -352,11 +390,17 @@ export default function AddNewComic() {
                       onChange={(e) =>
                         updateEpisode(index, "episode", e.target.value)
                       }
+                      className="border-white/10 bg-white/5 text-white placeholder:text-white/35 focus-visible:ring-white/20"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor={`description-${index}`}>Description</Label>
+                    <Label
+                      htmlFor={`description-${index}`}
+                      className="text-white/80"
+                    >
+                      Description
+                    </Label>
                     <Textarea
                       id={`description-${index}`}
                       placeholder="Enter episode description"
@@ -364,6 +408,7 @@ export default function AddNewComic() {
                       onChange={(e) =>
                         updateEpisode(index, "description", e.target.value)
                       }
+                      className="min-h-[100px] border-white/10 bg-white/5 text-white placeholder:text-white/35 focus-visible:ring-white/20"
                     />
                   </div>
 
@@ -378,17 +423,22 @@ export default function AddNewComic() {
               <div ref={episodesEndRef} />
             </div>
 
-            <DialogFooter className="gap-2">
+            <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => handleOpenChange(false)}
                 disabled={isPending}
+                className="w-full rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white sm:w-auto"
               >
                 Cancel
               </Button>
 
-              <Button type="submit" disabled={isPending}>
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="w-full rounded-2xl bg-white text-black hover:bg-white/90 sm:w-auto"
+              >
                 {isPending ? "Saving..." : "Save Comic"}
               </Button>
             </DialogFooter>
@@ -397,22 +447,28 @@ export default function AddNewComic() {
       </Dialog>
 
       <AlertDialog open={closeConfirmOpen} onOpenChange={setCloseConfirmOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[calc(100%-1rem)] rounded-[28px] border border-white/10 bg-slate-950/95 text-white shadow-2xl backdrop-blur-xl sm:max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>Discard this comic draft?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-base text-white sm:text-lg">
+              Discard this comic draft?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm leading-relaxed text-white/65">
               Closing this form will remove the comic title, thumbnail, and all
               imported episode images that have not been saved yet.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isPending}>
+          <AlertDialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+            <AlertDialogCancel
+              disabled={isPending}
+              className="w-full border-white/15 bg-white/5 text-white hover:bg-white/10 hover:text-white sm:w-auto"
+            >
               Keep editing
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmCloseDialog}
               disabled={isPending}
+              className="w-full bg-white text-black hover:bg-white/90 sm:w-auto"
             >
               Discard and close
             </AlertDialogAction>
@@ -421,14 +477,20 @@ export default function AddNewComic() {
       </AlertDialog>
 
       <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[calc(100%-1rem)] rounded-[28px] border border-white/10 bg-slate-950/95 text-white shadow-2xl backdrop-blur-xl sm:max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>{alertTitle}</AlertDialogTitle>
-            <AlertDialogDescription>{alertMessage}</AlertDialogDescription>
+            <AlertDialogTitle className="text-base text-white sm:text-lg">
+              {alertTitle}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="break-words text-sm leading-relaxed text-white/65">
+              {alertMessage}
+            </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <AlertDialogFooter>
-            <AlertDialogAction>Okay</AlertDialogAction>
+          <AlertDialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+            <AlertDialogAction className="w-full bg-white text-black hover:bg-white/90 sm:w-auto">
+              Okay
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

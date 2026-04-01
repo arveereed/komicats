@@ -15,7 +15,7 @@ export default function DownloadsPageComponent() {
   // Move the navigation logic here
   useEffect(() => {
     if (userLoaded && isSignedIn && !isAdmin) {
-      router.push("/profile/avatar");
+      router.push("/profile/avatar/downloads");
     }
     if (isAdmin) {
       router.push("/admin");

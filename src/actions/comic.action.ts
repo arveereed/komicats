@@ -75,6 +75,7 @@ export async function createComic(formData: FormData) {
 
   try {
     const title = formData.get("title")?.toString().trim() || "";
+    const description = formData.get("description")?.toString().trim() || "";
     const thumbnail = formData.get("thumbnail")?.toString().trim() || "";
     const episodesRaw = formData.get("episodes")?.toString() || "[]";
     const thumbnailPublicId =
@@ -126,6 +127,7 @@ export async function createComic(formData: FormData) {
     const comic = await prisma.comic.create({
       data: {
         title,
+        description,
         thumbnail: thumbnail || null,
         thumbnailPublicId: thumbnailPublicId || null,
         cloudinaryFolder: cloudinaryFolder || null,
@@ -255,6 +257,7 @@ export async function updateComic(formData: FormData) {
   try {
     const comicId = formData.get("comicId")?.toString().trim() || "";
     const title = formData.get("title")?.toString().trim() || "";
+    const description = formData.get("description")?.toString().trim() || "";
     const thumbnail = formData.get("thumbnail")?.toString().trim() || "";
     const episodesRaw = formData.get("episodes")?.toString() || "[]";
 
@@ -278,6 +281,7 @@ export async function updateComic(formData: FormData) {
       where: { id: comicId },
       data: {
         title,
+        description,
         thumbnail: thumbnail || null,
         episodes: {
           deleteMany: {},
@@ -313,14 +317,6 @@ export async function updateComic(formData: FormData) {
       success: false,
       message: "Failed to update comic",
     };
-  }
-}
-
-async function deleteFolderIfEmpty(path: string) {
-  try {
-    await cloudinary.api.delete_folder(path);
-  } catch (error) {
-    console.warn(`Could not delete folder: ${path}`, error);
   }
 }
 

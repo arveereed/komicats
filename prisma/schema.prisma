@@ -32,6 +32,7 @@ model Profile {
 model Comic {
   id                String    @id @default(cuid())
   title             String
+  description       String
   thumbnail         String?
   thumbnailPublicId String?
   cloudinaryFolder  String?

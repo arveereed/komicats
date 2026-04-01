@@ -15,12 +15,11 @@ export default function MyCoinsComponent() {
   // Move the navigation logic here
   useEffect(() => {
     if (userLoaded && isSignedIn && !isAdmin) {
-      router.push("/profile/avatar");
+      router.push("/profile/avatar/my-coins");
     }
     if (isAdmin) {
       router.push("/admin");
     }
   }, [userLoaded, isSignedIn, router, isAdmin]);
-
   return <div>MyCoinsComponent</div>;
 }

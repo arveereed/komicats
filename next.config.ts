@@ -17,6 +17,11 @@ const nextConfig = {
         hostname: "res.cloudinary.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/dhl0zf4ho/image/upload/**",
+      },
     ],
     // 2. Fix the SVG "dangerouslyAllowSVG" error
     dangerouslyAllowSVG: true,

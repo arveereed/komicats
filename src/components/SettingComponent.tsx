@@ -35,7 +35,7 @@ export default function SettingComponent() {
   // Move the navigation logic here
   useEffect(() => {
     if (userLoaded && isSignedIn && !isAdmin) {
-      router.push("/profile/avatar");
+      router.push("/profile/avatar/setting");
     }
     if (isAdmin) {
       router.push("/admin");

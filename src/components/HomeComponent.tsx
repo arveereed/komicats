@@ -15,7 +15,7 @@ export default function HomePageComponent() {
   // Move the navigation logic here
   useEffect(() => {
     if (userLoaded && isSignedIn && !isAdmin) {
-      router.push("/profile/avatar");
+      router.push("/profile/avatar/profile");
     }
     if (isAdmin) {
       router.push("/admin");

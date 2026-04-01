@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Image as ImageIcon, Plus, X } from "lucide-react";
 import { useEffect, useId, useMemo, useRef } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -60,11 +61,18 @@ export default function EpisodeImagesUpload({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <Label htmlFor={inputId}>{label}</Label>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Label htmlFor={inputId} className="text-white/80">
+          {label}
+        </Label>
 
         <label htmlFor={inputId}>
-          <Button type="button" variant="outline" asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            asChild
+            className="rounded-2xl border border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-white"
+          >
             <span className="cursor-pointer">
               <Plus className="mr-2 h-4 w-4" />
               Add Pages
@@ -84,7 +92,7 @@ export default function EpisodeImagesUpload({
       />
 
       {value.length === 0 ? (
-        <div className="flex h-40 flex-col items-center justify-center rounded-lg border bg-muted text-muted-foreground">
+        <div className="flex h-40 flex-col items-center justify-center rounded-3xl border border-white/10 bg-white/5 text-white/50 backdrop-blur-md">
           <ImageIcon className="mb-2 h-8 w-8" />
           <p className="text-sm">No episode images selected</p>
         </div>
@@ -93,9 +101,9 @@ export default function EpisodeImagesUpload({
           {previews.map((item, index) => (
             <div
               key={`${item.file.name}-${index}`}
-              className="overflow-hidden rounded-xl border"
+              className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-xl backdrop-blur-md"
             >
-              <div className="relative h-40 w-full bg-muted">
+              <div className="relative h-40 w-full bg-white/5">
                 <Dialog>
                   <DialogTrigger asChild>
                     <button
@@ -106,7 +114,7 @@ export default function EpisodeImagesUpload({
                         src={item.url}
                         alt={`Episode page ${index + 1}`}
                         fill
-                        className="object-cover"
+                        className="object-cover transition duration-300 hover:scale-105"
                         unoptimized
                       />
                     </button>
@@ -117,13 +125,12 @@ export default function EpisodeImagesUpload({
                       Episode page {index + 1} full preview
                     </DialogTitle>
 
-                    <div className="relative flex max-h-[90vh] min-h-[300px] w-full items-center justify-center overflow-hidden rounded-lg bg-black/90 p-2 sm:p-4">
+                    <div className="relative flex max-h-[90vh] min-h-[300px] w-full items-center justify-center overflow-hidden rounded-[28px] border border-white/10 bg-slate-950/95 p-2 shadow-2xl backdrop-blur-xl sm:p-4">
                       <DialogClose asChild>
                         <Button
                           type="button"
                           size="icon"
-                          variant="secondary"
-                          className="absolute right-3 top-3 z-50 rounded-full"
+                          className="absolute right-3 top-3 z-50 rounded-full border border-white/10 bg-white/10 text-white hover:bg-white/20"
                         >
                           <X className="h-5 w-5" />
                         </Button>
@@ -145,17 +152,16 @@ export default function EpisodeImagesUpload({
                 <Button
                   type="button"
                   size="icon"
-                  variant="destructive"
-                  className="absolute right-2 top-2 z-10 h-7 w-7 rounded-full"
+                  className="absolute right-2 top-2 z-10 h-7 w-7 rounded-full border border-red-500/20 bg-red-500/90 text-white hover:bg-red-500"
                   onClick={() => handleRemove(index)}
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
 
-              <div className="border-t px-3 py-2 text-xs text-muted-foreground">
-                Page {index + 1}
-                <div>Filename: {item.file.name}</div>
+              <div className="border-t border-white/10 px-3 py-2 text-xs text-white/55">
+                <div>Page {index + 1}</div>
+                <div className="truncate">Filename: {item.file.name}</div>
               </div>
             </div>
           ))}
