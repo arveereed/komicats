@@ -7,10 +7,6 @@ export async function syncUser() {
 
   if (!userId || !user) return;
 
-  console.log("user.firstName: ", user.firstName);
-  console.log("user.lastName: ", user.lastName);
-  console.log("user.unsafeMetadata.fullname: ", user.unsafeMetadata.fullname);
-
   const existingUser = await prisma.user.findUnique({
     where: {
       clerkId: userId,
