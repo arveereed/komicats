@@ -29,6 +29,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { useUser } from "@clerk/nextjs";
 
 type EpisodeImage = {
   id: string;
@@ -69,18 +70,29 @@ export default function EpisodeReader({
 }: EpisodeReaderProps) {
   const [episodesOpen, setEpisodesOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const { user: clerkUser } = useUser();
 
   const currentEpisode = useMemo(
     () => episodes.find((episode) => episode.id === episodeId),
     [episodes, episodeId],
   );
 
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  const isAdmin =
+    !!adminEmail && clerkUser?.emailAddresses[0].emailAddress === adminEmail;
+
   return (
     <section className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white">
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-3 sm:h-20 sm:px-4 lg:px-6">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <Link href={`/admin/comics/${comicId}`}>
+            <Link
+              href={
+                isAdmin
+                  ? `/admin/comics/${comicId}`
+                  : `/profile/avatar/comics/${comicId}`
+              }
+            >
               <Button
                 variant="ghost"
                 size="icon"
