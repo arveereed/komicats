@@ -128,6 +128,9 @@ function MobileNavbar({ user }: { user: SyncedUserType }) {
     }
   };
 
+  const isOnRead = pathname.includes("/profile/avatar/comics");
+  if (isOnRead) return null;
+
   return (
     <div className="flex md:hidden h-16 items-center space-x-2 justify-between">
       {!isProfileAvatarPath && !isProfileAvatarSetting && (

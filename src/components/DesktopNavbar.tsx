@@ -113,6 +113,9 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
     }
   };
 
+  const isOnRead = pathname.includes("/profile/avatar/comics");
+  if (isOnRead) return null;
+
   return (
     <div className="hidden md:flex items-center justify-between">
       <div className="flex h-16 items-center gap-10">

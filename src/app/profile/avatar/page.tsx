@@ -66,7 +66,7 @@ export default function ProfileSelection() {
   const handleSelect = (profileId: string, name: string) => {
     // We still use localStorage to track which specific profile is "active" in the browser
     localStorage.setItem("komicats_active_profile", profileId);
-    router.replace(`/profile/avatar/profile=${name}`);
+    router.replace(`/profile/avatar/home`);
   };
 
   const handleAddProfile = async () => {

@@ -77,7 +77,7 @@ export default function EpisodeReader({
 
   return (
     <section className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-xl">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-3 sm:h-20 sm:px-4 lg:px-6">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Link href={`/admin/comics/${comicId}`}>
