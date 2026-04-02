@@ -68,16 +68,24 @@ export default function SigninForm() {
       }
 
       if (signInAttempt.status === "needs_second_factor") {
-        setNeedsSecondFactor(true);
-
         const emailSecondFactor = signInAttempt.supportedSecondFactors?.find(
           (factor) => factor.strategy === "email_code",
         );
 
+        if (!emailSecondFactor) {
+          setError("No supported email verification method was found.");
+          return;
+        }
+
+        await signIn.prepareSecondFactor({
+          strategy: "email_code",
+        });
+
+        setNeedsSecondFactor(true);
         setInfo(
           emailSecondFactor?.safeIdentifier
             ? `We sent a verification code to ${emailSecondFactor.safeIdentifier}.`
-            : "Enter the verification code sent to your email.",
+            : "We sent a verification code to your email.",
         );
         return;
       }
@@ -89,21 +97,26 @@ export default function SigninForm() {
       );
       setError("Sign-in needs an extra step that is not handled yet.");
     } catch (err: any) {
-      const code = err?.errors?.[0]?.code;
+      const clerkError = err?.errors?.[0];
+      const errorCode = clerkError?.code;
 
-      if (code === "form_password_incorrect") {
+      if (errorCode === "form_password_incorrect") {
         setError("Password is incorrect. Please try again.");
-      } else if (code === "form_param_format_invalid") {
+      } else if (errorCode === "form_param_format_invalid") {
         setError("Email address must be valid.");
-      } else if (code === "form_identifier_not_found") {
+      } else if (errorCode === "form_identifier_not_found") {
         setError("Email doesn't exist. Please try again.");
       } else if (
-        code === "form_param_nil" ||
-        code === "form_conditional_param_missing"
+        errorCode === "form_param_nil" ||
+        errorCode === "form_conditional_param_missing"
       ) {
         setError("Email or password is empty.");
       } else {
-        setError("Something went wrong. Please try again.");
+        setError(
+          clerkError?.longMessage ||
+            clerkError?.message ||
+            "Something went wrong. Please try again.",
+        );
       }
     } finally {
       setIsLoading(false);
@@ -120,7 +133,7 @@ export default function SigninForm() {
 
       const secondFactorAttempt = await signIn.attemptSecondFactor({
         strategy: "email_code",
-        code,
+        code: code.trim(),
       });
 
       if (secondFactorAttempt.status === "complete") {
@@ -134,21 +147,53 @@ export default function SigninForm() {
       );
       setError("Verification could not be completed. Please try again.");
     } catch (err: any) {
-      const code = err?.errors?.[0]?.code;
+      const clerkError = err?.errors?.[0];
+      const errorCode = clerkError?.code;
 
-      if (code === "form_code_incorrect" || code === "verification_failed") {
+      if (errorCode === "verification_not_sent") {
+        setError("A verification code has not been sent yet.");
+      } else if (
+        errorCode === "form_code_incorrect" ||
+        errorCode === "verification_failed"
+      ) {
         setError("Invalid verification code. Please try again.");
-      } else if (code === "form_param_nil") {
+      } else if (errorCode === "form_param_nil") {
         setError("Verification code is required.");
-      } else if (code === "verification_expired") {
+      } else if (errorCode === "verification_expired") {
         setError("Verification code expired. Please sign in again.");
         setNeedsSecondFactor(false);
         setCode("");
       } else {
-        setError("Failed to verify the code. Please try again.");
+        setError(
+          clerkError?.longMessage ||
+            clerkError?.message ||
+            "Failed to verify the code. Please try again.",
+        );
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const onResendCode = async () => {
+    if (!isLoaded || !signIn) return;
+
+    try {
+      setError(null);
+      setInfo(null);
+
+      await signIn.prepareSecondFactor({
+        strategy: "email_code",
+      });
+
+      setInfo("A new verification code has been sent to your email.");
+    } catch (err: any) {
+      const clerkError = err?.errors?.[0];
+      setError(
+        clerkError?.longMessage ||
+          clerkError?.message ||
+          "Failed to resend code.",
+      );
     }
   };
 
@@ -175,10 +220,10 @@ export default function SigninForm() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-svh px-4 py-12 bg-slate-50">
+    <div className="flex items-center justify-center min-h-svh px-4 py-12 bg-slate-50 text-black">
       <div className="max-w-[480px] w-full">
-        <div className="p-6 sm:p-10 rounded-2xl bg-white border border-gray-200 shadow-sm">
-          <h1 className="text-slate-900 text-center text-2xl sm:text-3xl font-semibold">
+        <div className="p-6 sm:p-10 rounded-2xl bg-white border border-gray-200 shadow-sm text-black">
+          <h1 className="text-black text-center text-2xl sm:text-3xl font-semibold">
             {needsSecondFactor ? "Verify your email" : "Sign in"}
           </h1>
 
@@ -195,7 +240,7 @@ export default function SigninForm() {
           )}
 
           {info && (
-            <div className="bg-blue-50 text-blue-700 p-3 rounded-lg mt-4 text-sm">
+            <div className="bg-blue-50 text-black p-3 rounded-lg mt-4 text-sm">
               {info}
             </div>
           )}
@@ -207,7 +252,7 @@ export default function SigninForm() {
                   type="button"
                   onClick={onFacebookSignIn}
                   disabled={isFacebookLoading}
-                  className="w-full flex items-center justify-center gap-2 border border-slate-300 rounded-md py-3 px-4 text-slate-900 font-medium hover:bg-slate-50 disabled:opacity-60 cursor-pointer transition-colors"
+                  className="w-full flex items-center justify-center gap-2 border border-slate-300 rounded-md py-3 px-4 text-black font-medium hover:bg-slate-50 disabled:opacity-60 cursor-pointer transition-colors"
                 >
                   <Facebook size={18} />
                   <span className="text-sm sm:text-base">
@@ -220,7 +265,7 @@ export default function SigninForm() {
 
               <div className="flex items-center gap-3 my-6">
                 <div className="h-px bg-slate-200 flex-1" />
-                <span className="text-xs sm:text-sm text-slate-500 uppercase tracking-wider">
+                <span className="text-xs sm:text-sm text-black uppercase tracking-wider">
                   or
                 </span>
                 <div className="h-px bg-slate-200 flex-1" />
@@ -234,7 +279,7 @@ export default function SigninForm() {
                 }}
               >
                 <div>
-                  <label className="text-slate-900 text-sm font-medium mb-2 block">
+                  <label className="text-black text-sm font-medium mb-2 block">
                     Email
                   </label>
                   <input
@@ -243,13 +288,13 @@ export default function SigninForm() {
                     name="username"
                     type="email"
                     required
-                    className="w-full text-slate-900 text-sm border border-slate-300 px-4 py-3 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                    className="w-full text-black text-sm border border-slate-300 px-4 py-3 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
                     placeholder="Enter your email"
                   />
                 </div>
 
                 <div>
-                  <label className="text-slate-900 text-sm font-medium mb-2 block">
+                  <label className="text-black text-sm font-medium mb-2 block">
                     Password
                   </label>
                   <div className="relative flex items-center">
@@ -259,13 +304,13 @@ export default function SigninForm() {
                       name="password"
                       type={showPassword ? "text" : "password"}
                       required
-                      className="w-full text-slate-900 text-sm border border-slate-300 px-4 py-3 pr-10 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                      className="w-full text-black text-sm border border-slate-300 px-4 py-3 pr-10 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
                       placeholder="Enter password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute cursor-pointer right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                      className="absolute cursor-pointer right-3 top-1/2 -translate-y-1/2 text-black hover:text-gray-700"
                     >
                       {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
@@ -282,7 +327,7 @@ export default function SigninForm() {
                     />
                     <label
                       htmlFor="remember-me"
-                      className="ml-2 block text-sm text-slate-700 cursor-pointer"
+                      className="ml-2 block text-sm text-black cursor-pointer"
                     >
                       Remember me
                     </label>
@@ -291,7 +336,7 @@ export default function SigninForm() {
                   <div className="text-sm">
                     <Link
                       href="/auth/forgot-password"
-                      className="text-blue-600 hover:underline font-semibold"
+                      className="text-black hover:underline font-semibold"
                     >
                       Forgot password?
                     </Link>
@@ -308,10 +353,10 @@ export default function SigninForm() {
                   </button>
                 </div>
 
-                <p className="text-slate-600 text-sm mt-6 text-center">
+                <p className="text-black text-sm mt-6 text-center">
                   Don't have an account?{" "}
                   <Link
-                    className="text-blue-600 font-semibold hover:underline ml-1"
+                    className="text-black font-semibold hover:underline ml-1"
                     href="/auth/sign-up"
                   >
                     Register here
@@ -328,7 +373,7 @@ export default function SigninForm() {
               }}
             >
               <div>
-                <label className="text-slate-900 text-sm font-medium mb-2 block">
+                <label className="text-black text-sm font-medium mb-2 block">
                   Verification code
                 </label>
                 <input
@@ -337,7 +382,7 @@ export default function SigninForm() {
                   type="text"
                   inputMode="numeric"
                   required
-                  className="w-full text-slate-900 text-sm border border-slate-300 px-4 py-3 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
+                  className="w-full text-black text-sm border border-slate-300 px-4 py-3 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
                   placeholder="Enter the code from your email"
                 />
               </div>
@@ -353,13 +398,21 @@ export default function SigninForm() {
 
                 <button
                   type="button"
+                  onClick={onResendCode}
+                  className="w-full py-3 px-4 text-sm font-medium rounded-md border border-slate-300 text-black hover:bg-slate-50 transition-all"
+                >
+                  Resend code
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => {
                     setNeedsSecondFactor(false);
                     setCode("");
                     setInfo(null);
                     setError(null);
                   }}
-                  className="w-full py-3 px-4 text-sm font-medium rounded-md border border-slate-300 hover:bg-slate-50 transition-all"
+                  className="w-full py-3 px-4 text-sm font-medium rounded-md border border-slate-300 text-black hover:bg-slate-50 transition-all"
                 >
                   Back to sign in
                 </button>
