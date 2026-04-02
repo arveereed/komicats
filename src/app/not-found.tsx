@@ -17,7 +17,8 @@ export default function NotFound() {
       </h2>
       <p className="mt-2 text-base text-muted-foreground max-w-prose">
         Sorry, we couldn’t find the page you’re looking for. It might have been
-        moved, deleted, or perhaps it never existed in the first place.
+        moved, deleted, you may not have permission to access it, or perhaps it
+        never existed in the first place.
       </p>
 
       {/* Action Buttons */}

@@ -46,13 +46,12 @@ export default function ProfileSelection() {
 
   // Move the navigation logic here
   useEffect(() => {
-    if (!userLoaded || !isSignedIn) return;
-
+    if (userLoaded && isSignedIn && !isAdmin) {
+      router.push("/profile/avatar");
+    }
     if (isAdmin) {
       router.push("/admin");
     }
-
-    router.push("/profile/avatar");
   }, [userLoaded, isSignedIn, router, isAdmin]);
 
   useEffect(() => {

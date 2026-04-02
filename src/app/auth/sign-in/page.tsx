@@ -85,10 +85,12 @@ export default function SigninForm() {
       setError(null);
       setIsFacebookLoading(true);
 
+      const path = isAdmin ? "/admin" : "/profile/avatar";
+
       await signIn.authenticateWithRedirect({
         strategy: "oauth_facebook",
         redirectUrl: "/auth/sso-callback",
-        redirectUrlComplete: "/profile/avatar",
+        redirectUrlComplete: path,
       });
     } catch (err: any) {
       console.error("Facebook sign in error:", err);

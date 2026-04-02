@@ -1,8 +1,19 @@
 import AdminAddNewComicComponent from "@/components/AdminAddNewComicComponent";
 import ComicListSection from "@/components/admin/ComicListSection";
+import { currentUser } from "@clerk/nextjs/server";
 import { BookOpen, Shield, Sparkles } from "lucide-react";
+import { notFound } from "next/navigation";
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  const clerkUser = await currentUser();
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const isAdmin =
+    !!adminEmail && clerkUser?.emailAddresses[0].emailAddress === adminEmail;
+
+  if (!isAdmin) {
+    return notFound();
+  }
+
   return (
     <section className="">
       <div className="relative overflow-hidden">
