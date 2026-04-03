@@ -145,7 +145,11 @@ export default function EpisodeReader({
                       return (
                         <Link
                           key={episode.id}
-                          href={`/admin/comics/${comicId}/episode/${episode.id}`}
+                          href={
+                            isAdmin
+                              ? `/admin/comics/${comicId}/episode/${episode.id}`
+                              : `/profile/avatar/comics/${comicId}/episode/${episode.id}`
+                          }
                           onClick={() => setEpisodesOpen(false)}
                           className={`block rounded-2xl border p-4 transition ${
                             isActive
@@ -287,7 +291,13 @@ export default function EpisodeReader({
             </div>
 
             <div className="mt-6">
-              <Link href={`/admin/comics/${comicId}`}>
+              <Link
+                href={
+                  isAdmin
+                    ? `/admin/comics/${comicId}`
+                    : `/profile/avatar/comics/${comicId}`
+                }
+              >
                 <Button variant="secondary" className="rounded-full px-6">
                   Back to Comic
                 </Button>
@@ -319,7 +329,11 @@ export default function EpisodeReader({
         <div className="hidden w-full max-w-4xl items-center justify-center gap-3 px-4 py-10 sm:flex">
           {previousEpisodeId ? (
             <Link
-              href={`/admin/comics/${comicId}/episode/${previousEpisodeId}`}
+              href={
+                isAdmin
+                  ? `/admin/comics/${comicId}/episode/${previousEpisodeId}`
+                  : `/profile/avatar/comics/${comicId}/episode/${previousEpisodeId}`
+              }
             >
               <Button
                 variant="outline"
@@ -340,12 +354,24 @@ export default function EpisodeReader({
             </Button>
           )}
 
-          <Link href={`/admin/comics/${comicId}`}>
+          <Link
+            href={
+              isAdmin
+                ? `/admin/comics/${comicId}`
+                : `/profile/avatar/comics/${comicId}`
+            }
+          >
             <Button className="rounded-full px-6">All Episodes</Button>
           </Link>
 
           {nextEpisodeId ? (
-            <Link href={`/admin/comics/${comicId}/episode/${nextEpisodeId}`}>
+            <Link
+              href={
+                isAdmin
+                  ? `/admin/comics/${comicId}/episode/${nextEpisodeId}`
+                  : `/profile/avatar/comics/${comicId}/episode/${nextEpisodeId}`
+              }
+            >
               <Button className="gap-2 rounded-full px-5">
                 Next
                 <ChevronRight className="h-4 w-4" />
@@ -364,7 +390,11 @@ export default function EpisodeReader({
         <div className="mx-auto grid max-w-md grid-cols-3 gap-2">
           {previousEpisodeId ? (
             <Link
-              href={`/admin/comics/${comicId}/episode/${previousEpisodeId}`}
+              href={
+                isAdmin
+                  ? `/admin/comics/${comicId}/episode/${previousEpisodeId}`
+                  : `/profile/avatar/comics/${comicId}/episode/${previousEpisodeId}`
+              }
               className="w-full"
             >
               <Button
@@ -386,13 +416,24 @@ export default function EpisodeReader({
             </Button>
           )}
 
-          <Link href={`/admin/comics/${comicId}`} className="w-full">
+          <Link
+            href={
+              isAdmin
+                ? `/admin/comics/${comicId}`
+                : `/profile/avatar/comics/${comicId}`
+            }
+            className="w-full"
+          >
             <Button className="w-full">Episodes</Button>
           </Link>
 
           {nextEpisodeId ? (
             <Link
-              href={`/admin/comics/${comicId}/episode/${nextEpisodeId}`}
+              href={
+                isAdmin
+                  ? `/admin/comics/${comicId}/episode/${nextEpisodeId}`
+                  : `/profile/avatar/comics/${comicId}/episode/${nextEpisodeId}`
+              }
               className="w-full"
             >
               <Button className="w-full gap-1">

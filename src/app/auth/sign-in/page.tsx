@@ -35,7 +35,13 @@ export default function SigninForm() {
     }
   }, [userLoaded, isSignedIn, router, isAdmin]);
 
-  if (!userLoaded || !isLoaded) return <div>Loading...</div>;
+  if (!userLoaded || !isLoaded) {
+    return (
+      <div className="flex min-h-svh items-center justify-center px-4 text-sm text-white/70">
+        Loading...
+      </div>
+    );
+  }
 
   const redirectAfterLogin = async (sessionId: string | null) => {
     if (!sessionId || !setActive) return;
@@ -220,27 +226,36 @@ export default function SigninForm() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-svh px-4 py-12 bg-slate-50 text-black">
-      <div className="max-w-[480px] w-full">
-        <div className="p-6 sm:p-10 rounded-2xl bg-white border border-gray-200 shadow-sm text-black">
-          <h1 className="text-black text-center text-2xl sm:text-3xl font-semibold">
-            {needsSecondFactor ? "Verify your email" : "Sign in"}
-          </h1>
+    <div className="flex min-h-svh items-center justify-center px-4 py-12 text-white">
+      <div className="w-full max-w-[480px]">
+        <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl sm:p-10">
+          <div className="mb-8 text-center">
+            <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+              {needsSecondFactor ? "Verify your email" : "Sign in"}
+            </h1>
+            <p className="mt-2 text-sm text-white/60">
+              Welcome back to Komicats
+            </p>
+          </div>
 
           {error && (
-            <div className="flex items-start justify-between bg-red-500 text-white p-3 rounded-lg mt-4">
+            <div className="mt-4 flex items-start justify-between rounded-xl border border-red-400/20 bg-red-500/15 p-3 text-red-100">
               <div className="flex items-center gap-2">
-                <AlertCircle size={20} className="shrink-0" />
+                <AlertCircle size={18} className="mt-0.5 shrink-0" />
                 <p className="text-sm">{error}</p>
               </div>
-              <button className="cursor-pointer" onClick={() => setError(null)}>
-                <XCircle size={20} />
+              <button
+                type="button"
+                className="cursor-pointer text-red-100/80 hover:text-white"
+                onClick={() => setError(null)}
+              >
+                <XCircle size={18} />
               </button>
             </div>
           )}
 
           {info && (
-            <div className="bg-blue-50 text-black p-3 rounded-lg mt-4 text-sm">
+            <div className="mt-4 rounded-xl border border-cyan-400/20 bg-cyan-400/10 p-3 text-sm text-cyan-100">
               {info}
             </div>
           )}
@@ -252,7 +267,7 @@ export default function SigninForm() {
                   type="button"
                   onClick={onFacebookSignIn}
                   disabled={isFacebookLoading}
-                  className="w-full flex items-center justify-center gap-2 border border-slate-300 rounded-md py-3 px-4 text-black font-medium hover:bg-slate-50 disabled:opacity-60 cursor-pointer transition-colors"
+                  className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-medium text-white transition hover:bg-white/10 disabled:opacity-60"
                 >
                   <Facebook size={18} />
                   <span className="text-sm sm:text-base">
@@ -263,12 +278,12 @@ export default function SigninForm() {
                 </button>
               </div>
 
-              <div className="flex items-center gap-3 my-6">
-                <div className="h-px bg-slate-200 flex-1" />
-                <span className="text-xs sm:text-sm text-black uppercase tracking-wider">
+              <div className="my-6 flex items-center gap-3">
+                <div className="h-px flex-1 bg-white/10" />
+                <span className="text-xs uppercase tracking-[0.2em] text-white/40">
                   or
                 </span>
-                <div className="h-px bg-slate-200 flex-1" />
+                <div className="h-px flex-1 bg-white/10" />
               </div>
 
               <form
@@ -279,7 +294,7 @@ export default function SigninForm() {
                 }}
               >
                 <div>
-                  <label className="text-black text-sm font-medium mb-2 block">
+                  <label className="mb-2 block text-sm font-medium text-white/85">
                     Email
                   </label>
                   <input
@@ -288,13 +303,13 @@ export default function SigninForm() {
                     name="username"
                     type="email"
                     required
-                    className="w-full text-black text-sm border border-slate-300 px-4 py-3 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
                     placeholder="Enter your email"
+                    className="w-full rounded-xl border border-white/10 bg-[#0b1a20]/80 px-4 py-3 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-teal-300/40 focus:ring-2 focus:ring-teal-300/20"
                   />
                 </div>
 
                 <div>
-                  <label className="text-black text-sm font-medium mb-2 block">
+                  <label className="mb-2 block text-sm font-medium text-white/85">
                     Password
                   </label>
                   <div className="relative flex items-center">
@@ -304,30 +319,30 @@ export default function SigninForm() {
                       name="password"
                       type={showPassword ? "text" : "password"}
                       required
-                      className="w-full text-black text-sm border border-slate-300 px-4 py-3 pr-10 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
                       placeholder="Enter password"
+                      className="w-full rounded-xl border border-white/10 bg-[#0b1a20]/80 px-4 py-3 pr-10 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-teal-300/40 focus:ring-2 focus:ring-teal-300/20"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute cursor-pointer right-3 top-1/2 -translate-y-1/2 text-black hover:text-gray-700"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-white/55 hover:text-white"
                     >
                       {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                   <div className="flex items-center">
                     <input
                       id="remember-me"
                       name="remember-me"
                       type="checkbox"
-                      className="h-4 w-4 shrink-0 text-blue-600 focus:ring-blue-500 border-slate-300 rounded cursor-pointer"
+                      className="h-4 w-4 shrink-0 rounded border-white/20 bg-transparent text-teal-400 focus:ring-teal-400"
                     />
                     <label
                       htmlFor="remember-me"
-                      className="ml-2 block text-sm text-black cursor-pointer"
+                      className="ml-2 block cursor-pointer text-sm text-white/70"
                     >
                       Remember me
                     </label>
@@ -336,7 +351,7 @@ export default function SigninForm() {
                   <div className="text-sm">
                     <Link
                       href="/auth/forgot-password"
-                      className="text-black hover:underline font-semibold"
+                      className="font-medium text-teal-300 transition hover:text-teal-200 hover:underline"
                     >
                       Forgot password?
                     </Link>
@@ -347,16 +362,16 @@ export default function SigninForm() {
                   <button
                     disabled={isLoading}
                     type="submit"
-                    className="bg-black text-white hover:bg-neutral-800 shadow-sm hover:shadow-md disabled:bg-neutral-400 w-full py-3 px-4 text-[15px] font-medium tracking-wide rounded-md focus:outline-none cursor-pointer transition-all"
+                    className="w-full rounded-xl bg-teal-400 px-4 py-3 text-[15px] font-semibold text-slate-950 shadow-lg shadow-teal-500/20 transition hover:bg-teal-300 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isLoading ? "Loading..." : "Sign in"}
                   </button>
                 </div>
 
-                <p className="text-black text-sm mt-6 text-center">
-                  Don't have an account?{" "}
+                <p className="mt-6 text-center text-sm text-white/65">
+                  Don't have an account?
                   <Link
-                    className="text-black font-semibold hover:underline ml-1"
+                    className="ml-1 font-semibold text-teal-300 transition hover:text-teal-200 hover:underline"
                     href="/auth/sign-up"
                   >
                     Register here
@@ -366,14 +381,14 @@ export default function SigninForm() {
             </>
           ) : (
             <form
-              className="space-y-5 mt-8"
+              className="mt-8 space-y-5"
               onSubmit={(e) => {
                 e.preventDefault();
                 onVerifySecondFactor();
               }}
             >
               <div>
-                <label className="text-black text-sm font-medium mb-2 block">
+                <label className="mb-2 block text-sm font-medium text-white/85">
                   Verification code
                 </label>
                 <input
@@ -382,16 +397,16 @@ export default function SigninForm() {
                   type="text"
                   inputMode="numeric"
                   required
-                  className="w-full text-black text-sm border border-slate-300 px-4 py-3 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
                   placeholder="Enter the code from your email"
+                  className="w-full rounded-xl border border-white/10 bg-[#0b1a20]/80 px-4 py-3 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-teal-300/40 focus:ring-2 focus:ring-teal-300/20"
                 />
               </div>
 
-              <div className="pt-2 space-y-3">
+              <div className="space-y-3 pt-2">
                 <button
                   disabled={isLoading}
                   type="submit"
-                  className="bg-black text-white hover:bg-neutral-800 shadow-sm hover:shadow-md disabled:bg-neutral-400 w-full py-3 px-4 text-[15px] font-medium tracking-wide rounded-md focus:outline-none cursor-pointer transition-all"
+                  className="w-full rounded-xl bg-teal-400 px-4 py-3 text-[15px] font-semibold text-slate-950 shadow-lg shadow-teal-500/20 transition hover:bg-teal-300 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isLoading ? "Verifying..." : "Verify code"}
                 </button>
@@ -399,7 +414,7 @@ export default function SigninForm() {
                 <button
                   type="button"
                   onClick={onResendCode}
-                  className="w-full py-3 px-4 text-sm font-medium rounded-md border border-slate-300 text-black hover:bg-slate-50 transition-all"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10"
                 >
                   Resend code
                 </button>
@@ -412,7 +427,7 @@ export default function SigninForm() {
                     setInfo(null);
                     setError(null);
                   }}
-                  className="w-full py-3 px-4 text-sm font-medium rounded-md border border-slate-300 text-black hover:bg-slate-50 transition-all"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white/80 transition hover:bg-white/10 hover:text-white"
                 >
                   Back to sign in
                 </button>

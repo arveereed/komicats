@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { XCircle, AlertCircle, EyeOff, Eye, Facebook } from "lucide-react"; // optional icons
-import { useSignIn, useSignUp } from "@clerk/nextjs/legacy";
+import { XCircle, AlertCircle, EyeOff, Eye } from "lucide-react";
+import { useSignUp } from "@clerk/nextjs/legacy";
 import VerifyEmailUI from "../components/VerifyEmailUI";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -26,26 +26,29 @@ export default function SignupForm() {
 
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  // const [isFacebookLoading, setIsFacebookLoading] = useState(false);
 
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
   const isAdmin =
     !!adminEmail && clerkUser?.emailAddresses[0].emailAddress === adminEmail;
 
-  // Move the navigation logic here when visit
   useEffect(() => {
     if (userLoaded && isSignedIn) {
       router.push("/profile/avatar");
     }
   }, [userLoaded, isSignedIn, router]);
 
-  // Rest of your component logic...
-  if (!userLoaded || !isLoaded) return <div>Loading...</div>;
+  if (!userLoaded || !isLoaded) {
+    return (
+      <div className="flex min-h-svh items-center justify-center px-4 text-sm text-white/70">
+        Loading...
+      </div>
+    );
+  }
 
-  // Handle submission of sign-up form
   const onSignUpPress = async () => {
     if (!isLoaded) return;
     setIsLoading(true);
+    setError(null);
 
     if (!emailAddress || !confirmPassword || !password || !fullname) {
       setError("All fields are required.");
@@ -59,7 +62,6 @@ export default function SignupForm() {
       return;
     }
 
-    // Start sign-up process using email and password provided
     try {
       await signUp.create({
         emailAddress,
@@ -69,17 +71,12 @@ export default function SignupForm() {
         },
       });
 
-      // Send user an email with verification code
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
 
-      // Set 'pendingVerification' to true to display second form
-      // and capture OTP code
       setIsLoading(false);
-      setError("");
+      setError(null);
       setPendingVerification(true);
     } catch (err: any) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
       if (err.errors?.[0]?.code === "form_identifier_exists") {
         setError("That email address is taken. Please try another.");
       } else if (err.errors?.[0]?.code === "form_param_format_invalid") {
@@ -90,73 +87,46 @@ export default function SignupForm() {
         setError("Passwords must be 8 characters or more.");
       } else if (err.errors?.[0]?.code === "form_password_pwned") {
         setError("Please use a different password.");
+      } else {
+        setError("Something went wrong. Please try again.");
       }
       setIsLoading(false);
-      // console.error(JSON.stringify(err, null, 2));
     }
   };
 
-  // Handle submission of verification form
   const onVerifyPress = async () => {
     if (!isLoaded) return;
     setIsLoading(true);
 
     try {
-      // Use the code the user provided to attempt verification
       const signUpAttempt = await signUp.attemptEmailAddressVerification({
         code,
       });
 
-      // If verification was completed, set the session to active
-      // and redirect the user
       if (signUpAttempt.status === "complete") {
         await setActive({ session: signUpAttempt.createdSessionId });
 
         if (emailAddress === adminEmail) window.location.href = "/admin";
         else window.location.href = "/profile/avatar";
+
         setIsLoading(false);
       } else {
-        // If the status is not complete, check why. User may need to
-        // complete further steps.
         setIsLoading(false);
-
         console.error(JSON.stringify(signUpAttempt, null, 2));
       }
     } catch (err: any) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
       if (err.errors?.[0]?.code === "too_many_requests") {
         setError("Too many requests. Please try again in a bit.");
       } else if (err.errors?.[0]?.code === "form_param_nil") {
         setError("Enter a code");
       } else if (err.errors?.[0]?.code === "form_code_incorrect") {
         setError("The code is incorrect");
+      } else {
+        setError("Verification failed. Please try again.");
       }
       setIsLoading(false);
-
-      // console.error(JSON.stringify(err, null, 2));
     }
   };
-  /* 
-  const onFacebookSignUp = async () => {
-    if (!isLoaded || !signUp) return;
-
-    try {
-      setError(null);
-      setIsFacebookLoading(true);
-
-      await signUp.authenticateWithRedirect({
-        strategy: "oauth_facebook",
-        redirectUrl: "/auth/sso-callback", // 👈 callback page
-        redirectUrlComplete: "/profile/avatar", // 👈 success → home
-      });
-    } catch (err) {
-      console.error(err);
-      setError("Facebook sign up failed.");
-    } finally {
-      setIsFacebookLoading(false);
-    }
-  }; */
 
   if (pendingVerification) {
     return (
@@ -173,175 +143,156 @@ export default function SignupForm() {
   }
 
   return (
-    <>
-      {/* Use min-h-svh to account for mobile browser toolbars and added vertical padding */}
-      <div className="flex min-h-svh flex-col justify-center p-4 sm:p-8 bg-gray-50">
-        {/* Adjusted max-width and internal padding for mobile vs desktop */}
-        <div className="max-w-md w-full mx-auto border border-gray-200 rounded-2xl p-6 sm:p-10 bg-white shadow-sm">
-          <h1 className="text-slate-900 text-center text-2xl sm:text-3xl font-semibold">
+    <div className="flex min-h-svh flex-col justify-center px-4 py-12 text-white sm:px-8">
+      <div className="mx-auto w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl sm:p-10">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
             Sign up
           </h1>
+          <p className="mt-2 text-sm text-white/60">
+            Create your Komicats account
+          </p>
+        </div>
 
-          {error && (
-            <div className="flex items-start justify-between bg-red-500 text-white p-3 rounded-lg my-6">
-              <div className="flex items-center gap-2">
-                <AlertCircle size={20} className="shrink-0" />
-                <p className="text-sm">{error}</p>
-              </div>
-              <button className="cursor-pointer" onClick={() => setError("")}>
-                <XCircle size={20} />
-              </button>
+        {error && (
+          <div className="my-6 flex items-start justify-between rounded-xl border border-red-400/20 bg-red-500/15 p-3 text-red-100">
+            <div className="flex items-center gap-2">
+              <AlertCircle size={20} className="shrink-0" />
+              <p className="text-sm">{error}</p>
             </div>
-          )}
-
-          {/* FACEBOOK */}
-          {/*  <div className="mt-8">
             <button
-              onClick={onFacebookSignUp}
-              disabled={isFacebookLoading}
-              className="w-full flex items-center justify-center gap-2 border border-slate-300 rounded-md py-3 px-4 text-slate-900 font-medium hover:bg-slate-50 disabled:opacity-60"
+              className="cursor-pointer text-red-100/80 hover:text-white"
+              onClick={() => setError("")}
+              type="button"
             >
-              <Facebook size={18} />
-              {isFacebookLoading ? "Connecting..." : "Continue with Facebook"}
+              <XCircle size={20} />
             </button>
-          </div> */}
-          {/* 
-          <div className="flex items-center gap-3 my-6">
-            <div className="h-px bg-slate-200 flex-1" />
-            <span className="text-xs sm:text-sm text-slate-500 uppercase tracking-wider">
-              or
-            </span>
-            <div className="h-px bg-slate-200 flex-1" />
-          </div> */}
+          </div>
+        )}
 
-          <form className="mt-8">
-            <div className="space-y-5">
-              {/* Fullname */}
-              <div>
-                <label
-                  htmlFor="fullname"
-                  className="text-sm font-medium text-slate-900 mb-1.5 block"
-                >
-                  Fullname
-                </label>
-                <input
-                  id="fullname"
-                  type="text"
-                  placeholder="Enter fullname"
-                  value={fullname}
-                  onChange={(e) => setFullname(e.target.value)}
-                  className="border border-gray-300 w-full text-sm px-4 py-3 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                />
-              </div>
-
-              {/* Email */}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="text-sm font-medium text-slate-900 mb-1.5 block"
-                >
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  placeholder="Enter email"
-                  value={emailAddress}
-                  onChange={(e) => setEmailAddress(e.target.value)}
-                  className="border border-gray-300 w-full text-sm px-4 py-3 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                />
-              </div>
-
-              {/* Password */}
-              <div>
-                <label
-                  htmlFor="password"
-                  className="text-sm font-medium text-slate-900 mb-1.5 block"
-                >
-                  Password
-                </label>
-                <div className="relative flex items-center">
-                  <input
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    className="w-full text-slate-900 text-sm border border-slate-300 px-4 py-3 pr-10 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
-                    placeholder="Enter password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute cursor-pointer right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1"
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Confirm Password */}
-              <div>
-                <label
-                  htmlFor="cpassword"
-                  className="text-sm font-medium text-slate-900 mb-1.5 block"
-                >
-                  Confirm Password
-                </label>
-                <div className="relative flex items-center">
-                  <input
-                    id="cpassword"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    name="confirmPassword"
-                    type={showCPassword ? "text" : "password"}
-                    required
-                    className="w-full text-slate-900 text-sm border border-slate-300 px-4 py-3 pr-10 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition-all"
-                    placeholder="Enter confirm password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowCPassword((prev) => !prev)}
-                    className="absolute cursor-pointer right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1"
-                  >
-                    {/* Fixed logic to check showCPassword specifically */}
-                    {showCPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-10">
-              <button
-                type="button"
-                disabled={isLoading}
-                onClick={onSignUpPress}
-                className="bg-black text-white hover:bg-neutral-800 shadow-sm hover:shadow-md cursor-pointer w-full py-3 px-4 text-sm font-medium rounded-md transition-all active:scale-[0.98] disabled:bg-neutral-400 disabled:cursor-not-allowed"
+        <form className="mt-8">
+          <div className="space-y-5">
+            <div>
+              <label
+                htmlFor="fullname"
+                className="mb-2 block text-sm font-medium text-white/85"
               >
-                {isLoading ? "Creating account..." : "Create an account"}
-              </button>
-
-              <div
-                id="clerk-captcha"
-                data-cl-theme="dark"
-                data-cl-size="flexible"
-                data-cl-language="en-US"
+                Fullname
+              </label>
+              <input
+                id="fullname"
+                type="text"
+                placeholder="Enter fullname"
+                value={fullname}
+                onChange={(e) => setFullname(e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-[#0b1a20]/80 px-4 py-3 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-teal-300/40 focus:ring-2 focus:ring-teal-300/20"
               />
             </div>
 
-            <p className="text-center text-sm text-slate-600 mt-6">
-              Already have an account?{" "}
-              <Link
-                href="/auth/sign-in"
-                className="text-blue-600 font-semibold hover:underline ml-1"
+            <div>
+              <label
+                htmlFor="email"
+                className="mb-2 block text-sm font-medium text-white/85"
               >
-                Login here
-              </Link>
-            </p>
-          </form>
-        </div>
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                placeholder="Enter email"
+                value={emailAddress}
+                onChange={(e) => setEmailAddress(e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-[#0b1a20]/80 px-4 py-3 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-teal-300/40 focus:ring-2 focus:ring-teal-300/20"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="password"
+                className="mb-2 block text-sm font-medium text-white/85"
+              >
+                Password
+              </label>
+              <div className="relative flex items-center">
+                <input
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  placeholder="Enter password"
+                  className="w-full rounded-xl border border-white/10 bg-[#0b1a20]/80 px-4 py-3 pr-10 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-teal-300/40 focus:ring-2 focus:ring-teal-300/20"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer p-1 text-white/55 hover:text-white"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="cpassword"
+                className="mb-2 block text-sm font-medium text-white/85"
+              >
+                Confirm Password
+              </label>
+              <div className="relative flex items-center">
+                <input
+                  id="cpassword"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  name="confirmPassword"
+                  type={showCPassword ? "text" : "password"}
+                  required
+                  placeholder="Enter confirm password"
+                  className="w-full rounded-xl border border-white/10 bg-[#0b1a20]/80 px-4 py-3 pr-10 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-teal-300/40 focus:ring-2 focus:ring-teal-300/20"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer p-1 text-white/55 hover:text-white"
+                >
+                  {showCPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10">
+            <button
+              type="button"
+              disabled={isLoading}
+              onClick={onSignUpPress}
+              className="w-full rounded-xl bg-teal-400 px-4 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-teal-500/20 transition hover:bg-teal-300 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isLoading ? "Creating account..." : "Create an account"}
+            </button>
+
+            <div
+              id="clerk-captcha"
+              data-cl-theme="dark"
+              data-cl-size="flexible"
+              data-cl-language="en-US"
+              className="mt-4"
+            />
+          </div>
+
+          <p className="mt-6 text-center text-sm text-white/65">
+            Already have an account?
+            <Link
+              href="/auth/sign-in"
+              className="ml-1 font-semibold text-teal-300 transition hover:text-teal-200 hover:underline"
+            >
+              Login here
+            </Link>
+          </p>
+        </form>
       </div>
-    </>
+    </div>
   );
 }

@@ -22,7 +22,6 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-
   const [signingOut, setSigningOut] = useState(false);
 
   const pathname = usePathname() || "";
@@ -44,14 +43,6 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
 
   const notifications = useMemo(() => {
     const items: { id: number; title: string; description: string }[] = [];
-
-    /* if (message) {
-      items.push({
-        id: 1,
-        title: message,
-        description: "Your account state was updated.",
-      }); 
-    }*/
 
     if (pathname.includes("/profile/avatar/my-coins")) {
       items.push({
@@ -96,7 +87,7 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
 
   const navLinkClass = (active: boolean) =>
     `relative text-[15px] font-medium transition-colors ${
-      active ? "text-white" : "text-white/80 hover:text-white"
+      active ? "text-teal-300" : "text-white/75 hover:text-white"
     }`;
 
   const handleSignOut = async () => {
@@ -117,14 +108,13 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
   if (isOnRead) return null;
 
   return (
-    <div className="hidden md:flex items-center justify-between">
+    <div className="hidden items-center justify-between md:flex">
       <div className="flex h-16 items-center gap-10">
-        {/* LEFT SIDE */}
         {isProfileAvatarSetting ? (
           <Button
             asChild
             variant="ghost"
-            className="group h-10 rounded-xl px-3 text-zinc-300 transition-all hover:bg-white/10 hover:text-white"
+            className="group h-10 rounded-xl px-3 text-white/70 transition-all hover:bg-white/10 hover:text-white"
           >
             <Link
               href="/profile/avatar/profile"
@@ -137,7 +127,7 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
         ) : (
           <Link
             href={isSignedIn && user ? profileHref : "/"}
-            className="hidden md:flex font-mono text-xl font-bold tracking-wider text-white"
+            className="hidden font-mono text-xl font-bold tracking-wider text-white md:flex"
           >
             Komicats
           </Link>
@@ -153,7 +143,7 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
             >
               My Coins
               {pathname.includes("/profile/avatar/my-coins") && (
-                <span className="absolute -bottom-1 left-0 h-px w-full bg-white/80" />
+                <span className="absolute -bottom-1 left-0 h-px w-full bg-teal-300" />
               )}
             </Link>
 
@@ -165,7 +155,7 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
             >
               Shop
               {pathname.includes("/profile/avatar/shop") && (
-                <span className="absolute -bottom-1 left-0 h-px w-full bg-white/80" />
+                <span className="absolute -bottom-1 left-0 h-px w-full bg-teal-300" />
               )}
             </Link>
 
@@ -177,25 +167,24 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
             >
               Downloads
               {pathname.includes("/profile/avatar/downloads") && (
-                <span className="absolute -bottom-1 left-0 h-px w-full bg-white/80" />
+                <span className="absolute -bottom-1 left-0 h-px w-full bg-teal-300" />
               )}
             </Link>
           </div>
         )}
       </div>
 
-      {/* RIGHT SIDE */}
       <div className="flex items-center gap-4">
         {!isLoaded && (
           <>
-            <div className="h-8 w-20 animate-pulse rounded bg-zinc-800" />
-            <div className="h-8 w-20 animate-pulse rounded bg-zinc-800" />
+            <div className="h-8 w-20 animate-pulse rounded bg-white/10" />
+            <div className="h-8 w-20 animate-pulse rounded bg-white/10" />
           </>
         )}
+
         {isLoaded && isSignedIn && user && isProfileAvatarPath && (
           <div className="flex items-center gap-3">
             <div className="ml-2 flex items-center space-x-4">
-              {/* SEARCH BUTTON */}
               <Popover open={searchOpen} onOpenChange={setSearchOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -204,17 +193,17 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
                     className="h-10 w-10 rounded-full text-white hover:bg-white/10 hover:text-white"
                     aria-label="Search"
                   >
-                    <Search className="h-6 w-6" />
+                    <Search className="h-5 w-5" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
                   align="end"
-                  className="w-80 rounded-2xl border border-white/10 bg-zinc-950 p-3 text-white shadow-xl"
+                  className="w-80 rounded-2xl border border-white/10 bg-[#08161c]/95 p-3 text-white shadow-xl backdrop-blur-xl"
                 >
                   <div className="space-y-3">
                     <div>
                       <p className="text-sm font-semibold">Search</p>
-                      <p className="text-xs text-zinc-400">
+                      <p className="text-xs text-white/50">
                         Search items in the avatar shop.
                       </p>
                     </div>
@@ -224,14 +213,14 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search avatars, items, coins..."
-                        className="border-white/10 bg-white/5 text-white placeholder:text-zinc-500"
+                        className="border-white/10 bg-white/5 text-white placeholder:text-white/35"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleSearch();
                         }}
                       />
                       <Button
                         onClick={handleSearch}
-                        className="bg-white text-black hover:bg-white/90"
+                        className="bg-teal-400 text-slate-950 hover:bg-teal-300"
                       >
                         Go
                       </Button>
@@ -240,7 +229,6 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
                 </PopoverContent>
               </Popover>
 
-              {/* NOTIFICATION BUTTON */}
               <Popover
                 open={notificationsOpen}
                 onOpenChange={setNotificationsOpen}
@@ -252,9 +240,9 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
                     className="relative h-10 w-10 rounded-full text-white hover:bg-white/10 hover:text-white"
                     aria-label="Notifications"
                   >
-                    <Bell className="h-6 w-6" />
+                    <Bell className="h-5 w-5" />
                     {unreadCount > 0 && (
-                      <Badge className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10px] text-black">
+                      <Badge className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-300 px-1 text-[10px] text-slate-950">
                         {unreadCount}
                       </Badge>
                     )}
@@ -262,11 +250,11 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
                 </PopoverTrigger>
                 <PopoverContent
                   align="end"
-                  className="w-96 rounded-2xl border border-white/10 bg-zinc-950 p-0 text-white shadow-xl"
+                  className="w-96 rounded-2xl border border-white/10 bg-[#08161c]/95 p-0 text-white shadow-xl backdrop-blur-xl"
                 >
                   <div className="border-b border-white/10 px-4 py-3">
                     <p className="text-sm font-semibold">Notifications</p>
-                    <p className="text-xs text-zinc-400">
+                    <p className="text-xs text-white/50">
                       Recent updates in your account
                     </p>
                   </div>
@@ -280,7 +268,7 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
                         <p className="text-sm font-medium text-white">
                           {item.title}
                         </p>
-                        <p className="mt-1 text-xs text-zinc-400">
+                        <p className="mt-1 text-xs text-white/50">
                           {item.description}
                         </p>
                       </div>
@@ -290,31 +278,27 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
               </Popover>
 
               <Link href="/profile/avatar/setting">
-                <Avatar className="h-9 w-9 rounded-full">
+                <Avatar className="h-9 w-9 rounded-full ring-1 ring-white/10">
                   <AvatarImage src={"profileImage"} alt={"profileName"} />
-                  <AvatarFallback className="rounded-lg bg-zinc-800 text-white">
-                    {/* {typeof profileName === "string" &&
-                    profileName.length > 0 ? (
-                      profileName.slice(0, 1).toUpperCase()
-                    ) : ( */}
+                  <AvatarFallback className="rounded-lg bg-white/10 text-white">
                     <UserCircle2 className="h-4 w-4" />
-                    {/* )} */}
                   </AvatarFallback>
                 </Avatar>
               </Link>
             </div>
           </div>
         )}
+
         {isLoaded &&
           isSignedIn &&
           user &&
           !isProfileAvatarPath &&
           !isProfileAvatarSetting && (
-            <div className="flex justify-center items-center space-x-3">
+            <div className="flex items-center justify-center space-x-3">
               <Link href={profileHref}>
                 <Button
                   variant="ghost"
-                  className="h-11 rounded-xl border border-white/10 bg-white/[0.04] cursor-default px-2 hover:bg-white/[0.08]"
+                  className="h-11 cursor-default rounded-xl border border-white/10 bg-white/[0.04] px-2 hover:bg-white/[0.08]"
                 >
                   <div className="flex items-center gap-2">
                     <Avatar className="h-9 w-9 rounded-lg">
@@ -322,7 +306,7 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
                         src={user?.image || ""}
                         alt={user.fullname || ""}
                       />
-                      <AvatarFallback className="rounded-lg bg-zinc-800 text-white">
+                      <AvatarFallback className="rounded-lg bg-white/10 text-white">
                         {typeof user.fullname === "string" &&
                         user.fullname.length > 0 ? (
                           user.fullname.slice(0, 1).toUpperCase()
@@ -346,7 +330,7 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
               >
                 {signingOut ? (
                   <>
-                    <Loader2 className="animate-spin size-2" /> Loading..
+                    <Loader2 className="size-4 animate-spin" /> Loading...
                   </>
                 ) : (
                   "Sign out"
@@ -354,23 +338,20 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
               </Button>
             </div>
           )}
+
         {isLoaded && isSignedIn && user && isProfileAvatarSetting && (
-          <Avatar className="h-9 w-9 rounded-full">
+          <Avatar className="h-9 w-9 rounded-full ring-1 ring-white/10">
             <AvatarImage src={"profileImage"} alt={"profileName"} />
-            <AvatarFallback className="rounded-lg bg-zinc-800 text-white">
-              {/*  {typeof profileName === "string" && profileName.length > 0 ? (
-                profileName.slice(0, 1).toUpperCase()
-              ) : ( */}
+            <AvatarFallback className="rounded-lg bg-white/10 text-white">
               <UserCircle2 className="h-4 w-4" />
-              {/* )} */}
             </AvatarFallback>
           </Avatar>
         )}
+
         {isLoaded && !isSignedIn && (
-          /* GUEST USER */
           <div className="space-x-4">
             <Link href="/auth/sign-in">
-              <Button className="bg-white text-black hover:bg-white/90">
+              <Button className="bg-teal-400 text-slate-950 hover:bg-teal-300">
                 Sign in
               </Button>
             </Link>

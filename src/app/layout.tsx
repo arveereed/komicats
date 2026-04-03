@@ -44,7 +44,7 @@ export default async function RootLayout({
               className={
                 isAdmin
                   ? "relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white"
-                  : "relative min-h-screen overflow-hidden bg-[#07141a]"
+                  : "relative min-h-screen overflow-hidden bg-[#07141a] text-white"
               }
             >
               {isAdmin ? <AdminBackgroundDecor /> : <BackgroundDecor />}

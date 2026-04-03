@@ -5,14 +5,16 @@ import { useClerk } from "@clerk/nextjs";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Loader2, UserCircle2 } from "lucide-react";
+import { Loader2, Shield, UserCircle2 } from "lucide-react";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 type SyncedUserType = Awaited<ReturnType<typeof syncUser>>;
 
 export default function AdminNavbar({ user }: { user: SyncedUserType }) {
   const { signOut } = useClerk();
   const [signingOut, setSigningOut] = useState(false);
+  const pathname = usePathname();
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -25,28 +27,28 @@ export default function AdminNavbar({ user }: { user: SyncedUserType }) {
     }
   };
 
+  const isOnRead = pathname.includes("/admin/comics");
+  if (isOnRead) return null;
+
   return (
-    /* hidden md:flex */
-    <div className="flex items-center justify-between">
-      {/* LEFT SIDE */}
-      <div className="flex h-16 items-center gap-10">
-        {/* hidden md:flex  */}
+    <div className="flex h-16 items-center justify-between">
+      <div className="flex items-center gap-10">
         <Link
           href="/admin"
-          className="font-mono text-xl font-bold tracking-wider text-white"
+          className="inline-flex items-center gap-2 font-mono text-xl font-bold tracking-wider text-white"
         >
-          Welcome, Admin!
+          <Shield className="h-5 w-5 text-cyan-300" />
+          <span>Welcome, Admin!</span>
         </Link>
       </div>
 
-      {/* RIGHT SIDE */}
       <div className="flex items-center gap-4">
         {user && (
-          <div className="flex justify-center items-center space-x-3">
-            <Link href="">
+          <div className="flex items-center justify-center space-x-3">
+            <div>
               <Button
                 variant="ghost"
-                className="h-11 rounded-xl border border-white/10 bg-white/[0.04] cursor-default px-2 hover:bg-white/[0.08]"
+                className="h-11 cursor-default rounded-xl border border-white/10 bg-white/[0.04] px-2 hover:bg-white/[0.08]"
               >
                 <div className="flex items-center gap-2">
                   <Avatar className="h-9 w-9 rounded-lg">
@@ -54,7 +56,7 @@ export default function AdminNavbar({ user }: { user: SyncedUserType }) {
                       src={user?.image || ""}
                       alt={user?.fullname || ""}
                     />
-                    <AvatarFallback className="rounded-lg bg-zinc-800 text-white">
+                    <AvatarFallback className="rounded-lg bg-white/10 text-white">
                       {typeof user?.fullname === "string" &&
                       user.fullname.length > 0 ? (
                         user.fullname.slice(0, 1).toUpperCase()
@@ -69,17 +71,17 @@ export default function AdminNavbar({ user }: { user: SyncedUserType }) {
                   </span>
                 </div>
               </Button>
-            </Link>
+            </div>
 
             <Button
               disabled={signingOut}
               onClick={handleSignOut}
               variant="ghost"
-              className="rounded-xl text-white/80 hover:bg-white/10 hover:text-white"
+              className="rounded-xl border border-transparent text-white/80 hover:border-white/10 hover:bg-white/10 hover:text-white"
             >
               {signingOut ? (
                 <>
-                  <Loader2 className="animate-spin size-2" /> Loading..
+                  <Loader2 className="size-4 animate-spin" /> Loading...
                 </>
               ) : (
                 "Sign out"
