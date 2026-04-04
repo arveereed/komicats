@@ -116,7 +116,7 @@ function SubmitButton({ priceAmount }: { priceAmount: number }) {
     <Button
       type="submit"
       disabled={pending}
-      className="mt-6 w-full rounded-md bg-[linear-gradient(90deg,#7468ff_0%,#6fd7ff_50%,#7468ff_100%)] py-2 text-[18px] font-medium text-[#2f2f2f] shadow-md"
+      className="mt-6 h-10 w-full rounded-md bg-[linear-gradient(90deg,#7468ff_0%,#6fd7ff_50%,#7468ff_100%)] py-2 text-[18px] font-medium text-[#2f2f2f] shadow-md"
     >
       {pending ? "Redirecting..." : `Buy for ${formatPhp(priceAmount)}`}
     </Button>
