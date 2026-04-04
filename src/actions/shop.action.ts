@@ -50,9 +50,9 @@ export async function buyCoinsAction(formData: FormData) {
       amount: plan.priceAmount,
       coins: plan.coins,
       bonusCoins: plan.bonusCoins,
-      totalCoins: plan.coins + plan.bonusCoins,
+      totalCoins,
       referenceNumber,
-      status: "PENDING",
+      status: "PAID",
     },
   });
 
@@ -68,8 +68,8 @@ export async function buyCoinsAction(formData: FormData) {
           name: user.fullname,
           email: user.email,
         },
-        success_url: `${appUrl}/shop?status=success&ref=${referenceNumber}`,
-        cancel_url: `${appUrl}/shop?status=cancelled&ref=${referenceNumber}`,
+        success_url: `${appUrl}/profile/avatar/shop`,
+        cancel_url: `${appUrl}/profile/avatar/shop`,
         description: `${plan.name} - ${totalCoins} Komicats coins`,
         line_items: [
           {
@@ -87,9 +87,11 @@ export async function buyCoinsAction(formData: FormData) {
         show_line_items: true,
         metadata: {
           purchaseId: purchase.id,
+          referenceNumber,
           userId: user.id,
           clerkId: user.clerkId,
           planId: plan.id,
+          totalCoins: String(totalCoins),
         },
       },
     },

@@ -1,10 +1,11 @@
+import { syncUserCoins } from "@/actions/coin.action";
 import ShopComponent from "@/components/ShopComponent";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 type ShopPageProps = {
-  searchParams?: Promise<{
+  searchParams: Promise<{
     status?: string;
     ref?: string;
   }>;
@@ -21,15 +22,8 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 
   const user = await prisma.user.findUnique({
     where: { clerkId },
-    include: {
-      purchases: {
-        where: { status: "PAID" },
-        select: { totalCoins: true },
-      },
-      transactions: {
-        where: { type: "DEBIT" },
-        select: { amount: true },
-      },
+    select: {
+      id: true,
     },
   });
 
@@ -37,29 +31,52 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     throw new Error("User not found");
   }
 
-  const plans = await prisma.coinPlan.findMany({
-    where: { isActive: true },
-    include: {
-      features: {
-        orderBy: { order: "asc" },
+  const [plans, totalPurchasedCoins, totalPlayedCoins] = await Promise.all([
+    prisma.coinPlan.findMany({
+      where: { isActive: true },
+      include: {
+        features: {
+          orderBy: { order: "asc" },
+        },
       },
-    },
-    orderBy: { priceAmount: "asc" },
-  });
+      orderBy: { priceAmount: "asc" },
+    }),
 
-  const purchased = user.purchases.reduce((sum, p) => sum + p.totalCoins, 0);
-  const played = user.transactions.reduce((sum, t) => sum + t.amount, 0);
+    prisma.coinPurchase.aggregate({
+      where: {
+        userId: user.id,
+      },
+      _sum: {
+        totalCoins: true,
+      },
+    }),
+
+    prisma.coinTransaction.aggregate({
+      where: {
+        userId: user.id,
+        type: "DEBIT",
+      },
+      _sum: {
+        amount: true,
+      },
+    }),
+  ]);
+
+  const purchased = totalPurchasedCoins._sum.totalCoins ?? 0;
+  const played = totalPlayedCoins._sum.amount ?? 0;
+
+  await syncUserCoins();
 
   return (
     <ShopComponent
       stats={{
-        coins: user.coins,
+        coins: purchased,
         purchased,
         played,
       }}
       plans={plans}
-      paymentStatus={params?.status}
-      referenceNumber={params?.ref}
+      paymentStatus={params.status}
+      referenceNumber={params.ref}
     />
   );
 }
