@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Check, Sparkles, Trash2 } from "lucide-react";
 import { deleteCoinPlan } from "@/actions/plan.action";
 
@@ -6,6 +5,7 @@ type PlanFeature = {
   id: string;
   label: string;
   order: number;
+  planId: string;
 };
 
 type CoinPlan = {

@@ -45,10 +45,12 @@ export async function buyCoinsAction(formData: FormData) {
     data: {
       userId: user.id,
       planId: plan.id,
+      planName: plan.name,
+      planSlug: plan.slug,
       amount: plan.priceAmount,
       coins: plan.coins,
       bonusCoins: plan.bonusCoins,
-      totalCoins,
+      totalCoins: plan.coins + plan.bonusCoins,
       referenceNumber,
       status: "PENDING",
     },
@@ -66,8 +68,8 @@ export async function buyCoinsAction(formData: FormData) {
           name: user.fullname,
           email: user.email,
         },
-        cancel_url: `${appUrl}/shop?status=cancelled`,
-        success_url: `${appUrl}/shop?status=success`,
+        success_url: `${appUrl}/shop?status=success&ref=${referenceNumber}`,
+        cancel_url: `${appUrl}/shop?status=cancelled&ref=${referenceNumber}`,
         description: `${plan.name} - ${totalCoins} Komicats coins`,
         line_items: [
           {

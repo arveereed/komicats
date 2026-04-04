@@ -1,5 +1,6 @@
 "use server";
 
+import { Prisma } from "@/generated/prisma/client";
 import prisma from "@/lib/prisma";
 import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
@@ -59,6 +60,18 @@ export async function createCoinPlan(
     if (bonusCoins < 0) throw new Error("Bonus coins must be 0 or greater");
     if (priceAmount <= 0) throw new Error("Price must be greater than 0");
 
+    const existingPlan = await prisma.coinPlan.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+
+    if (existingPlan) {
+      return {
+        success: false,
+        message: "Slug already exists. Please use a different slug.",
+      };
+    }
+
     await prisma.coinPlan.create({
       data: {
         name,
@@ -77,13 +90,24 @@ export async function createCoinPlan(
       },
     });
 
-    revalidatePath("/admin");
+    revalidatePath("/admin/plans");
+    revalidatePath("/shop");
 
     return {
       success: true,
       message: "Plan created successfully.",
     };
   } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return {
+        success: false,
+        message: "Slug already exists. Please use a different slug.",
+      };
+    }
+
     return {
       success: false,
       message:
@@ -115,6 +139,18 @@ export async function updateCoinPlan(formData: FormData) {
   if (bonusCoins < 0) throw new Error("Bonus coins must be 0 or greater");
   if (priceAmount <= 0) throw new Error("Price must be greater than 0");
 
+  const existingPlan = await prisma.coinPlan.findFirst({
+    where: {
+      slug,
+      NOT: { id },
+    },
+    select: { id: true },
+  });
+
+  if (existingPlan) {
+    throw new Error("Slug already exists. Please use a different slug.");
+  }
+
   await prisma.coinPlan.update({
     where: { id },
     data: {
@@ -136,6 +172,7 @@ export async function updateCoinPlan(formData: FormData) {
   });
 
   revalidatePath("/admin");
+  revalidatePath("/shop");
 }
 
 export async function deleteCoinPlan(formData: FormData) {
@@ -143,11 +180,29 @@ export async function deleteCoinPlan(formData: FormData) {
 
   const id = String(formData.get("id") || "").trim();
 
-  if (!id) throw new Error("Plan id is required");
+  if (!id) return;
+
+  const purchaseCount = await prisma.coinPurchase.count({
+    where: { planId: id },
+  });
+
+  if (purchaseCount > 0) {
+    await prisma.coinPlan.update({
+      where: { id },
+      data: { isActive: false },
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/plans");
+    revalidatePath("/shop");
+    return;
+  }
 
   await prisma.coinPlan.delete({
     where: { id },
   });
 
   revalidatePath("/admin");
+  revalidatePath("/admin/plans");
+  revalidatePath("/shop");
 }

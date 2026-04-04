@@ -81,7 +81,7 @@ model CoinPlan {
   slug        String            @unique
   coins       Int
   bonusCoins  Int               @default(0)
-  priceAmount Int               // centavos, e.g. 19900 = PHP 199.00
+  priceAmount Int
   isPopular   Boolean           @default(false)
   isActive    Boolean           @default(true)
   createdAt   DateTime          @default(now())
@@ -105,8 +105,13 @@ model CoinPurchase {
   id                   String         @id @default(cuid())
   userId               String
   user                 User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   planId               String
   plan                 CoinPlan       @relation(fields: [planId], references: [id])
+
+  planName             String
+  planSlug             String
+
   amount               Int
   coins                Int
   bonusCoins           Int            @default(0)
@@ -120,7 +125,7 @@ model CoinPurchase {
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
 
-  transactions         CoinTransaction[] 
+  transactions         CoinTransaction[]
 
   @@index([userId])
   @@index([planId])

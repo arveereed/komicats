@@ -1,7 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { Coins, Check, Sparkles } from "lucide-react";
+import Link from "next/link";
+import {
+  Coins,
+  Check,
+  Sparkles,
+  CheckCircle2,
+  CircleX,
+  ArrowRight,
+} from "lucide-react";
 import { useFormStatus } from "react-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +36,8 @@ type Props = {
     played: number;
   };
   plans: Plan[];
+  paymentStatus?: string;
+  referenceNumber?: string;
 };
 
 function formatPhp(cents: number) {
@@ -37,18 +47,135 @@ function formatPhp(cents: number) {
   }).format(cents / 100);
 }
 
-export default function ShopComponent({ stats, plans }: Props) {
+export default function ShopComponent({
+  stats,
+  plans,
+  paymentStatus,
+  referenceNumber,
+}: Props) {
   return (
     <section className="relative min-h-screen overflow-hidden px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-8">
+        <PaymentStatusBanner
+          status={paymentStatus}
+          referenceNumber={referenceNumber}
+        />
+
         <ShopStats
           coins={stats.coins}
           purchased={stats.purchased}
           played={stats.played}
         />
+
         <PricingSection plans={plans} />
       </div>
     </section>
+  );
+}
+
+function PaymentStatusBanner({
+  status,
+  referenceNumber,
+}: {
+  status?: string;
+  referenceNumber?: string;
+}) {
+  if (status !== "success" && status !== "cancelled") {
+    return null;
+  }
+
+  const isSuccess = status === "success";
+
+  return (
+    <Card
+      className={`overflow-hidden rounded-3xl border text-white shadow-2xl backdrop-blur-xl ${
+        isSuccess
+          ? "border-emerald-300/20 bg-gradient-to-br from-emerald-400/15 via-white/5 to-cyan-400/10"
+          : "border-rose-300/20 bg-gradient-to-br from-rose-400/15 via-white/5 to-orange-400/10"
+      }`}
+    >
+      <CardContent className="p-5 sm:p-6 lg:p-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-4 sm:gap-5">
+            <div
+              className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border sm:h-16 sm:w-16 ${
+                isSuccess
+                  ? "border-emerald-300/20 bg-emerald-300/10 text-emerald-200"
+                  : "border-rose-300/20 bg-rose-300/10 text-rose-200"
+              }`}
+            >
+              {isSuccess ? (
+                <CheckCircle2 className="h-7 w-7" />
+              ) : (
+                <CircleX className="h-7 w-7" />
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <div
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium ${
+                  isSuccess
+                    ? "border-emerald-300/20 bg-emerald-300/10 text-emerald-200"
+                    : "border-rose-300/20 bg-rose-300/10 text-rose-200"
+                }`}
+              >
+                {isSuccess ? <Sparkles className="h-3.5 w-3.5" /> : null}
+                {isSuccess ? "Payment Submitted" : "Payment Cancelled"}
+              </div>
+
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                {isSuccess
+                  ? "Payment received successfully"
+                  : "Your checkout was cancelled"}
+              </h1>
+
+              <p className="max-w-2xl text-sm leading-6 text-white/70 sm:text-base">
+                {isSuccess
+                  ? "We’re now verifying your payment. Your coins will appear in your account once confirmation is completed."
+                  : "No payment was completed. You can return to the shop and try again anytime."}
+              </p>
+
+              {referenceNumber ? (
+                <p className="text-xs text-white/50">
+                  Reference:{" "}
+                  <span className="font-mono font-medium text-white/80">
+                    {referenceNumber}
+                  </span>
+                </p>
+              ) : null}
+
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <Link
+                  href="/shop"
+                  className="inline-flex h-10 items-center justify-center rounded-xl border border-white/10 bg-white/10 px-4 text-sm font-medium text-white transition hover:bg-white/15"
+                >
+                  {isSuccess ? "Buy more coins" : "Return to shop"}
+                </Link>
+
+                <Link
+                  href={isSuccess ? "/library" : "/support"}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(90deg,#7468ff_0%,#6fd7ff_50%,#7468ff_100%)] px-4 text-sm font-medium text-[#2f2f2f] shadow-md"
+                >
+                  {isSuccess ? "Go to Library" : "Contact support"}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="min-w-[220px] rounded-2xl border border-white/10 bg-white/5 p-4">
+            <p className="text-sm font-semibold text-white">
+              {isSuccess ? "What happens next?" : "Need help?"}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-white/60">
+              {isSuccess
+                ? "Your purchase will be confirmed by your payment webhook before coins are credited."
+                : "If you were charged but landed here, wait for payment confirmation or contact support with your reference number."}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

@@ -3,12 +3,21 @@ import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-export default async function ShopPage() {
+type ShopPageProps = {
+  searchParams?: Promise<{
+    status?: string;
+    ref?: string;
+  }>;
+};
+
+export default async function ShopPage({ searchParams }: ShopPageProps) {
   const { userId: clerkId } = await auth();
 
   if (!clerkId) {
     redirect("/auth/sign-in");
   }
+
+  const params = await searchParams;
 
   const user = await prisma.user.findUnique({
     where: { clerkId },
@@ -49,6 +58,8 @@ export default async function ShopPage() {
         played,
       }}
       plans={plans}
+      paymentStatus={params?.status}
+      referenceNumber={params?.ref}
     />
   );
 }
