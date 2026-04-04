@@ -209,7 +209,7 @@ function ShopStats({
 
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <StatBox label="Purchased" value={String(purchased)} />
-            <StatBox label="Played" value={String(played)} />
+            {/* <StatBox label="Played" value={String(played)} /> */}
           </div>
         </div>
       </CardContent>

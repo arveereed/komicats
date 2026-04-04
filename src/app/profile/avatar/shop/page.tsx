@@ -31,7 +31,9 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     throw new Error("User not found");
   }
 
-  const [plans, totalPurchasedCoins, totalPlayedCoins] = await Promise.all([
+  await syncUserCoins();
+
+  const [plans, purchasedCoinsAgg, totalPurchasedCoins] = await Promise.all([
     prisma.coinPlan.findMany({
       where: { isActive: true },
       include: {
@@ -45,34 +47,29 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     prisma.coinPurchase.aggregate({
       where: {
         userId: user.id,
+        status: "PAID",
       },
       _sum: {
         totalCoins: true,
       },
     }),
 
-    prisma.coinTransaction.aggregate({
+    prisma.coinPurchase.count({
       where: {
         userId: user.id,
-        type: "DEBIT",
-      },
-      _sum: {
-        amount: true,
+        status: "PAID",
       },
     }),
   ]);
 
-  const purchased = totalPurchasedCoins._sum.totalCoins ?? 0;
-  const played = totalPlayedCoins._sum.amount ?? 0;
-
-  await syncUserCoins();
+  const purchased = purchasedCoinsAgg._sum.totalCoins ?? 0;
 
   return (
     <ShopComponent
       stats={{
         coins: purchased,
-        purchased,
-        played,
+        purchased: totalPurchasedCoins,
+        played: 0,
       }}
       plans={plans}
       paymentStatus={params.status}
