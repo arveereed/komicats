@@ -1,73 +1,66 @@
 "use client";
 
-import { Coins, Check, Sparkles, ShoppingBag } from "lucide-react";
-import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-// Optional if you use shadcn
+import Image from "next/image";
+import { Coins, Check, Sparkles } from "lucide-react";
+import { useFormStatus } from "react-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import { buyCoinsAction } from "@/actions/shop.action";
 
-const plans = [
-  {
-    id: 1,
-    title: "Starter Pack",
-    coins: 20,
-    bonus: 2,
-    price: "PHP 199.00/mo",
-    popular: false,
-    features: [
-      "Bonus Coins every month",
-      "Ad-free reading in Originals and Browsing",
-      "KOMICATS SHOP coupon",
-    ],
-  },
-  {
-    id: 2,
-    title: "Premium Pack",
-    coins: 100,
-    bonus: 10,
-    price: "PHP 499.00/mo",
-    popular: true,
-    features: [
-      "Bonus Coins every month",
-      "Ad-free reading in Originals and Browsing",
-      "Episode discounts",
-      "KOMICATS SHOP coupon",
-    ],
-  },
-];
+type Plan = {
+  id: string;
+  name: string;
+  coins: number;
+  bonusCoins: number;
+  priceAmount: number;
+  isPopular: boolean;
+  features: {
+    id: string;
+    label: string;
+    order: number;
+  }[];
+};
 
-export default function ShopComponent() {
-  const { isSignedIn, isLoaded: userLoaded, user: clerkUser } = useUser();
-  const router = useRouter();
+type Props = {
+  stats: {
+    coins: number;
+    purchased: number;
+    played: number;
+  };
+  plans: Plan[];
+};
 
-  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
-  const isAdmin =
-    !!adminEmail && clerkUser?.emailAddresses[0]?.emailAddress === adminEmail;
+function formatPhp(cents: number) {
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+  }).format(cents / 100);
+}
 
-  useEffect(() => {
-    if (userLoaded && !isSignedIn) {
-      router.push("/auth/sign-in");
-    }
-
-    if (isAdmin) {
-      router.push("/admin");
-    }
-  }, [userLoaded, isSignedIn, router, isAdmin]);
-
+export default function ShopComponent({ stats, plans }: Props) {
   return (
     <section className="relative min-h-screen overflow-hidden px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-8">
-        <ShopStats />
-        <PricingSection />
+        <ShopStats
+          coins={stats.coins}
+          purchased={stats.purchased}
+          played={stats.played}
+        />
+        <PricingSection plans={plans} />
       </div>
     </section>
   );
 }
 
-function ShopStats() {
+function ShopStats({
+  coins,
+  purchased,
+  played,
+}: {
+  coins: number;
+  purchased: number;
+  played: number;
+}) {
   return (
     <Card className="overflow-hidden rounded-3xl border-white/10 bg-white/5 text-white shadow-2xl backdrop-blur-xl">
       <CardContent className="p-5 sm:p-6 lg:p-8">
@@ -82,14 +75,14 @@ function ShopStats() {
                 Total Coins
               </p>
               <h2 className="mt-1 text-4xl font-bold tracking-tight sm:text-5xl">
-                17
+                {coins}
               </h2>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            <StatBox label="Purchased" value="7" />
-            <StatBox label="Played" value="11" />
+            <StatBox label="Purchased" value={String(purchased)} />
+            <StatBox label="Played" value={String(played)} />
           </div>
         </div>
       </CardContent>
@@ -106,7 +99,7 @@ function StatBox({ label, value }: { label: string; value: string }) {
   );
 }
 
-function PricingSection() {
+function PricingSection({ plans }: { plans: Plan[] }) {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       {plans.map((plan) => (
@@ -116,23 +109,25 @@ function PricingSection() {
   );
 }
 
-function PlanCard({
-  plan,
-}: {
-  plan: {
-    id: number;
-    title: string;
-    coins: number;
-    bonus: number;
-    price: string;
-    popular: boolean;
-    features: string[];
-  };
-}) {
+function SubmitButton({ priceAmount }: { priceAmount: number }) {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button
+      type="submit"
+      disabled={pending}
+      className="mt-6 w-full rounded-md bg-[linear-gradient(90deg,#7468ff_0%,#6fd7ff_50%,#7468ff_100%)] py-2 text-[18px] font-medium text-[#2f2f2f] shadow-md"
+    >
+      {pending ? "Redirecting..." : `Buy for ${formatPhp(priceAmount)}`}
+    </Button>
+  );
+}
+
+function PlanCard({ plan }: { plan: Plan }) {
   return (
     <Card
       className={`relative rounded-3xl border text-white shadow-2xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${
-        plan.popular
+        plan.isPopular
           ? "border-teal-300/30 bg-gradient-to-br from-teal-400/10 via-white/5 to-cyan-400/10"
           : "border-white/10 bg-white/5"
       }`}
@@ -143,7 +138,7 @@ function PlanCard({
             <div className="flex items-center gap-2">
               <Image src="/coin-pack.png" alt="Coin" width={35} height={35} />
               <CardTitle className="text-lg font-semibold sm:text-xl">
-                {plan.title}
+                {plan.name}
               </CardTitle>
             </div>
 
@@ -152,12 +147,12 @@ function PlanCard({
                 {plan.coins}
               </span>
               <span className="pb-1 text-base text-white/70">
-                + {plan.bonus}
+                + {plan.bonusCoins}
               </span>
             </div>
           </div>
 
-          {plan.popular && (
+          {plan.isPopular && (
             <div className="inline-flex items-center gap-1 rounded-full border border-teal-300/20 bg-teal-300/10 px-3 py-1 text-xs font-medium text-teal-200">
               <Sparkles className="h-3.5 w-3.5" />
               Most Popular
@@ -172,18 +167,19 @@ function PlanCard({
         <ul className="space-y-3">
           {plan.features.map((feature) => (
             <li
-              key={feature}
+              key={feature.id}
               className="flex items-start gap-3 text-sm text-white/85 sm:text-base"
             >
               <Check className="mt-0.5 h-4 w-4 shrink-0 text-teal-300" />
-              <span>{feature}</span>
+              <span>{feature.label}</span>
             </li>
           ))}
         </ul>
 
-        <Button className="mt-6 w-full rounded-md bg-[linear-gradient(90deg,#7468ff_0%,#6fd7ff_50%,#7468ff_100%)] py-2 text-[18px] font-medium text-[#2f2f2f] shadow-md">
-          {plan.price}
-        </Button>
+        <form action={buyCoinsAction}>
+          <input type="hidden" name="planId" value={plan.id} />
+          <SubmitButton priceAmount={plan.priceAmount} />
+        </form>
       </CardContent>
     </Card>
   );

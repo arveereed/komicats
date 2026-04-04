@@ -8,16 +8,19 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  clerkId   String    @unique
-  fullname  String
-  image     String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id            String            @id @default(cuid())
+  email         String            @unique
+  clerkId       String            @unique
+  fullname      String
+  image         String?
+  coins         Int               @default(0)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
-  profiles  Profile[]
-  comics    Comic[]
+  profiles      Profile[]
+  comics        Comic[]
+  purchases     CoinPurchase[]
+  transactions  CoinTransaction[]
 }
 
 model Profile {
@@ -70,4 +73,82 @@ model EpisodeImage {
   @@index([episodeId])
   @@index([publicId])
   @@unique([episodeId, order])
+}
+
+model CoinPlan {
+  id          String            @id @default(cuid())
+  name        String
+  slug        String            @unique
+  coins       Int
+  bonusCoins  Int               @default(0)
+  priceAmount Int               // centavos, e.g. 19900 = PHP 199.00
+  isPopular   Boolean           @default(false)
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  features    CoinPlanFeature[]
+  purchases   CoinPurchase[]
+}
+
+model CoinPlanFeature {
+  id        String   @id @default(cuid())
+  planId    String
+  plan      CoinPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  label     String
+  order     Int
+
+  @@unique([planId, order])
+}
+
+model CoinPurchase {
+  id                   String         @id @default(cuid())
+  userId               String
+  user                 User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId               String
+  plan                 CoinPlan       @relation(fields: [planId], references: [id])
+  amount               Int
+  coins                Int
+  bonusCoins           Int            @default(0)
+  totalCoins           Int
+  status               PurchaseStatus @default(PENDING)
+
+  paymongoCheckoutId   String?        @unique
+  paymongoPaymentId    String?        @unique
+  referenceNumber      String         @unique
+
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  transactions         CoinTransaction[] 
+
+  @@index([userId])
+  @@index([planId])
+}
+
+model CoinTransaction {
+  id           String              @id @default(cuid())
+  userId       String
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purchaseId   String?
+  purchase     CoinPurchase?       @relation(fields: [purchaseId], references: [id])
+  type         CoinTransactionType
+  amount       Int
+  balanceAfter Int
+  description  String?
+  createdAt    DateTime            @default(now())
+
+  @@index([userId, createdAt])
+}
+
+enum PurchaseStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+}
+
+enum CoinTransactionType {
+  CREDIT
+  DEBIT
 }
