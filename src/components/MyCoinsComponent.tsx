@@ -26,7 +26,15 @@ const missions = [
   },
 ];
 
-export default function MyCoinsComponent() {
+export default function MyCoinsComponent({
+  stats,
+}: {
+  stats: {
+    coins: number;
+    purchased: number;
+    played: number;
+  };
+}) {
   const { isSignedIn, isLoaded: userLoaded, user: clerkUser } = useUser();
   const router = useRouter();
 
@@ -47,14 +55,26 @@ export default function MyCoinsComponent() {
   return (
     <section className="relative min-h-screen overflow-hidden px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-8">
-        <CoinsOverview />
+        <CoinsOverview
+          coins={stats.coins}
+          purchased={stats.purchased}
+          played={stats.played}
+        />
         <MissionGrid />
       </div>
     </section>
   );
 }
 
-function CoinsOverview() {
+function CoinsOverview({
+  coins,
+  purchased,
+  played,
+}: {
+  coins: number;
+  purchased: number;
+  played: number;
+}) {
   return (
     <Card className="overflow-hidden rounded-3xl border-white/10 bg-white/5 text-white shadow-2xl backdrop-blur-xl">
       <CardContent className="p-5 sm:p-6 lg:p-8">
@@ -70,7 +90,7 @@ function CoinsOverview() {
                   Total Coins
                 </p>
                 <h1 className="mt-1 text-4xl font-bold tracking-tight sm:text-5xl">
-                  17
+                  {coins}
                 </h1>
               </div>
             </div>
@@ -79,12 +99,12 @@ function CoinsOverview() {
               <StatCard
                 icon={<ShoppingBag className="h-4 w-4 text-teal-300" />}
                 label="Purchased"
-                value="7"
+                value={purchased.toString()}
               />
               <StatCard
                 icon={<PlayCircle className="h-4 w-4 text-teal-300" />}
                 label="Played"
-                value="11"
+                value={played.toString()}
               />
             </div>
           </div>

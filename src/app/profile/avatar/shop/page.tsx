@@ -34,7 +34,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 
   await syncUserCoins();
 
-  const [plans, purchasedCoinsAgg, totalPurchasedCoins] = await Promise.all([
+  const [plans, totalPurchasedCoins] = await Promise.all([
     prisma.coinPlan.findMany({
       where: { isActive: true },
       include: {
@@ -43,16 +43,6 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
         },
       },
       orderBy: { priceAmount: "asc" },
-    }),
-
-    prisma.coinPurchase.aggregate({
-      where: {
-        userId: user.id,
-        status: "PAID",
-      },
-      _sum: {
-        totalCoins: true,
-      },
     }),
 
     prisma.coinPurchase.count({
