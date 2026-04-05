@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BookOpen, ChevronLeft } from "lucide-react";
+import { BookOpen, ChevronLeft, Lock } from "lucide-react";
 
 import { getComicById } from "@/actions/comic.action";
 import { Button } from "@/components/ui/button";
+import { LockedEpisodeCard } from "@/components/comic/locked-episode-card";
 
 type PageProps = {
   params: Promise<{
@@ -28,6 +29,9 @@ export default async function ComicDetailsPage({ params }: PageProps) {
   const readHref = firstEpisode
     ? `/profile/avatar/comics/${comic.id}/episode/${firstEpisode.id}`
     : "#";
+
+  const FREE_EPISODE_LIMIT = 5;
+  const isUnlocked = comic.isUnlocked;
 
   return (
     <div /* className="min-h-screen overflow-hidden bg-[#0d1b1f] text-white" */>
@@ -67,7 +71,6 @@ export default async function ComicDetailsPage({ params }: PageProps) {
               <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
                 {comic.title}
               </h1>
-
               <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-white/80">
                 <span>{new Date(comic.createdAt).getFullYear()}</span>
                 <span className="rounded-md bg-white/15 px-2 py-0.5 text-xs font-medium text-white">
@@ -75,7 +78,6 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                 </span>
                 <span>{totalEpisodes} Episodes</span>
               </div>
-
               <div className="mt-6 flex flex-col gap-3 sm:max-w-xl">
                 {firstEpisode ? (
                   <Link href={readHref}>
@@ -94,13 +96,11 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                   </Button>
                 )}
               </div>
-
               <p className="mt-6 max-w-5xl text-base leading-8 text-white/90 sm:text-lg">
                 {comic.description?.trim() ||
                   comic.episodes?.[0]?.description ||
                   "No description available yet."}
               </p>
-
               <div className="mt-4 flex flex-wrap gap-6 border-b border-white/10 text-sm font-semibold">
                 <button className="border-b-2 border-cyan-300 pb-3 text-white">
                   Episodes
@@ -115,7 +115,80 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                 ) : (
                   comic.episodes.map((episode, index) => {
                     const previewImage = episode.images?.[0]?.imageUrl ?? null;
+                    const episodeNumber = index + 1;
+                    const isLocked =
+                      episodeNumber > FREE_EPISODE_LIMIT && !isUnlocked;
                     const episodeHref = `/profile/avatar/comics/${comic.id}/episode/${episode.id}`;
+
+                    const content = (
+                      <div className="group flex items-start gap-4 rounded-2xl p-2 transition hover:bg-white/5">
+                        <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-white/10 sm:h-28 sm:w-24">
+                          {previewImage ? (
+                            <>
+                              <Image
+                                src={previewImage}
+                                alt={episode.title}
+                                fill
+                                className={`object-cover transition duration-300 group-hover:scale-105 ${
+                                  isLocked ? "blur-[1px] brightness-50" : ""
+                                }`}
+                              />
+
+                              {isLocked && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/35">
+                                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black/60 ring-1 ring-white/20">
+                                    <Lock className="h-5 w-5 text-white" />
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <div className="flex h-full items-center justify-center text-xs text-white/50">
+                              No image
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="min-w-0 flex-1 pt-1">
+                          <h3 className="line-clamp-1 text-xl font-semibold text-white">
+                            {episodeNumber}. {episode.title}
+                          </h3>
+
+                          <p className="mt-2 line-clamp-2 text-base leading-7 text-white/85">
+                            {isLocked
+                              ? "Unlock this episode by purchasing this comic."
+                              : episode.description ||
+                                "No description available."}
+                          </p>
+
+                          <div className="mt-2 flex items-center gap-3 text-sm text-white/55">
+                            <span>
+                              {episode.images?.length || 0} page
+                              {(episode.images?.length || 0) > 1 ? "s" : ""}
+                            </span>
+
+                            {isLocked && (
+                              <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-white/80">
+                                Locked
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+
+                    if (isLocked) {
+                      return (
+                        <LockedEpisodeCard
+                          key={episode.id}
+                          comicId={comic.id}
+                          title={`${episodeNumber}. ${episode.title}`}
+                          description="Unlock this episode by purchasing this comic."
+                          imageUrl={previewImage}
+                          pages={episode.images?.length || 0}
+                        />
+                      );
+                    }
 
                     return (
                       <Link
@@ -123,38 +196,7 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                         href={episodeHref}
                         className="block"
                       >
-                        <div className="group flex items-start gap-4 rounded-2xl p-2 transition hover:bg-white/5">
-                          <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-white/10 sm:h-28 sm:w-24">
-                            {previewImage ? (
-                              <Image
-                                src={previewImage}
-                                alt={episode.title}
-                                fill
-                                className="object-cover transition duration-300 group-hover:scale-105"
-                              />
-                            ) : (
-                              <div className="flex h-full items-center justify-center text-xs text-white/50">
-                                No image
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="min-w-0 flex-1 pt-1">
-                            <h3 className="line-clamp-1 text-xl font-semibold text-white">
-                              {index + 1}. {episode.title}
-                            </h3>
-
-                            <p className="mt-2 line-clamp-2 text-base leading-7 text-white/85">
-                              {episode.description ||
-                                "No description available."}
-                            </p>
-
-                            <p className="mt-2 text-sm text-white/55">
-                              {episode.images?.length || 0} page
-                              {(episode.images?.length || 0) > 1 ? "s" : ""}
-                            </p>
-                          </div>
-                        </div>
+                        {content}
                       </Link>
                     );
                   })

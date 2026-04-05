@@ -214,34 +214,42 @@ export async function getAllComics() {
   }
 }
 
-export async function getComicById(comicId: string) {
-  try {
-    const comic = await prisma.comic.findUnique({
-      where: {
-        id: comicId,
-      },
-      include: {
-        user: true,
-        episodes: {
-          orderBy: {
-            order: "asc",
-          },
-          include: {
-            images: {
-              orderBy: {
-                order: "asc",
-              },
-            },
+const FREE_EPISODE_LIMIT = 5;
+
+export async function getComicById(id: string, userId?: string) {
+  const comic = await prisma.comic.findUnique({
+    where: { id },
+    include: {
+      user: true,
+      episodes: {
+        orderBy: { order: "asc" },
+        include: {
+          images: {
+            orderBy: { order: "asc" },
           },
         },
       },
-    });
+      unlocks: userId
+        ? {
+            where: { userId },
+            select: { id: true },
+          }
+        : false,
+    },
+  });
 
-    return comic;
-  } catch (error) {
-    console.error("GET_COMIC_BY_ID_ERROR", error);
-    return null;
-  }
+  if (!comic) return null;
+
+  const isUnlocked = Array.isArray(comic.unlocks) && comic.unlocks.length > 0;
+
+  return {
+    ...comic,
+    isUnlocked,
+    episodes: comic.episodes.map((episode, index) => ({
+      ...episode,
+      isLocked: index + 1 > FREE_EPISODE_LIMIT && !isUnlocked,
+    })),
+  };
 }
 
 export async function updateComic(formData: FormData) {
