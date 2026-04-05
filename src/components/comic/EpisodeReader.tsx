@@ -125,7 +125,7 @@ export default function EpisodeReader({
                 </Button>
               </SheetTrigger>
 
-              <SheetContent className="w-[90vw] border-white/10 bg-slate-950 text-white sm:max-w-md">
+              <SheetContent className="w-[90vw] border-white/10 bg-slate-950 text-white sm:max-w-md flex flex-col">
                 <SheetHeader>
                   <SheetTitle className="text-white">Episodes</SheetTitle>
                   <SheetDescription className="text-white/60">
@@ -133,7 +133,8 @@ export default function EpisodeReader({
                   </SheetDescription>
                 </SheetHeader>
 
-                <div className="mt-6 space-y-3">
+                {/* Scrollable Container */}
+                <div className="mt-6 flex-1 overflow-y-auto pr-2 space-y-3">
                   {episodes.length === 0 ? (
                     <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/60">
                       No episodes available.
