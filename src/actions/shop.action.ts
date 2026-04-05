@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { createPayMongoCheckoutSession } from "@/lib/paymongo";
 import prisma from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
 function makeReferenceNumber() {
   return `KMC-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
@@ -104,5 +105,6 @@ export async function buyCoinsAction(formData: FormData) {
     },
   });
 
+  revalidatePath("/profile/avatar/shop");
   redirect(checkout.data.attributes.checkout_url);
 }
