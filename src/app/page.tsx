@@ -6,6 +6,25 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import PostCard from "@/components/PostCard";
+
+const MOCK_POSTS = [
+  {
+    image: "/icons/post-1.jpg",
+    date: "MAY 30, 2026",
+    title: "Filipino-Comics-Filtered-Lenses",
+  },
+  {
+    image: "/icons/post-2.jpg",
+    date: "MAY 22, 2026",
+    title: "Filipino-Comics-Patay-Kung-Patay",
+  },
+  {
+    image: "/icons/post-3.jpg",
+    date: "April 23, 22, 2026",
+    title: "Filipino-Comics-PASIG-Unbound",
+  },
+];
 
 export default function AnimeBlog() {
   const router = useRouter();
@@ -66,6 +85,13 @@ export default function AnimeBlog() {
           {/* <div className="hidden md:block">
             <VerticalPager />
           </div> */}
+        </div>
+
+        {/* Bottom Post Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-12">
+          {MOCK_POSTS.map((post, idx) => (
+            <PostCard key={idx} {...post} index={idx} />
+          ))}
         </div>
       </div>
 
