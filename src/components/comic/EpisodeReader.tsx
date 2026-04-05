@@ -260,7 +260,14 @@ export default function EpisodeReader({
                   </div>
 
                   <div className="flex flex-wrap gap-3 pt-2">
-                    <Link href={`/admin/comics/${comicId}`} className="flex-1">
+                    <Link
+                      href={
+                        isAdmin
+                          ? `/admin/comics/${comicId}`
+                          : `/profile/avatar/comics/${comicId}`
+                      }
+                      className="flex-1"
+                    >
                       <Button className="w-full">Back to Comic</Button>
                     </Link>
 

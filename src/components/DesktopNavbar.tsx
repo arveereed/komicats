@@ -116,7 +116,6 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
   };
 
   const isOnRead = pathname.includes("/profile/avatar/comics");
-  if (isOnRead) return null;
 
   const [openSwitchDialog, setOpenSwitchDialog] = useState(false);
 
@@ -125,6 +124,9 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
     localStorage.removeItem("komicats_active_profile");
     router.push("/profile/avatar");
   };
+
+  if (isOnRead) return null;
+
   return (
     <div className="hidden items-center justify-between md:flex">
       <div className="flex h-16 items-center gap-10">
