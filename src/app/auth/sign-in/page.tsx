@@ -7,6 +7,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+const REMEMBER_ME_KEY = "komicats_remember_me";
+const REMEMBERED_EMAIL_KEY = "komicats_remembered_email";
+
 export default function SigninForm() {
   const router = useRouter();
   const { isSignedIn, isLoaded: userLoaded, user: clerkUser } = useUser();
@@ -17,6 +20,7 @@ export default function SigninForm() {
   const [code, setCode] = useState("");
   const [needsSecondFactor, setNeedsSecondFactor] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,6 +39,17 @@ export default function SigninForm() {
     }
   }, [userLoaded, isSignedIn, router, isAdmin]);
 
+  useEffect(() => {
+    const savedRememberMe = localStorage.getItem(REMEMBER_ME_KEY) === "true";
+    const savedEmail = localStorage.getItem(REMEMBERED_EMAIL_KEY) || "";
+
+    setRememberMe(savedRememberMe);
+
+    if (savedRememberMe && savedEmail) {
+      setEmailAddress(savedEmail);
+    }
+  }, []);
+
   if (!userLoaded || !isLoaded) {
     return (
       <div className="flex min-h-svh items-center justify-center px-4 text-sm text-white/70">
@@ -42,6 +57,16 @@ export default function SigninForm() {
       </div>
     );
   }
+
+  const persistRememberMe = () => {
+    if (rememberMe) {
+      localStorage.setItem(REMEMBER_ME_KEY, "true");
+      localStorage.setItem(REMEMBERED_EMAIL_KEY, emailAddress.trim());
+    } else {
+      localStorage.removeItem(REMEMBER_ME_KEY);
+      localStorage.removeItem(REMEMBERED_EMAIL_KEY);
+    }
+  };
 
   const redirectAfterLogin = async (sessionId: string | null) => {
     if (!sessionId || !setActive) return;
@@ -62,6 +87,8 @@ export default function SigninForm() {
       setError(null);
       setInfo(null);
       setIsLoading(true);
+
+      persistRememberMe();
 
       const signInAttempt = await signIn.create({
         identifier: emailAddress,
@@ -203,12 +230,14 @@ export default function SigninForm() {
     }
   };
 
-  const onFacebookSignIn = async () => {
+  /*   const onFacebookSignIn = async () => {
     if (!isLoaded || !signIn) return;
 
     try {
       setError(null);
       setIsFacebookLoading(true);
+
+      persistRememberMe();
 
       const path = isAdmin ? "/admin" : "/profile/avatar";
 
@@ -223,7 +252,7 @@ export default function SigninForm() {
     } finally {
       setIsFacebookLoading(false);
     }
-  };
+  }; */
 
   return (
     <div className="flex min-h-svh items-center justify-center px-4 py-12 text-white">
@@ -262,7 +291,7 @@ export default function SigninForm() {
 
           {!needsSecondFactor ? (
             <>
-              <div className="mt-8">
+              {/* <div className="mt-8">
                 <button
                   type="button"
                   onClick={onFacebookSignIn}
@@ -284,7 +313,7 @@ export default function SigninForm() {
                   or
                 </span>
                 <div className="h-px flex-1 bg-white/10" />
-              </div>
+              </div> */}
 
               <form
                 className="space-y-5"
@@ -338,6 +367,8 @@ export default function SigninForm() {
                       id="remember-me"
                       name="remember-me"
                       type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
                       className="h-4 w-4 shrink-0 rounded border-white/20 bg-transparent text-teal-400 focus:ring-teal-400"
                     />
                     <label
