@@ -186,6 +186,7 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                           description="Unlock this episode by purchasing this comic."
                           imageUrl={previewImage}
                           pages={episode.images?.length || 0}
+                          priceCoins={50}
                         />
                       );
                     }

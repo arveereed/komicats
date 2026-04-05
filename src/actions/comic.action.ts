@@ -28,6 +28,9 @@ type NormalizedEpisodeInput = {
   }[];
 };
 
+const FREE_EPISODE_LIMIT = 5;
+const COMIC_UNLOCK_PRICE = 50;
+
 function normalizeEpisodes(input: RawEpisodeInput[]): NormalizedEpisodeInput[] {
   return input.map((episode) => {
     const normalizedImages = (episode.images ?? [])
@@ -214,9 +217,16 @@ export async function getAllComics() {
   }
 }
 
-const FREE_EPISODE_LIMIT = 5;
+export async function getComicById(id: string) {
+  const { userId: clerkId } = await auth();
 
-export async function getComicById(id: string, userId?: string) {
+  const dbUser = clerkId
+    ? await prisma.user.findUnique({
+        where: { clerkId },
+        select: { id: true },
+      })
+    : null;
+
   const comic = await prisma.comic.findUnique({
     where: { id },
     include: {
@@ -229,10 +239,14 @@ export async function getComicById(id: string, userId?: string) {
           },
         },
       },
-      unlocks: userId
+      unlocks: dbUser
         ? {
-            where: { userId },
-            select: { id: true },
+            where: {
+              userId: dbUser.id,
+            },
+            select: {
+              id: true,
+            },
           }
         : false,
     },
@@ -240,15 +254,9 @@ export async function getComicById(id: string, userId?: string) {
 
   if (!comic) return null;
 
-  const isUnlocked = Array.isArray(comic.unlocks) && comic.unlocks.length > 0;
-
   return {
     ...comic,
-    isUnlocked,
-    episodes: comic.episodes.map((episode, index) => ({
-      ...episode,
-      isLocked: index + 1 > FREE_EPISODE_LIMIT && !isUnlocked,
-    })),
+    isUnlocked: Array.isArray(comic.unlocks) && comic.unlocks.length > 0,
   };
 }
 
@@ -397,5 +405,96 @@ export async function deleteComic(comicId: string) {
   } catch (error) {
     console.error("DELETE_COMIC_ERROR", error);
     throw new Error("Failed to delete comic");
+  }
+}
+
+export async function buyComicUnlock({ comicId }: { comicId: string }) {
+  try {
+    const { userId: clerkId } = await auth();
+
+    if (!clerkId) {
+      return { success: false, message: "You must be logged in." };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { clerkId },
+      select: {
+        id: true,
+        coins: true,
+      },
+    });
+
+    if (!user) {
+      return { success: false, message: "User not found." };
+    }
+
+    if (user.coins < COMIC_UNLOCK_PRICE) {
+      return { success: false, message: "Not enough coins." };
+    }
+
+    const comic = await prisma.comic.findUnique({
+      where: { id: comicId },
+      select: { id: true, title: true },
+    });
+
+    if (!comic) {
+      return { success: false, message: "Comic not found." };
+    }
+
+    const existingUnlock = await prisma.comicUnlock.findUnique({
+      where: {
+        userId_comicId: {
+          userId: user.id,
+          comicId,
+        },
+      },
+    });
+
+    if (existingUnlock) {
+      return { success: true, message: "Comic already unlocked." };
+    }
+
+    await prisma.$transaction(async (tx) => {
+      const updatedUser = await tx.user.update({
+        where: { id: user.id },
+        data: {
+          coins: {
+            decrement: COMIC_UNLOCK_PRICE,
+          },
+        },
+        select: {
+          id: true,
+          coins: true,
+        },
+      });
+
+      await tx.comicUnlock.create({
+        data: {
+          userId: user.id,
+          comicId,
+          paidCoins: COMIC_UNLOCK_PRICE,
+        },
+      });
+
+      await tx.coinTransaction.create({
+        data: {
+          userId: user.id,
+          type: "DEBIT",
+          amount: COMIC_UNLOCK_PRICE,
+          balanceAfter: updatedUser.coins,
+          description: `Unlocked comic: ${comic.title}`,
+        },
+      });
+    });
+
+    revalidatePath(`/profile/avatar/comics/${comicId}`);
+
+    return {
+      success: true,
+      message: "Comic unlocked successfully.",
+    };
+  } catch (error) {
+    console.error("buyComicUnlock error:", error);
+    return { success: false, message: "Something went wrong." };
   }
 }

@@ -24,6 +24,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     where: { clerkId },
     select: {
       id: true,
+      coins: true,
     },
   });
 
@@ -62,12 +63,12 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     }),
   ]);
 
-  const purchased = purchasedCoinsAgg._sum.totalCoins ?? 0;
+  const coins = user.coins ?? 0;
 
   return (
     <ShopComponent
       stats={{
-        coins: purchased,
+        coins,
         purchased: totalPurchasedCoins,
         played: 0,
       }}

@@ -32,7 +32,18 @@ export async function syncUserCoins() {
     },
   });
 
-  const totalCoins = totals._sum.totalCoins ?? 0;
+  const totalExpenses = await prisma.comicUnlock.aggregate({
+    where: {
+      userId: user.id,
+    },
+    _sum: {
+      paidCoins: true,
+    },
+  });
+
+  const totalPurchased = totals._sum.totalCoins ?? 0;
+  const totalSpent = totalExpenses._sum.paidCoins ?? 0;
+  const totalCoins = totalPurchased - totalSpent;
 
   const updatedUser = await prisma.user.update({
     where: { id: user.id },
