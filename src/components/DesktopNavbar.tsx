@@ -218,7 +218,7 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
                 </PopoverTrigger>
                 <PopoverContent
                   align="end"
-                  className="w-80 rounded-2xl border border-white/10 bg-[#08161c]/95 p-3 text-white shadow-xl backdrop-blur-xl"
+                  className="w-80 rounded-2xl border border-white/10 bg-black/90 p-3 text-white shadow-xl backdrop-blur-xl"
                 >
                   <div className="space-y-3">
                     <div>
@@ -270,7 +270,7 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
                 </PopoverTrigger>
                 <PopoverContent
                   align="end"
-                  className="w-96 rounded-2xl border border-white/10 bg-[#08161c]/95 p-0 text-white shadow-xl backdrop-blur-xl"
+                  className="w-96 rounded-2xl border border-white/10 bg-black/90 p-0 text-white shadow-xl backdrop-blur-xl"
                 >
                   <div className="border-b border-white/10 px-4 py-3">
                     <p className="text-sm font-semibold">Notifications</p>
@@ -297,7 +297,6 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
                 </PopoverContent>
               </Popover>
 
-              {/* Switch User Dialog */}
               <AlertDialog
                 open={openSwitchDialog}
                 onOpenChange={setOpenSwitchDialog}
@@ -313,14 +312,14 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
                   </button>
                 </AlertDialogTrigger>
 
-                <AlertDialogContent className="overflow-hidden border border-white/10 bg-[#08161c] p-0 text-white shadow-2xl shadow-black/40 sm:max-w-md">
+                <AlertDialogContent className="overflow-hidden border border-white/10 bg-black p-0 text-white shadow-2xl shadow-black/40 sm:max-w-md">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(86,153,160,0.16),transparent_30%),radial-gradient(circle_at_top_right,rgba(72,117,126,0.10),transparent_32%),linear-gradient(135deg,#10242b_0%,#08161c_40%,#030b0f_100%)]" />
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(86,153,160,0.08),transparent_30%),radial-gradient(circle_at_top_right,rgba(72,117,126,0.05),transparent_32%),linear-gradient(135deg,#000_0%,#000_40%,#000_100%)]" />
                     <div className="absolute -left-10 top-6 h-32 w-32 rounded-full bg-teal-300/10 blur-3xl" />
                     <div className="absolute right-0 top-0 h-28 w-28 rounded-full bg-cyan-400/10 blur-3xl" />
                     <div className="absolute bottom-0 left-1/3 h-24 w-24 rounded-full bg-emerald-300/10 blur-3xl" />
                     <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:56px_56px]" />
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_35%,rgba(0,0,0,0.22)_70%,rgba(0,0,0,0.5)_100%)]" />
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_35%,rgba(0,0,0,0.4)_70%,rgba(0,0,0,0.7)_100%)]" />
 
                     <div className="relative z-10 px-6 py-6">
                       <AlertDialogHeader className="space-y-3">

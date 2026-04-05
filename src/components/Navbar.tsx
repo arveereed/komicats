@@ -16,7 +16,7 @@ export default async function Navbar() {
   const isAdmin = Boolean(adminEmail && userEmail === adminEmail);
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#08161c]/80 backdrop-blur-xl supports-[backdrop-filter]:bg-[#08161c]/65">
+    <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/95 backdrop-blur-xl">
       <div className="mx-auto max-w-[1400px] px-6">
         {isAdmin ? (
           <AdminNavbar user={user} />
