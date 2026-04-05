@@ -62,7 +62,6 @@ export default async function MyCoinsPage() {
           played: 0,
         }}
       />
-      ;
     </div>
   );
 }

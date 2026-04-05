@@ -16,14 +16,14 @@ const missions = [
     image:
       "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop",
   },
-  {
+  /* {
     id: 2,
     title: "Color Bolts Sort",
     subtitle: "Multi Reward Mission",
     reward: 123,
     image:
       "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1200&auto=format&fit=crop",
-  },
+  }, */
 ];
 
 export default function MyCoinsComponent({
