@@ -39,6 +39,7 @@ import {
   AlertDialogTrigger,
 } from "./ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import Image from "next/image";
 
 type SyncedUserType = Awaited<ReturnType<typeof syncUser>>;
 
@@ -59,6 +60,7 @@ function MobileNavbar({ user }: { user: SyncedUserType }) {
     pathname.includes("/profile/avatar/my-coins") ||
     pathname.includes("/profile/avatar/shop") ||
     pathname.includes("/profile/avatar/search") ||
+    pathname.includes("/profile/avatar/notifications") ||
     pathname.includes("/profile/avatar/downloads");
 
   const isProfileAvatarSetting = pathname.includes("/profile/avatar/setting");
@@ -314,54 +316,19 @@ function MobileNavbar({ user }: { user: SyncedUserType }) {
               />
             </div>
 
-            <Popover
-              open={notificationsOpen}
-              onOpenChange={setNotificationsOpen}
-            >
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative h-10 w-10 rounded-full text-white hover:bg-white/10 hover:text-white"
-                  aria-label="Notifications"
-                >
-                  <Bell className="h-5 w-5" />
-                  {unreadCount > 0 && (
-                    <Badge className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-300 px-1 text-[10px] text-slate-950">
-                      {unreadCount}
-                    </Badge>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              {/* CHANGED: bg-[#08161c]/95 -> bg-black/90 */}
-              <PopoverContent
-                align="end"
-                className="w-96 rounded-2xl border border-white/10 bg-black/90 p-0 text-white shadow-xl backdrop-blur-xl"
-              >
-                <div className="border-b border-white/10 px-4 py-3">
-                  <p className="text-sm font-semibold">Notifications</p>
-                  <p className="text-xs text-white/50">
-                    Recent updates in your account
-                  </p>
-                </div>
-
-                <div className="max-h-80 overflow-y-auto">
-                  {notifications.map((item) => (
-                    <div
-                      key={item.id}
-                      className="border-b border-white/10 px-4 py-3 last:border-b-0"
-                    >
-                      <p className="text-sm font-medium text-white">
-                        {item.title}
-                      </p>
-                      <p className="mt-1 text-xs text-white/50">
-                        {item.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
+            <Link href="/profile/avatar/notifications">
+              <Image
+                alt="Notification Icon"
+                width={24}
+                height={24}
+                src="/icons/notif.png"
+              />
+              {unreadCount > 0 && (
+                <Badge className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-300 px-1 text-[10px] text-slate-950">
+                  {unreadCount}
+                </Badge>
+              )}
+            </Link>
 
             {/* Switch User Dialog */}
             <AlertDialog
