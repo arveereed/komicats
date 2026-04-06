@@ -42,14 +42,18 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
     pathname.includes("/profile/avatar/profile") ||
     pathname.includes("/profile/avatar/my-coins") ||
     pathname.includes("/profile/avatar/shop") ||
+    pathname.includes("/profile/avatar/search") ||
     pathname.includes("/profile/avatar/downloads");
 
   const isProfileAvatarSetting = pathname.includes("/profile/avatar/setting");
 
   const handleSearch = () => {
-    if (!searchQuery.trim()) return;
-    router.push(`/profile/avatar/shop?q=${encodeURIComponent(searchQuery)}`);
-    setSearchOpen(false);
+    const query = searchQuery.trim();
+    router.push(
+      query
+        ? `/profile/avatar/search?q=${encodeURIComponent(query)}`
+        : "/profile/avatar/search",
+    );
   };
 
   const notifications = useMemo(() => {
@@ -205,49 +209,19 @@ export default function DesktopNavbar({ user }: { user: SyncedUserType }) {
         {isLoaded && isSignedIn && user && isProfileAvatarPath && (
           <div className="flex items-center gap-3">
             <div className="ml-2 flex items-center space-x-4">
-              <Popover open={searchOpen} onOpenChange={setSearchOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-10 w-10 rounded-full text-white hover:bg-white/10 hover:text-white"
-                    aria-label="Search"
-                  >
-                    <Search className="h-5 w-5" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent
-                  align="end"
-                  className="w-80 rounded-2xl border border-white/10 bg-black/90 p-3 text-white shadow-xl backdrop-blur-xl"
-                >
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-sm font-semibold">Search</p>
-                      <p className="text-xs text-white/50">
-                        Search items in the avatar shop.
-                      </p>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Input
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search avatars, items, coins..."
-                        className="border-white/10 bg-white/5 text-white placeholder:text-white/35"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleSearch();
-                        }}
-                      />
-                      <Button
-                        onClick={handleSearch}
-                        className="bg-teal-400 text-slate-950 hover:bg-teal-300"
-                      >
-                        Go
-                      </Button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
+              {/* Search */}
+              <div className="flex h-12 w-[360px] items-center rounded-md bg-[#35535b] px-4">
+                <Search className="mr-3 h-5 w-5 text-white/80" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSearch();
+                  }}
+                  placeholder="Search Comics.."
+                  className="h-full border-0 bg-transparent p-0 text-[18px] text-white shadow-none outline-none ring-0 placeholder:text-white/55 focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+              </div>
 
               <Popover
                 open={notificationsOpen}
