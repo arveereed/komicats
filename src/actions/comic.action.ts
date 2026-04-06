@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import cloudinary from "@/lib/cloudinary";
+import { getDbUserId } from "./user.action";
 
 type RawEpisodeInput = {
   episode?: string;
@@ -68,8 +69,9 @@ function normalizeEpisodes(input: RawEpisodeInput[]): NormalizedEpisodeInput[] {
 
 export async function createComic(formData: FormData) {
   const { userId } = await auth();
+  const creatorId = await getDbUserId();
 
-  if (!userId) {
+  if (!userId || !creatorId) {
     return {
       success: false,
       message: "Unauthorized",
@@ -165,6 +167,26 @@ export async function createComic(formData: FormData) {
     revalidatePath("/");
     revalidatePath("/admin");
     revalidatePath("/admin/comics");
+
+    // create notification
+    const users = await prisma.user.findMany({
+      where: {
+        id: {
+          not: creatorId,
+        },
+      },
+      select: { id: true },
+    });
+
+    await prisma.notification.createMany({
+      data: users.map((user) => ({
+        userId: user.id,
+        creatorId,
+        comicId: comic.id,
+        type: "COMIC",
+      })),
+    });
+    // end of creating notification
 
     return {
       success: true,
@@ -343,29 +365,62 @@ export async function deleteComic(comicId: string) {
     throw new Error("Unauthorized");
   }
 
-  try {
-    const comic = await prisma.comic.findUnique({
-      where: { id: comicId },
-      include: {
-        episodes: {
-          include: {
-            images: true,
-          },
+  const comic = await prisma.comic.findUnique({
+    where: { id: comicId },
+    include: {
+      episodes: {
+        include: {
+          images: true,
         },
       },
-    });
+      user: {
+        select: {
+          email: true,
+          clerkId: true,
+        },
+      },
+    },
+  });
 
-    if (!comic) {
-      throw new Error("Comic not found");
-    }
+  if (!comic) {
+    throw new Error("Comic not found");
+  }
 
-    const publicIds = [
-      comic.thumbnailPublicId,
-      ...comic.episodes.flatMap((episode) =>
-        episode.images.map((image) => image.publicId),
-      ),
-    ].filter((publicId): publicId is string => Boolean(publicId));
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
 
+  const currentDbUser = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    select: {
+      email: true,
+      clerkId: true,
+    },
+  });
+
+  const isAdmin =
+    !!adminEmail &&
+    !!currentDbUser?.email &&
+    currentDbUser.email.toLowerCase() === adminEmail;
+
+  if (!isAdmin && comic.userId !== userId) {
+    throw new Error("Forbidden");
+  }
+
+  console.log("DELETE_COMIC_START", {
+    comicId,
+    currentUserId: userId,
+    comicOwnerClerkId: comic.userId,
+    currentUserEmail: currentDbUser?.email,
+    isAdmin,
+  });
+
+  const publicIds = [
+    comic.thumbnailPublicId,
+    ...comic.episodes.flatMap((episode) =>
+      episode.images.map((image) => image.publicId),
+    ),
+  ].filter((publicId): publicId is string => Boolean(publicId));
+
+  try {
     if (publicIds.length > 0) {
       await cloudinary.api.delete_resources(publicIds);
     }
@@ -391,21 +446,27 @@ export async function deleteComic(comicId: string) {
         try {
           await cloudinary.api.delete_folder(folderPath);
         } catch (error) {
-          console.warn(`Failed to delete folder: ${folderPath}`, error);
+          console.warn("DELETE_FOLDER_WARNING", folderPath, error);
         }
       }
     }
-
-    await prisma.comic.delete({
-      where: { id: comicId },
-    });
-
-    revalidatePath("/admin");
-    revalidatePath("/");
   } catch (error) {
-    console.error("DELETE_COMIC_ERROR", error);
-    throw new Error("Failed to delete comic");
+    console.error("CLOUDINARY_DELETE_ERROR", error);
   }
+
+  await prisma.comic.delete({
+    where: { id: comicId },
+  });
+
+  console.log("DELETE_COMIC_SUCCESS", { comicId });
+
+  revalidatePath("/admin");
+  revalidatePath("/");
+  revalidatePath("/admin/comics");
+
+  return {
+    success: true,
+  };
 }
 
 export async function buyComicUnlock({ comicId }: { comicId: string }) {

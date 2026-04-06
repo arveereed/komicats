@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertTriangle } from "lucide-react";
+import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,12 +19,26 @@ import {
 type Props = {
   comicId: string;
   comicTitle: string;
-  action: (formData: FormData) => void;
+  action: () => Promise<unknown>;
 };
 
-export function DeleteComicDialog({ comicId, comicTitle, action }: Props) {
+export function DeleteComicDialog({ comicTitle, action }: Props) {
+  const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  const handleDelete = () => {
+    startTransition(async () => {
+      try {
+        await action();
+        setOpen(false);
+      } catch (error) {
+        console.error("DELETE_DIALOG_ERROR", error);
+      }
+    });
+  };
+
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <Button
           type="button"
@@ -57,18 +72,13 @@ export function DeleteComicDialog({ comicId, comicTitle, action }: Props) {
             Cancel
           </AlertDialogCancel>
 
-          <form action={action} className="w-full sm:w-auto">
-            <input type="hidden" name="comicId" value={comicId} />
-
-            <AlertDialogAction asChild>
-              <Button
-                type="submit"
-                className="w-full rounded-2xl bg-red-500 text-white hover:bg-red-500/90 sm:w-auto"
-              >
-                Yes, delete
-              </Button>
-            </AlertDialogAction>
-          </form>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isPending}
+            className="w-full rounded-2xl bg-red-500 text-white hover:bg-red-500/90 sm:w-auto"
+          >
+            {isPending ? "Deleting..." : "Yes, delete"}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

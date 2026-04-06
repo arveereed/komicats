@@ -17,11 +17,36 @@ model User {
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
+  // Relations
   profiles      Profile[]
   comics        Comic[]
   purchases     CoinPurchase[]
   transactions  CoinTransaction[]
   comicUnlocks  ComicUnlock[]
+
+  notifications         Notification[] @relation("userNotifications") // notifications received by a user
+  notificationsCreated  Notification[] @relation("notificationCreator") // notifications triggered or created by a user
+}
+
+model Notification {
+  id              String @id @default(cuid())
+  userId          String
+  creatorId       String
+  type            NotificationType
+  read            Boolean @default(false)
+  comicId         String?
+  createdAt       DateTime @default(now())
+
+  // Relations
+  user            User @relation("userNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  creator         User @relation("notificationCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  comic           Comic? @relation(fields: [comicId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+enum NotificationType {
+  COMIC
 }
 
 model Profile {
@@ -41,11 +66,14 @@ model Comic {
   thumbnailPublicId String?
   cloudinaryFolder  String?
   userId            String
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  // Relations
   user              User           @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
   episodes          Episode[]
   unlocks           ComicUnlock[]
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  notifications     Notification[]
 }
 
 
