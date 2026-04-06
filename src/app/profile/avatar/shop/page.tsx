@@ -34,7 +34,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 
   await syncUserCoins();
 
-  const [plans, totalPurchasedCoins] = await Promise.all([
+  const [plans, totalPurchasedCoins, coins] = await Promise.all([
     prisma.coinPlan.findMany({
       where: { isActive: true },
       include: {
@@ -51,14 +51,20 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
         status: "PAID",
       },
     }),
-  ]);
 
-  const coins = user.coins ?? 0;
+    await prisma.user.findUnique({
+      where: { clerkId },
+      select: {
+        id: true,
+        coins: true,
+      },
+    }),
+  ]);
 
   return (
     <ShopComponent
       stats={{
-        coins,
+        coins: coins?.coins ?? 0,
         purchased: totalPurchasedCoins,
         played: 0,
       }}
