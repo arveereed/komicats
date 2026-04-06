@@ -7,12 +7,19 @@ export async function syncUser() {
 
   if (!userId || !user) return;
 
-  const existingUser = await prisma.user.findUnique({
+  const email = user.emailAddresses[0]?.emailAddress?.trim().toLowerCase();
+  if (!email) return null;
+
+  const existingUser = await prisma.user.findFirst({
     where: {
-      clerkId: userId,
+      OR: [{ clerkId: userId }, { email }],
     },
   });
-  if (existingUser) return existingUser;
+
+  if (existingUser) {
+    console.log(existingUser);
+    return existingUser;
+  }
 
   const dbUser = await prisma.user.create({
     data: {
