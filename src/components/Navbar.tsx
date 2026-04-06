@@ -3,9 +3,15 @@ import { syncUser } from "@/actions/user.action";
 import MobileNavbar from "./MobileNavbar";
 import { currentUser } from "@clerk/nextjs/server";
 import AdminNavbar from "./AdminNavbar";
+import {
+  getNotifications,
+  getUnreadNotificationCount,
+} from "@/actions/notification.action";
 
 export default async function Navbar() {
   const clerkUser = await currentUser();
+  const notificationsCount = await getUnreadNotificationCount();
+
   const user = await syncUser();
 
   const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
@@ -22,8 +28,11 @@ export default async function Navbar() {
           <AdminNavbar user={user} />
         ) : (
           <>
-            <DesktopNavbar user={user} />
-            <MobileNavbar user={user} />
+            <DesktopNavbar
+              user={user}
+              notificationsCount={notificationsCount}
+            />
+            <MobileNavbar user={user} notificationsCount={notificationsCount} />
           </>
         )}
       </div>

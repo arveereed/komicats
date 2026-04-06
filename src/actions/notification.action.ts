@@ -1,3 +1,5 @@
+"use server";
+
 import prisma from "@/lib/prisma";
 import { getDbUserId } from "./user.action";
 
@@ -37,4 +39,31 @@ export async function getNotifications() {
     console.error("Error fetching notifications:", error);
     throw new Error("Failed to fetch notifications");
   }
+}
+
+export async function getUnreadNotificationCount() {
+  const userId = await getDbUserId();
+  if (!userId) return 0;
+
+  return await prisma.notification.count({
+    where: {
+      userId,
+      read: false,
+    },
+  });
+}
+
+export async function markAllNotificationsAsRead() {
+  const userId = await getDbUserId();
+  if (!userId) return null;
+
+  return await prisma.notification.updateMany({
+    where: {
+      userId,
+      read: false,
+    },
+    data: {
+      read: true,
+    },
+  });
 }

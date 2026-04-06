@@ -2,7 +2,6 @@
 
 import {
   ArrowLeft,
-  Bell,
   BellIcon,
   HomeIcon,
   Loader2,
@@ -19,7 +18,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import Link from "next/link";
 import { Input } from "./ui/input";
@@ -38,17 +37,26 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "./ui/alert-dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import Image from "next/image";
+import {
+  getUnreadNotificationCount,
+  markAllNotificationsAsRead,
+} from "@/actions/notification.action";
 
 type SyncedUserType = Awaited<ReturnType<typeof syncUser>>;
+type NotificationCount = Awaited<ReturnType<typeof getUnreadNotificationCount>>;
 
-function MobileNavbar({ user }: { user: SyncedUserType }) {
+function MobileNavbar({
+  user,
+  notificationsCount,
+}: {
+  user: SyncedUserType;
+  notificationsCount: NotificationCount;
+}) {
   const { signOut } = useClerk();
   const { isSignedIn, isLoaded } = useUser();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
@@ -73,46 +81,6 @@ function MobileNavbar({ user }: { user: SyncedUserType }) {
         : "/profile/avatar/search",
     );
   };
-
-  const notifications = useMemo(() => {
-    const items: { id: number; title: string; description: string }[] = [];
-
-    if (pathname.includes("/profile/avatar/my-coins")) {
-      items.push({
-        id: 2,
-        title: "Coins page active",
-        description: "You are currently viewing your coin balance.",
-      });
-    }
-
-    if (pathname.includes("/profile/avatar/shop")) {
-      items.push({
-        id: 3,
-        title: "Shop is open",
-        description: "Browse available avatar items and upgrades.",
-      });
-    }
-
-    if (pathname.includes("/profile/avatar/downloads")) {
-      items.push({
-        id: 4,
-        title: "Downloads ready",
-        description: "Your downloadable assets are available here.",
-      });
-    }
-
-    if (items.length === 0) {
-      items.push({
-        id: 99,
-        title: "No new notifications",
-        description: "You’re all caught up.",
-      });
-    }
-
-    return items;
-  }, [pathname]);
-
-  const unreadCount = notifications[0]?.id === 99 ? 0 : notifications.length;
 
   const profileHref = isProfileAvatarPath
     ? "/profile/avatar/profile"
@@ -316,16 +284,24 @@ function MobileNavbar({ user }: { user: SyncedUserType }) {
               />
             </div>
 
-            <Link href="/profile/avatar/notifications">
+            <Link
+              href="/profile/avatar/notifications"
+              className="relative"
+              onClick={async () => {
+                if (notificationsCount > 0) {
+                  await markAllNotificationsAsRead();
+                }
+              }}
+            >
               <Image
                 alt="Notification Icon"
                 width={24}
                 height={24}
                 src="/icons/notif.png"
               />
-              {unreadCount > 0 && (
-                <Badge className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-300 px-1 text-[10px] text-slate-950">
-                  {unreadCount}
+              {notificationsCount > 0 && (
+                <Badge className="absolute -right-2.5 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-300 px-1 text-[10px] text-slate-950">
+                  {notificationsCount}
                 </Badge>
               )}
             </Link>
