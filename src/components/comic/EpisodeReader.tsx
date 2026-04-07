@@ -2,13 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
-  ArrowLeft,
   ChevronLeft,
   ChevronRight,
-  Info,
-  List,
   BookOpen,
   FileImage,
   Heart,
@@ -32,6 +30,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useUser } from "@clerk/nextjs";
+import { toggleLike } from "@/actions/like.action";
 
 type EpisodeImage = {
   id: string;
@@ -57,6 +56,13 @@ type EpisodeReaderProps = {
   episodes?: EpisodeItem[];
   previousEpisodeId?: string | null;
   nextEpisodeId?: string | null;
+  initialLiked: boolean;
+  initialLikeCount: number;
+};
+
+type OptimisticLikeState = {
+  liked: boolean;
+  count: number;
 };
 
 export default function EpisodeReader({
@@ -71,9 +77,13 @@ export default function EpisodeReader({
   episodes = [],
   previousEpisodeId,
   nextEpisodeId,
+  initialLiked,
+  initialLikeCount,
 }: EpisodeReaderProps) {
+  const router = useRouter();
   const [episodesOpen, setEpisodesOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const { user: clerkUser } = useUser();
 
   const currentEpisode = useMemo(
@@ -83,13 +93,45 @@ export default function EpisodeReader({
 
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
   const isAdmin =
-    !!adminEmail && clerkUser?.emailAddresses[0].emailAddress === adminEmail;
+    !!adminEmail && clerkUser?.emailAddresses[0]?.emailAddress === adminEmail;
+
+  const [optimisticLike, setOptimisticLike] = useOptimistic<
+    OptimisticLikeState,
+    void
+  >(
+    {
+      liked: initialLiked,
+      count: initialLikeCount,
+    },
+    (state) => ({
+      liked: !state.liked,
+      count: state.liked ? Math.max(0, state.count - 1) : state.count + 1,
+    }),
+  );
+
+  const commentsHref = isAdmin
+    ? `/admin/comics/${comicId}/episode/${episodeId}/comments`
+    : `/profile/avatar/comics/${comicId}/episode/${episodeId}/comments`;
+
+  async function handleToggleLike() {
+    startTransition(async () => {
+      setOptimisticLike();
+
+      const result = await toggleLike(episodeId, comicId, isAdmin);
+
+      if (!result?.success) {
+        router.refresh();
+        return;
+      }
+
+      router.refresh();
+    });
+  }
 
   return (
     <section className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white">
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-3 sm:h-20 sm:px-4 lg:px-6">
-          {/* TOP left section */}
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Link
               href={
@@ -105,7 +147,7 @@ export default function EpisodeReader({
               >
                 <Image
                   src="/icons/Arrow.png"
-                  alt="List image"
+                  alt="Back"
                   className="rotate-180"
                   width={34}
                   height={34}
@@ -114,7 +156,6 @@ export default function EpisodeReader({
             </Link>
           </div>
 
-          {/* TOP mid section */}
           <div className="min-w-0">
             <h1 className="truncate text-sm font-semibold sm:text-base lg:text-lg">
               {comicTitle}
@@ -125,7 +166,6 @@ export default function EpisodeReader({
             </p>
           </div>
 
-          {/* TOP right section */}
           <div className="flex items-center gap-1 sm:gap-2">
             <Sheet open={episodesOpen} onOpenChange={setEpisodesOpen}>
               <SheetTrigger asChild>
@@ -136,15 +176,14 @@ export default function EpisodeReader({
                 >
                   <Image
                     src="/icons/Menu.png"
-                    alt="List image"
+                    alt="Menu"
                     width={24}
                     height={24}
                   />
-                  {/* <List className="h-5 w-5" /> */}
                 </Button>
               </SheetTrigger>
 
-              <SheetContent className="w-[90vw] border-white/10 bg-slate-950 text-white sm:max-w-md flex flex-col">
+              <SheetContent className="flex w-[90vw] flex-col border-white/10 bg-slate-950 text-white sm:max-w-md">
                 <SheetHeader>
                   <SheetTitle className="text-white">Episodes</SheetTitle>
                   <SheetDescription className="text-white/60">
@@ -152,8 +191,7 @@ export default function EpisodeReader({
                   </SheetDescription>
                 </SheetHeader>
 
-                {/* Scrollable Container */}
-                <div className="mt-6 flex-1 overflow-y-auto pr-2 space-y-3">
+                <div className="mt-6 flex-1 space-y-3 overflow-y-auto pr-2">
                   {episodes.length === 0 ? (
                     <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white/60">
                       No episodes available.
@@ -221,7 +259,7 @@ export default function EpisodeReader({
               >
                 <Image
                   src="/icons/info.png"
-                  alt="List image"
+                  alt="Info"
                   width={24}
                   height={24}
                 />
@@ -358,18 +396,25 @@ export default function EpisodeReader({
           </div>
         )}
       </main>
-      {/* Desktop */}
+
       <div className="hidden w-full bg-black/85 sm:block">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-3">
           <div className="flex items-center divide-x divide-white/10 overflow-hidden rounded-md border border-white/10 bg-white/5">
-            <div className="flex h-11 items-center gap-2 px-4 text-sm text-white/90">
-              <Heart className="h-4 w-4 stroke-[1.75]" />
-              <span>102.8k</span>
-            </div>
-
-            <Link
-              href={`/profile/avatar/comics/${comicId}/episode/${episodeId}/comments`}
+            <button
+              type="button"
+              onClick={handleToggleLike}
+              disabled={isPending}
+              className="flex h-11 items-center gap-2 px-4 text-sm text-white/90 transition hover:bg-white/10 disabled:opacity-60"
             >
+              <Heart
+                className={`h-4 w-4 stroke-[1.75] transition ${
+                  optimisticLike.liked ? "fill-red-500 text-red-500" : ""
+                }`}
+              />
+              <span>{optimisticLike.count}</span>
+            </button>
+
+            <Link href={commentsHref}>
               <div className="flex h-11 items-center gap-2 px-4 text-sm text-white/90">
                 <MessageCircle className="h-4 w-4 stroke-[1.75]" />
                 <span>{commentsCount}</span>
@@ -431,19 +476,25 @@ export default function EpisodeReader({
         </div>
       </div>
 
-      {/* Mobile */}
       <div className="fixed inset-x-0 bottom-0 z-50 sm:hidden">
         <div className="border-t border-white/10 bg-black/85 backdrop-blur-md">
           <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
             <div className="flex items-center divide-x divide-white/10 overflow-hidden rounded-md border border-white/10 bg-white/5">
-              <div className="flex h-11 items-center gap-2 px-4 text-sm text-white/90">
-                <Heart className="h-4 w-4 stroke-[1.75]" />
-                <span>102.8k</span>
-              </div>
-
-              <Link
-                href={`/profile/avatar/comics/${comicId}/episode/${episodeId}/comments`}
+              <button
+                type="button"
+                onClick={handleToggleLike}
+                disabled={isPending}
+                className="flex h-11 items-center gap-2 px-4 text-sm text-white/90 transition hover:bg-white/10 disabled:opacity-60"
               >
+                <Heart
+                  className={`h-4 w-4 stroke-[1.75] transition ${
+                    optimisticLike.liked ? "fill-red-500 text-red-500" : ""
+                  }`}
+                />
+                <span>{optimisticLike.count}</span>
+              </button>
+
+              <Link href={commentsHref}>
                 <div className="flex h-11 items-center gap-2 px-4 text-sm text-white/90">
                   <MessageCircle className="h-4 w-4 stroke-[1.75]" />
                   <span>{commentsCount}</span>

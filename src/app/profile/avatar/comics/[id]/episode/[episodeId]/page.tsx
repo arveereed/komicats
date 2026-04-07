@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { getComicById } from "@/actions/comic.action";
 import EpisodeReader from "@/components/comic/EpisodeReader";
-import { getComments, getCommentsCount } from "@/actions/comment.action";
+import { getCommentsCount } from "@/actions/comment.action";
+import { getLikeStatus } from "@/actions/like.action";
 
 type PageProps = {
   params: Promise<{
@@ -15,6 +16,7 @@ export default async function EpisodePage({ params }: PageProps) {
 
   const comic = await getComicById(id);
   const comments = await getCommentsCount(episodeId);
+  const likeStatus = await getLikeStatus(episodeId);
 
   if (!comic) {
     notFound();
@@ -48,6 +50,8 @@ export default async function EpisodePage({ params }: PageProps) {
       pages={episode.images || []}
       previousEpisodeId={previousEpisode?.id}
       nextEpisodeId={nextEpisode?.id}
+      initialLiked={likeStatus.liked}
+      initialLikeCount={likeStatus.count}
       episodes={comic.episodes.map((ep) => ({
         id: ep.id,
         title: ep.title,

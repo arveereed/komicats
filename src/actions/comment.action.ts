@@ -8,6 +8,7 @@ export async function createComment(
   episodeId: string,
   content: string,
   comicId: string,
+  isAdmin: boolean,
 ) {
   try {
     const userId = await getDbUserId();
@@ -29,9 +30,11 @@ export async function createComment(
       },
     });
 
-    revalidatePath(
-      `/profile/avatar/comics/${comicId}/episode/${episodeId}/comments`,
-    );
+    const readerPath = isAdmin
+      ? `/admin/comics/${comicId}/episode/${episodeId}/comments`
+      : `/profile/avatar/comics/${comicId}/episode/${episodeId}/comments`;
+
+    revalidatePath(readerPath);
     return { success: true, comment };
   } catch (error) {
     console.error("Failed to create comment: ", error);

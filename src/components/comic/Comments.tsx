@@ -89,7 +89,7 @@ export default function Comments({
       addOptimisticComment(optimisticComment);
       setContent("");
 
-      const result = await createComment(episodeId, trimmed, comicId);
+      const result = await createComment(episodeId, trimmed, comicId, isAdmin);
 
       if (!result?.success) {
         setContent(trimmed);

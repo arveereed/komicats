@@ -23,7 +23,8 @@ model User {
   purchases     CoinPurchase[]
   transactions  CoinTransaction[]
   comicUnlocks  ComicUnlock[]
-  comments Comment[] 
+  comments      Comment[] 
+  likes         Like[]
 
   notifications         Notification[] @relation("userNotifications") // notifications received by a user
   notificationsCreated  Notification[] @relation("notificationCreator") // notifications triggered or created by a user
@@ -106,11 +107,25 @@ model Episode {
   comments    Comment[]
   images      EpisodeImage[]
   comic       Comic          @relation(fields: [comicId], references: [id], onDelete: Cascade)
+  like        Like[]
 
   @@index([comicId])
   @@unique([comicId, order])
 }
 
+model Like {
+  id          String @id @default(cuid())
+  episodeId   String
+  userId      String
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  episode     Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+
+  @@index([userId, episodeId]) // composite index for faster query
+  @@unique([userId, episodeId]) // this prevent user from liking post twice
+}
 
 model Comment {
   id          String @id @default(cuid())
