@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getNotifications } from "@/actions/notification.action";
 import NotificationCard from "@/components/NotificationCard";
 
