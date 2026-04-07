@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
-import { ArrowLeft, Send } from "lucide-react";
+import {
+  ArrowLeft,
+  Heart,
+  MessageCircle,
+  Send,
+  ThumbsDown,
+} from "lucide-react";
 import { createComment, getComments } from "@/actions/comment.action";
 import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { formatDistanceToNow } from "date-fns";
@@ -32,6 +38,41 @@ function Watermark() {
       <div className="absolute left-1/2 top-[30%] h-[280px] w-[280px] -translate-x-1/2 rounded-full border-[42px] border-white/[0.03]" />
       <div className="absolute left-1/2 top-[50%] h-[220px] w-[220px] -translate-x-1/2 rounded-full border-[34px] border-white/[0.025]" />
       <div className="absolute left-1/2 top-[8%] h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.03),transparent_62%)]" />
+    </div>
+  );
+}
+
+type CommentItem = {
+  id: number;
+  username: string;
+  date: string;
+  body: string;
+  replies: number;
+  likes: number;
+  dislikes: number;
+};
+
+function CommentActions({
+  replies,
+  likes,
+  dislikes,
+}: Pick<CommentItem, "replies" | "likes" | "dislikes">) {
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-white/75 sm:gap-5">
+      <div className="flex items-center gap-1.5">
+        <MessageCircle className="h-4 w-4 shrink-0" />
+        <span>{replies}</span>
+      </div>
+
+      <div className="flex items-center gap-1.5">
+        <Heart className="h-4 w-4 shrink-0" />
+        <span>{likes}</span>
+      </div>
+
+      <div className="flex items-center gap-1.5">
+        <ThumbsDown className="h-4 w-4 shrink-0" />
+        <span>{dislikes}</span>
+      </div>
     </div>
   );
 }
@@ -141,6 +182,8 @@ export default function Comments({
                 <p className="mt-2.5 text-[clamp(0.92rem,0.84rem+0.3vw,1rem)] leading-[1.7] text-white/90">
                   {comment.content}
                 </p>
+
+                <CommentActions replies={12} likes={10} dislikes={2} />
               </article>
             ))}
           </div>
