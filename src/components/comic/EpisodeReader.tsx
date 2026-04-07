@@ -11,6 +11,8 @@ import {
   List,
   BookOpen,
   FileImage,
+  Heart,
+  MessageCircle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -85,6 +87,7 @@ export default function EpisodeReader({
     <section className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white">
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-3 sm:h-20 sm:px-4 lg:px-6">
+          {/* TOP left section */}
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Link
               href={
@@ -98,21 +101,27 @@ export default function EpisodeReader({
                 size="icon"
                 className="h-9 w-9 rounded-full text-white hover:bg-white/10 hover:text-white sm:h-10 sm:w-10"
               >
-                <ArrowLeft className="h-5 w-5" />
+                <Image
+                  src="/icons/Arrow.png"
+                  alt="List image"
+                  className="rotate-180"
+                  width={34}
+                  height={34}
+                />
               </Button>
             </Link>
-
-            <div className="min-w-0">
-              <h1 className="truncate text-sm font-semibold sm:text-base lg:text-lg">
-                {comicTitle}
-              </h1>
-              <p className="truncate text-xs text-white/70 sm:text-sm">
-                {episodeNumber ? `Episode ${episodeNumber}` : "Episode"} ·{" "}
-                {episodeTitle}
-              </p>
-            </div>
+          </div>
+          <div className="min-w-0">
+            <h1 className="truncate text-sm font-semibold sm:text-base lg:text-lg">
+              {comicTitle}
+            </h1>
+            <p className="truncate text-xs text-white/70 sm:text-sm">
+              {episodeNumber ? `Episode ${episodeNumber}` : "Episode"} ·{" "}
+              {episodeTitle}
+            </p>
           </div>
 
+          {/* TOP right section */}
           <div className="flex items-center gap-1 sm:gap-2">
             <Sheet open={episodesOpen} onOpenChange={setEpisodesOpen}>
               <SheetTrigger asChild>
@@ -121,7 +130,13 @@ export default function EpisodeReader({
                   size="icon"
                   className="h-9 w-9 rounded-full text-white/80 hover:bg-white/10 hover:text-white sm:h-10 sm:w-10"
                 >
-                  <List className="h-5 w-5" />
+                  <Image
+                    src="/icons/Menu.png"
+                    alt="List image"
+                    width={24}
+                    height={24}
+                  />
+                  {/* <List className="h-5 w-5" /> */}
                 </Button>
               </SheetTrigger>
 
@@ -200,7 +215,12 @@ export default function EpisodeReader({
                 onClick={() => setInfoOpen(true)}
                 className="h-9 w-9 rounded-full text-white/80 hover:bg-white/10 hover:text-white sm:h-10 sm:w-10"
               >
-                <Info className="h-5 w-5" />
+                <Image
+                  src="/icons/info.png"
+                  alt="List image"
+                  width={24}
+                  height={24}
+                />
               </Button>
 
               <DialogContent className="border-white/10 bg-slate-950 text-white sm:max-w-lg">
@@ -286,7 +306,7 @@ export default function EpisodeReader({
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-6xl flex-col items-center px-2 py-4 sm:px-4 sm:py-6 lg:px-6">
+      <main className="mx-auto flex w-full max-w-6xl flex-col items-center px-2 py-4 pb-24 sm:px-4 sm:py-6 sm:pb-6 lg:px-6">
         {pages.length === 0 ? (
           <div className="mt-10 w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-8 text-center shadow-2xl backdrop-blur-md">
             <div className="space-y-2">
@@ -333,128 +353,144 @@ export default function EpisodeReader({
             ))}
           </div>
         )}
-
-        <div className="hidden w-full max-w-4xl items-center justify-center gap-3 px-4 py-10 sm:flex">
-          {previousEpisodeId ? (
-            <Link
-              href={
-                isAdmin
-                  ? `/admin/comics/${comicId}/episode/${previousEpisodeId}`
-                  : `/profile/avatar/comics/${comicId}/episode/${previousEpisodeId}`
-              }
-            >
-              <Button
-                variant="outline"
-                className="gap-2 rounded-full border-white/20 bg-white/10 px-5 text-white hover:bg-white/20 hover:text-white"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Previous
-              </Button>
-            </Link>
-          ) : (
-            <Button
-              disabled
-              variant="outline"
-              className="gap-2 rounded-full border-white/10 bg-white/5 px-5 text-white/40"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
-            </Button>
-          )}
-
-          <Link
-            href={
-              isAdmin
-                ? `/admin/comics/${comicId}`
-                : `/profile/avatar/comics/${comicId}`
-            }
-          >
-            <Button className="rounded-full px-6">All Episodes</Button>
-          </Link>
-
-          {nextEpisodeId ? (
-            <Link
-              href={
-                isAdmin
-                  ? `/admin/comics/${comicId}/episode/${nextEpisodeId}`
-                  : `/profile/avatar/comics/${comicId}/episode/${nextEpisodeId}`
-              }
-            >
-              <Button className="gap-2 rounded-full px-5">
-                Next
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          ) : (
-            <Button disabled className="gap-2 rounded-full px-5">
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
       </main>
+      {/* Desktop */}
+      <div className="hidden w-full bg-black/85 sm:block">
+        <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-3">
+          <div className="flex items-center divide-x divide-white/10 overflow-hidden rounded-md border border-white/10 bg-white/5">
+            <div className="flex h-11 items-center gap-2 px-4 text-sm text-white/90">
+              <Heart className="h-4 w-4 stroke-[1.75]" />
+              <span>102.8k</span>
+            </div>
 
-      <div className="sticky bottom-0 z-50 border-t border-white/10 bg-black/70 p-3 backdrop-blur-xl sm:hidden">
-        <div className="mx-auto grid max-w-md grid-cols-3 gap-2">
-          {previousEpisodeId ? (
-            <Link
-              href={
-                isAdmin
-                  ? `/admin/comics/${comicId}/episode/${previousEpisodeId}`
-                  : `/profile/avatar/comics/${comicId}/episode/${previousEpisodeId}`
-              }
-              className="w-full"
-            >
-              <Button
-                variant="outline"
-                className="w-full gap-1 border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+            <div className="flex h-11 items-center gap-2 px-4 text-sm text-white/90">
+              <MessageCircle className="h-4 w-4 stroke-[1.75]" />
+              <span>5,387</span>
+            </div>
+          </div>
+
+          <div className="flex items-center divide-x divide-white/10 overflow-hidden rounded-md border border-white/10 bg-white/5">
+            {previousEpisodeId ? (
+              <Link
+                href={
+                  isAdmin
+                    ? `/admin/comics/${comicId}/episode/${previousEpisodeId}`
+                    : `/profile/avatar/comics/${comicId}/episode/${previousEpisodeId}`
+                }
               >
-                <ChevronLeft className="h-4 w-4" />
-                Prev
-              </Button>
-            </Link>
-          ) : (
-            <Button
-              disabled
-              variant="outline"
-              className="w-full gap-1 border-white/10 bg-white/5 text-white/40"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Prev
-            </Button>
-          )}
+                <button
+                  type="button"
+                  className="flex h-11 w-14 items-center justify-center text-white/80 transition hover:bg-white/10 hover:text-white"
+                >
+                  <ChevronLeft className="h-5 w-5 stroke-[1.75]" />
+                </button>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="flex h-11 w-14 items-center justify-center text-white/30"
+              >
+                <ChevronLeft className="h-5 w-5 stroke-[1.75]" />
+              </button>
+            )}
 
-          <Link
-            href={
-              isAdmin
-                ? `/admin/comics/${comicId}`
-                : `/profile/avatar/comics/${comicId}`
-            }
-            className="w-full"
-          >
-            <Button className="w-full">Episodes</Button>
-          </Link>
+            {nextEpisodeId ? (
+              <Link
+                href={
+                  isAdmin
+                    ? `/admin/comics/${comicId}/episode/${nextEpisodeId}`
+                    : `/profile/avatar/comics/${comicId}/episode/${nextEpisodeId}`
+                }
+              >
+                <button
+                  type="button"
+                  className="flex h-11 w-14 items-center justify-center text-white/80 transition hover:bg-white/10 hover:text-white"
+                >
+                  <ChevronRight className="h-5 w-5 stroke-[1.75]" />
+                </button>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="flex h-11 w-14 items-center justify-center text-white/30"
+              >
+                <ChevronRight className="h-5 w-5 stroke-[1.75]" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
 
-          {nextEpisodeId ? (
-            <Link
-              href={
-                isAdmin
-                  ? `/admin/comics/${comicId}/episode/${nextEpisodeId}`
-                  : `/profile/avatar/comics/${comicId}/episode/${nextEpisodeId}`
-              }
-              className="w-full"
-            >
-              <Button className="w-full gap-1">
-                Next
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          ) : (
-            <Button disabled className="w-full gap-1">
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          )}
+      {/* Mobile */}
+      <div className="fixed inset-x-0 bottom-0 z-50 sm:hidden">
+        <div className="border-t border-white/10 bg-black/85 backdrop-blur-md">
+          <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
+            <div className="flex items-center divide-x divide-white/10 overflow-hidden rounded-md border border-white/10 bg-white/5">
+              <div className="flex h-11 items-center gap-2 px-4 text-sm text-white/90">
+                <Heart className="h-4 w-4 stroke-[1.75]" />
+                <span>102.8k</span>
+              </div>
+
+              <div className="flex h-11 items-center gap-2 px-4 text-sm text-white/90">
+                <MessageCircle className="h-4 w-4 stroke-[1.75]" />
+                <span>5,387</span>
+              </div>
+            </div>
+
+            <div className="flex items-center divide-x divide-white/10 overflow-hidden rounded-md border border-white/10 bg-white/5">
+              {previousEpisodeId ? (
+                <Link
+                  href={
+                    isAdmin
+                      ? `/admin/comics/${comicId}/episode/${previousEpisodeId}`
+                      : `/profile/avatar/comics/${comicId}/episode/${previousEpisodeId}`
+                  }
+                >
+                  <button
+                    type="button"
+                    className="flex h-11 w-14 items-center justify-center text-white/80 transition hover:bg-white/10 hover:text-white"
+                  >
+                    <ChevronLeft className="h-5 w-5 stroke-[1.75]" />
+                  </button>
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="flex h-11 w-14 items-center justify-center text-white/30"
+                >
+                  <ChevronLeft className="h-5 w-5 stroke-[1.75]" />
+                </button>
+              )}
+
+              {nextEpisodeId ? (
+                <Link
+                  href={
+                    isAdmin
+                      ? `/admin/comics/${comicId}/episode/${nextEpisodeId}`
+                      : `/profile/avatar/comics/${comicId}/episode/${nextEpisodeId}`
+                  }
+                >
+                  <button
+                    type="button"
+                    className="flex h-11 w-14 items-center justify-center text-white/80 transition hover:bg-white/10 hover:text-white"
+                  >
+                    <ChevronRight className="h-5 w-5 stroke-[1.75]" />
+                  </button>
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="flex h-11 w-14 items-center justify-center text-white/30"
+                >
+                  <ChevronRight className="h-5 w-5 stroke-[1.75]" />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </section>
