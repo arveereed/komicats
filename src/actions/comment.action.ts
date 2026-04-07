@@ -49,15 +49,20 @@ export async function getComments(episodeId: string) {
     }
 
     const comments = await prisma.comment.findMany({
-      where: {
-        episodeId,
-      },
+      where: { episodeId },
       include: {
         author: {
           select: {
             id: true,
             fullname: true,
             image: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            dislikes: true,
+            replies: true,
           },
         },
       },

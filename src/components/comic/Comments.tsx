@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import {
   ArrowLeft,
-  Heart,
   MessageCircle,
   Send,
   ThumbsDown,
+  ThumbsUp,
 } from "lucide-react";
 import { createComment, getComments } from "@/actions/comment.action";
 import { useMemo, useOptimistic, useState, useTransition } from "react";
@@ -42,21 +42,13 @@ function Watermark() {
   );
 }
 
-type CommentItem = {
-  id: number;
-  username: string;
-  date: string;
-  body: string;
+type CommentActionsProps = {
   replies: number;
   likes: number;
   dislikes: number;
 };
 
-function CommentActions({
-  replies,
-  likes,
-  dislikes,
-}: Pick<CommentItem, "replies" | "likes" | "dislikes">) {
+function CommentActions({ replies, likes, dislikes }: CommentActionsProps) {
   return (
     <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-white/75 sm:gap-5">
       <div className="flex items-center gap-1.5">
@@ -65,7 +57,7 @@ function CommentActions({
       </div>
 
       <div className="flex items-center gap-1.5">
-        <Heart className="h-4 w-4 shrink-0" />
+        <ThumbsUp className="h-4 w-4 shrink-0" />
         <span>{likes}</span>
       </div>
 
@@ -122,6 +114,11 @@ export default function Comments({
         id: clerkUser?.id ?? "me",
         fullname: clerkUser?.fullName || "You",
         image: clerkUser?.imageUrl || null,
+      },
+      _count: {
+        replies: 0,
+        likes: 0,
+        dislikes: 0,
       },
       optimistic: true,
     };
@@ -183,7 +180,11 @@ export default function Comments({
                   {comment.content}
                 </p>
 
-                <CommentActions replies={12} likes={10} dislikes={2} />
+                <CommentActions
+                  replies={comment._count.replies}
+                  likes={comment._count.likes}
+                  dislikes={comment._count.dislikes}
+                />
               </article>
             ))}
           </div>

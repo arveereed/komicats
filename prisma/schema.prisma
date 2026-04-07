@@ -17,32 +17,34 @@ model User {
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
-  // Relations
   profiles      Profile[]
   comics        Comic[]
   purchases     CoinPurchase[]
   transactions  CoinTransaction[]
   comicUnlocks  ComicUnlock[]
-  comments      Comment[] 
+  comments      Comment[]
   likes         Like[]
 
-  notifications         Notification[] @relation("userNotifications") // notifications received by a user
-  notificationsCreated  Notification[] @relation("notificationCreator") // notifications triggered or created by a user
+  commentLikes      CommentLike[]
+  commentDislikes   CommentDislike[]
+  commentReplies    CommentReply[] @relation("ReplyAuthor")
+
+  notifications         Notification[] @relation("userNotifications")
+  notificationsCreated  Notification[] @relation("notificationCreator")
 }
 
 model Notification {
-  id              String @id @default(cuid())
-  userId          String
-  creatorId       String
-  type            NotificationType
-  read            Boolean @default(false)
-  comicId         String?
-  createdAt       DateTime @default(now())
+  id         String           @id @default(cuid())
+  userId     String
+  creatorId  String
+  type       NotificationType
+  read       Boolean          @default(false)
+  comicId    String?
+  createdAt  DateTime         @default(now())
 
-  // Relations
-  user            User @relation("userNotifications", fields: [userId], references: [id], onDelete: Cascade)
-  creator         User @relation("notificationCreator", fields: [creatorId], references: [id], onDelete: Cascade)
-  comic           Comic? @relation(fields: [comicId], references: [id], onDelete: Cascade)
+  user       User   @relation("userNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  creator    User   @relation("notificationCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  comic      Comic? @relation(fields: [comicId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
 }
@@ -71,13 +73,11 @@ model Comic {
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
-  // Relations
   user              User           @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
   episodes          Episode[]
   unlocks           ComicUnlock[]
   notifications     Notification[]
 }
-
 
 model ComicUnlock {
   id         String   @id @default(cuid())
@@ -103,7 +103,6 @@ model Episode {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
-  // Relation
   comments    Comment[]
   images      EpisodeImage[]
   comic       Comic          @relation(fields: [comicId], references: [id], onDelete: Cascade)
@@ -114,32 +113,77 @@ model Episode {
 }
 
 model Like {
-  id          String @id @default(cuid())
+  id          String   @id @default(cuid())
   episodeId   String
   userId      String
   createdAt   DateTime @default(now())
 
-  // Relations
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  episode     Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  episode     Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
 
-  @@index([userId, episodeId]) // composite index for faster query
-  @@unique([userId, episodeId]) // this prevent user from liking post twice
+  @@index([userId, episodeId])
+  @@unique([userId, episodeId])
 }
 
 model Comment {
-  id          String @id @default(cuid())
+  id          String           @id @default(cuid())
   content     String
   authorId    String
   episodeId   String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  author      User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  episode     Episode          @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+
+  likes       CommentLike[]
+  dislikes    CommentDislike[]
+  replies     CommentReply[]
+
+  @@index([authorId, episodeId])
+}
+
+model CommentLike {
+  id          String   @id @default(cuid())
+  commentId   String
+  userId      String
+  createdAt   DateTime @default(now())
+
+  comment     Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@index([commentId])
+  @@index([userId])
+}
+
+model CommentDislike {
+  id          String   @id @default(cuid())
+  commentId   String
+  userId      String
+  createdAt   DateTime @default(now())
+
+  comment     Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@index([commentId])
+  @@index([userId])
+}
+
+model CommentReply {
+  id          String   @id @default(cuid())
+  content     String
+  commentId   String
+  authorId    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relations
-  author          User @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  episode         Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  comment     Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  author      User     @relation("ReplyAuthor", fields: [authorId], references: [id], onDelete: Cascade)
 
-  @@index([authorId, episodeId]) // composite index for faster queries
+  @@index([commentId])
+  @@index([authorId])
 }
 
 model EpisodeImage {
@@ -185,26 +229,20 @@ model CoinPlanFeature {
 model CoinPurchase {
   id                   String         @id @default(cuid())
   userId               String
-
   planId               String
-
   planName             String
   planSlug             String
-
   amount               Int
   coins                Int
   bonusCoins           Int            @default(0)
   totalCoins           Int
   status               PurchaseStatus @default(PENDING)
-
   paymongoCheckoutId   String?        @unique
   paymongoPaymentId    String?        @unique
   referenceNumber      String         @unique
-
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
 
-  // Relation
   transactions         CoinTransaction[]
   plan                 CoinPlan       @relation(fields: [planId], references: [id])
   user                 User           @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -222,8 +260,7 @@ model CoinTransaction {
   balanceAfter Int
   description  String?
   createdAt    DateTime            @default(now())
-  
-  // Relation
+
   user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   purchase     CoinPurchase?       @relation(fields: [purchaseId], references: [id])
 
