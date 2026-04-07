@@ -13,6 +13,8 @@ import { createComment, getComments } from "@/actions/comment.action";
 import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
+import CommentReplySection from "./CommentReplySection";
+import CommentActions from "./CommentActions";
 
 type CommentsPageProps = {
   comicId: string;
@@ -38,33 +40,6 @@ function Watermark() {
       <div className="absolute left-1/2 top-[30%] h-[280px] w-[280px] -translate-x-1/2 rounded-full border-[42px] border-white/[0.03]" />
       <div className="absolute left-1/2 top-[50%] h-[220px] w-[220px] -translate-x-1/2 rounded-full border-[34px] border-white/[0.025]" />
       <div className="absolute left-1/2 top-[8%] h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.03),transparent_62%)]" />
-    </div>
-  );
-}
-
-type CommentActionsProps = {
-  replies: number;
-  likes: number;
-  dislikes: number;
-};
-
-function CommentActions({ replies, likes, dislikes }: CommentActionsProps) {
-  return (
-    <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-white/75 sm:gap-5">
-      <div className="flex items-center gap-1.5">
-        <MessageCircle className="h-4 w-4 shrink-0" />
-        <span>{replies}</span>
-      </div>
-
-      <div className="flex items-center gap-1.5">
-        <ThumbsUp className="h-4 w-4 shrink-0" />
-        <span>{likes}</span>
-      </div>
-
-      <div className="flex items-center gap-1.5">
-        <ThumbsDown className="h-4 w-4 shrink-0" />
-        <span>{dislikes}</span>
-      </div>
     </div>
   );
 }
@@ -115,6 +90,11 @@ export default function Comments({
         fullname: clerkUser?.fullName || "You",
         image: clerkUser?.imageUrl || null,
       },
+      replies: [],
+      likes: [],
+      dislikes: [],
+      viewerLiked: false,
+      viewerDisliked: false,
       _count: {
         replies: 0,
         likes: 0,
@@ -181,9 +161,22 @@ export default function Comments({
                 </p>
 
                 <CommentActions
+                  comicId={comicId}
+                  episodeId={episodeId}
+                  commentId={comment.id}
                   replies={comment._count.replies}
                   likes={comment._count.likes}
                   dislikes={comment._count.dislikes}
+                  viewerLiked={comment.viewerLiked}
+                  viewerDisliked={comment.viewerDisliked}
+                  isAdmin={isAdmin}
+                />
+
+                <CommentReplySection
+                  comicId={comicId}
+                  episodeId={episodeId}
+                  commentId={comment.id}
+                  replies={comment.replies}
                 />
               </article>
             ))}

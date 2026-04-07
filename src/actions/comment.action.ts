@@ -48,14 +48,32 @@ export async function getComments(episodeId: string) {
       throw new Error("Episode ID is required");
     }
 
+    const userId = await getDbUserId();
+
     const comments = await prisma.comment.findMany({
-      where: { episodeId },
+      where: {
+        episodeId,
+      },
       include: {
         author: {
           select: {
             id: true,
             fullname: true,
             image: true,
+          },
+        },
+        replies: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                fullname: true,
+                image: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "asc",
           },
         },
         _count: {
@@ -65,15 +83,37 @@ export async function getComments(episodeId: string) {
             replies: true,
           },
         },
+        likes: userId
+          ? {
+              where: { userId },
+              select: { id: true },
+            }
+          : false,
+        dislikes: userId
+          ? {
+              where: { userId },
+              select: { id: true },
+            }
+          : false,
       },
       orderBy: {
         createdAt: "desc",
       },
     });
 
+    const normalizedComments = comments.map((comment) => ({
+      ...comment,
+      viewerLiked: Array.isArray(comment.likes)
+        ? comment.likes.length > 0
+        : false,
+      viewerDisliked: Array.isArray(comment.dislikes)
+        ? comment.dislikes.length > 0
+        : false,
+    }));
+
     return {
       success: true,
-      comments,
+      comments: normalizedComments,
     };
   } catch (error) {
     console.error("Failed to get comments:", error);
