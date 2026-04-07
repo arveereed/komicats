@@ -46,6 +46,7 @@ type EpisodeItem = {
 };
 
 type EpisodeReaderProps = {
+  commentsCount: number;
   comicId: string;
   comicTitle: string;
   episodeId: string;
@@ -59,6 +60,7 @@ type EpisodeReaderProps = {
 };
 
 export default function EpisodeReader({
+  commentsCount,
   comicId,
   comicTitle,
   episodeId,
@@ -370,7 +372,7 @@ export default function EpisodeReader({
             >
               <div className="flex h-11 items-center gap-2 px-4 text-sm text-white/90">
                 <MessageCircle className="h-4 w-4 stroke-[1.75]" />
-                <span>5,387</span>
+                <span>{commentsCount}</span>
               </div>
             </Link>
           </div>
@@ -444,7 +446,7 @@ export default function EpisodeReader({
               >
                 <div className="flex h-11 items-center gap-2 px-4 text-sm text-white/90">
                   <MessageCircle className="h-4 w-4 stroke-[1.75]" />
-                  <span>5,387</span>
+                  <span>{commentsCount}</span>
                 </div>
               </Link>
             </div>

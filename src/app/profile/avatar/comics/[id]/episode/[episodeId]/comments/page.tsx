@@ -1,3 +1,4 @@
+import { getComments } from "@/actions/comment.action";
 import Comments from "@/components/comic/Comments";
 
 type CommentsPageProps = {
@@ -9,6 +10,7 @@ type CommentsPageProps = {
 
 export default async function CommentsPage({ params }: CommentsPageProps) {
   const { id, episodeId } = await params;
+  const comments = await getComments(episodeId);
 
-  return <Comments comicId={id} episodeId={episodeId} />;
+  return <Comments comicId={id} episodeId={episodeId} comments={comments} />;
 }
