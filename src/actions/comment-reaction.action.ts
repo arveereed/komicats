@@ -4,6 +4,12 @@ import prisma from "@/lib/prisma";
 import { getDbUserId } from "./user.action";
 import { revalidatePath } from "next/cache";
 
+function getCommentsPath(comicId: string, episodeId: string, isAdmin: boolean) {
+  return isAdmin
+    ? `/admin/comics/${comicId}/episode/${episodeId}/comments`
+    : `/profile/avatar/comics/${comicId}/episode/${episodeId}/comments`;
+}
+
 export async function toggleCommentLike(
   commentId: string,
   comicId: string,
@@ -19,6 +25,18 @@ export async function toggleCommentLike(
 
     if (!commentId) {
       return { success: false, error: "Comment ID is required" };
+    }
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+      select: {
+        id: true,
+        authorId: true,
+      },
+    });
+
+    if (!comment) {
+      return { success: false, error: "Comment not found" };
     }
 
     const existingLike = await prisma.commentLike.findUnique({
@@ -54,22 +72,37 @@ export async function toggleCommentLike(
 
       liked = false;
     } else {
-      if (existingDislike) {
-        await prisma.commentDislike.delete({
-          where: {
-            commentId_userId: {
-              commentId,
-              userId,
+      await prisma.$transaction(async (tx) => {
+        if (existingDislike) {
+          await tx.commentDislike.delete({
+            where: {
+              commentId_userId: {
+                commentId,
+                userId,
+              },
             },
+          });
+        }
+
+        await tx.commentLike.create({
+          data: {
+            commentId,
+            userId,
           },
         });
-      }
 
-      await prisma.commentLike.create({
-        data: {
-          commentId,
-          userId,
-        },
+        if (comment.authorId !== userId) {
+          await tx.notification.create({
+            data: {
+              userId: comment.authorId,
+              creatorId: userId,
+              type: "COMMENT_LIKE",
+              comicId,
+              episodeId,
+              commentId,
+            },
+          });
+        }
       });
 
       liked = true;
@@ -85,11 +118,7 @@ export async function toggleCommentLike(
       }),
     ]);
 
-    const path = isAdmin
-      ? `/admin/comics/${comicId}/episode/${episodeId}/comments`
-      : `/profile/avatar/comics/${comicId}/episode/${episodeId}/comments`;
-
-    revalidatePath(path);
+    revalidatePath(getCommentsPath(comicId, episodeId, isAdmin));
 
     return {
       success: true,
@@ -119,6 +148,18 @@ export async function toggleCommentDislike(
 
     if (!commentId) {
       return { success: false, error: "Comment ID is required" };
+    }
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+      select: {
+        id: true,
+        authorId: true,
+      },
+    });
+
+    if (!comment) {
+      return { success: false, error: "Comment not found" };
     }
 
     const existingLike = await prisma.commentLike.findUnique({
@@ -154,22 +195,37 @@ export async function toggleCommentDislike(
 
       disliked = false;
     } else {
-      if (existingLike) {
-        await prisma.commentLike.delete({
-          where: {
-            commentId_userId: {
-              commentId,
-              userId,
+      await prisma.$transaction(async (tx) => {
+        if (existingLike) {
+          await tx.commentLike.delete({
+            where: {
+              commentId_userId: {
+                commentId,
+                userId,
+              },
             },
+          });
+        }
+
+        await tx.commentDislike.create({
+          data: {
+            commentId,
+            userId,
           },
         });
-      }
 
-      await prisma.commentDislike.create({
-        data: {
-          commentId,
-          userId,
-        },
+        if (comment.authorId !== userId) {
+          await tx.notification.create({
+            data: {
+              userId: comment.authorId,
+              creatorId: userId,
+              type: "COMMENT_DISLIKE",
+              comicId,
+              episodeId,
+              commentId,
+            },
+          });
+        }
       });
 
       liked = false;
@@ -185,11 +241,7 @@ export async function toggleCommentDislike(
       }),
     ]);
 
-    const path = isAdmin
-      ? `/admin/comics/${comicId}/episode/${episodeId}/comments`
-      : `/profile/avatar/comics/${comicId}/episode/${episodeId}/comments`;
-
-    revalidatePath(path);
+    revalidatePath(getCommentsPath(comicId, episodeId, isAdmin));
 
     return {
       success: true,

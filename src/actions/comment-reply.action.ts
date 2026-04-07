@@ -4,6 +4,12 @@ import prisma from "@/lib/prisma";
 import { getDbUserId } from "./user.action";
 import { revalidatePath } from "next/cache";
 
+function getCommentsPath(comicId: string, episodeId: string, isAdmin: boolean) {
+  return isAdmin
+    ? `/admin/comics/${comicId}/episode/${episodeId}/comments`
+    : `/profile/avatar/comics/${comicId}/episode/${episodeId}/comments`;
+}
+
 export async function getCommentReplies(commentId: string) {
   try {
     if (!commentId) {
@@ -62,35 +68,52 @@ export async function createCommentReply(
 
     const comment = await prisma.comment.findUnique({
       where: { id: commentId },
-      select: { id: true },
+      select: {
+        id: true,
+        authorId: true,
+      },
     });
 
     if (!comment) {
       throw new Error("Comment not found");
     }
 
-    const reply = await prisma.commentReply.create({
-      data: {
-        content: content.trim(),
-        commentId,
-        authorId: userId,
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            fullname: true,
-            image: true,
+    const reply = await prisma.$transaction(async (tx) => {
+      const createdReply = await tx.commentReply.create({
+        data: {
+          content: content.trim(),
+          commentId,
+          authorId: userId,
+        },
+        include: {
+          author: {
+            select: {
+              id: true,
+              fullname: true,
+              image: true,
+            },
           },
         },
-      },
+      });
+
+      if (comment.authorId !== userId) {
+        await tx.notification.create({
+          data: {
+            userId: comment.authorId,
+            creatorId: userId,
+            type: "COMMENT_REPLY",
+            comicId,
+            episodeId,
+            commentId,
+            replyId: createdReply.id,
+          },
+        });
+      }
+
+      return createdReply;
     });
 
-    const path = isAdmin
-      ? `/admin/comics/${comicId}/episode/${episodeId}/comments`
-      : `/profile/avatar/comics/${comicId}/episode/${episodeId}/comments`;
-
-    revalidatePath(path);
+    revalidatePath(getCommentsPath(comicId, episodeId, isAdmin));
 
     return {
       success: true,

@@ -4,40 +4,99 @@ import prisma from "@/lib/prisma";
 import { getDbUserId } from "./user.action";
 import { revalidatePath } from "next/cache";
 
+function getCommentsPath(comicId: string, episodeId: string, isAdmin: boolean) {
+  return isAdmin
+    ? `/admin/comics/${comicId}/episode/${episodeId}/comments`
+    : `/profile/avatar/comics/${comicId}/episode/${episodeId}/comments`;
+}
+
 export async function createComment(
   episodeId: string,
   content: string,
   comicId: string,
-  isAdmin: boolean,
+  isAdmin = false,
 ) {
   try {
     const userId = await getDbUserId();
 
-    if (!userId) return;
-    if (!content) throw new Error("Content is required");
+    if (!userId) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    if (!content.trim()) {
+      throw new Error("Content is required");
+    }
 
     const episode = await prisma.episode.findUnique({
       where: { id: episodeId },
+      select: { id: true },
     });
 
-    if (!episode) throw new Error("Episode not found");
+    if (!episode) {
+      throw new Error("Episode not found");
+    }
 
     const comment = await prisma.comment.create({
       data: {
-        content,
+        content: content.trim(),
         authorId: userId,
         episodeId,
       },
+      include: {
+        author: {
+          select: {
+            id: true,
+            fullname: true,
+            image: true,
+          },
+        },
+        replies: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                fullname: true,
+                image: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "asc",
+          },
+        },
+        likes: {
+          where: { userId },
+          select: {
+            id: true,
+            commentId: true,
+            userId: true,
+            createdAt: true,
+          },
+        },
+        dislikes: {
+          where: { userId },
+          select: {
+            id: true,
+            commentId: true,
+            userId: true,
+            createdAt: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            dislikes: true,
+            replies: true,
+          },
+        },
+      },
     });
 
-    const readerPath = isAdmin
-      ? `/admin/comics/${comicId}/episode/${episodeId}/comments`
-      : `/profile/avatar/comics/${comicId}/episode/${episodeId}/comments`;
+    revalidatePath(getCommentsPath(comicId, episodeId, isAdmin));
 
-    revalidatePath(readerPath);
     return { success: true, comment };
   } catch (error) {
-    console.error("Failed to create comment: ", error);
+    console.error("Failed to create comment:", error);
     return { success: false, error: "Failed to create comment" };
   }
 }
@@ -76,6 +135,28 @@ export async function getComments(episodeId: string) {
             createdAt: "asc",
           },
         },
+        likes: userId
+          ? {
+              where: { userId },
+              select: {
+                id: true,
+                commentId: true,
+                userId: true,
+                createdAt: true,
+              },
+            }
+          : false,
+        dislikes: userId
+          ? {
+              where: { userId },
+              select: {
+                id: true,
+                commentId: true,
+                userId: true,
+                createdAt: true,
+              },
+            }
+          : false,
         _count: {
           select: {
             likes: true,
@@ -83,18 +164,6 @@ export async function getComments(episodeId: string) {
             replies: true,
           },
         },
-        likes: userId
-          ? {
-              where: { userId },
-              select: { id: true },
-            }
-          : false,
-        dislikes: userId
-          ? {
-              where: { userId },
-              select: { id: true },
-            }
-          : false,
       },
       orderBy: {
         createdAt: "desc",

@@ -28,6 +28,25 @@ export async function getNotifications() {
             thumbnail: true,
           },
         },
+        episode: {
+          select: {
+            id: true,
+            title: true,
+            comicId: true,
+          },
+        },
+        comment: {
+          select: {
+            id: true,
+            content: true,
+          },
+        },
+        reply: {
+          select: {
+            id: true,
+            content: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
