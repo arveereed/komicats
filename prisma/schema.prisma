@@ -23,6 +23,7 @@ model User {
   purchases     CoinPurchase[]
   transactions  CoinTransaction[]
   comicUnlocks  ComicUnlock[]
+  comments Comment[] 
 
   notifications         Notification[] @relation("userNotifications") // notifications received by a user
   notificationsCreated  Notification[] @relation("notificationCreator") // notifications triggered or created by a user
@@ -97,14 +98,33 @@ model Episode {
   title       String
   description String
   comicId     String
-  comic       Comic          @relation(fields: [comicId], references: [id], onDelete: Cascade)
   order       Int
-  images      EpisodeImage[]
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
+  // Relation
+  comments    Comment[]
+  images      EpisodeImage[]
+  comic       Comic          @relation(fields: [comicId], references: [id], onDelete: Cascade)
+
   @@index([comicId])
   @@unique([comicId, order])
+}
+
+
+model Comment {
+  id          String @id @default(cuid())
+  content     String
+  authorId    String
+  episodeId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  author          User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  episode         Episode @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+
+  @@index([authorId, episodeId]) // composite index for faster queries
 }
 
 model EpisodeImage {
@@ -150,10 +170,8 @@ model CoinPlanFeature {
 model CoinPurchase {
   id                   String         @id @default(cuid())
   userId               String
-  user                 User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   planId               String
-  plan                 CoinPlan       @relation(fields: [planId], references: [id])
 
   planName             String
   planSlug             String
@@ -171,7 +189,10 @@ model CoinPurchase {
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
 
+  // Relation
   transactions         CoinTransaction[]
+  plan                 CoinPlan       @relation(fields: [planId], references: [id])
+  user                 User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([planId])
@@ -180,14 +201,16 @@ model CoinPurchase {
 model CoinTransaction {
   id           String              @id @default(cuid())
   userId       String
-  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   purchaseId   String?
-  purchase     CoinPurchase?       @relation(fields: [purchaseId], references: [id])
   type         CoinTransactionType
   amount       Int
   balanceAfter Int
   description  String?
   createdAt    DateTime            @default(now())
+  
+  // Relation
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purchase     CoinPurchase?       @relation(fields: [purchaseId], references: [id])
 
   @@index([userId, createdAt])
 }

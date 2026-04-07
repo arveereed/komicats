@@ -111,6 +111,8 @@ export default function EpisodeReader({
               </Button>
             </Link>
           </div>
+
+          {/* TOP mid section */}
           <div className="min-w-0">
             <h1 className="truncate text-sm font-semibold sm:text-base lg:text-lg">
               {comicTitle}
@@ -363,10 +365,14 @@ export default function EpisodeReader({
               <span>102.8k</span>
             </div>
 
-            <div className="flex h-11 items-center gap-2 px-4 text-sm text-white/90">
-              <MessageCircle className="h-4 w-4 stroke-[1.75]" />
-              <span>5,387</span>
-            </div>
+            <Link
+              href={`/profile/avatar/comics/${comicId}/episode/${episodeId}/comments`}
+            >
+              <div className="flex h-11 items-center gap-2 px-4 text-sm text-white/90">
+                <MessageCircle className="h-4 w-4 stroke-[1.75]" />
+                <span>5,387</span>
+              </div>
+            </Link>
           </div>
 
           <div className="flex items-center divide-x divide-white/10 overflow-hidden rounded-md border border-white/10 bg-white/5">
@@ -433,10 +439,14 @@ export default function EpisodeReader({
                 <span>102.8k</span>
               </div>
 
-              <div className="flex h-11 items-center gap-2 px-4 text-sm text-white/90">
-                <MessageCircle className="h-4 w-4 stroke-[1.75]" />
-                <span>5,387</span>
-              </div>
+              <Link
+                href={`/profile/avatar/comics/${comicId}/episode/${episodeId}/comments`}
+              >
+                <div className="flex h-11 items-center gap-2 px-4 text-sm text-white/90">
+                  <MessageCircle className="h-4 w-4 stroke-[1.75]" />
+                  <span>5,387</span>
+                </div>
+              </Link>
             </div>
 
             <div className="flex items-center divide-x divide-white/10 overflow-hidden rounded-md border border-white/10 bg-white/5">
