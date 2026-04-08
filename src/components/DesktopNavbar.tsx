@@ -125,7 +125,12 @@ export default function DesktopNavbar({
             href={isSignedIn && user ? profileHref : "/"}
             className="hidden font-mono text-xl font-bold tracking-wider text-white md:flex"
           >
-            Komicats
+            <Image
+              src="/icons/logo.png"
+              alt="Komicats Logo"
+              width={100}
+              height={100}
+            />
           </Link>
         )}
 

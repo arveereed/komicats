@@ -149,8 +149,8 @@ export default function EpisodeReader({
                   src="/icons/Arrow.png"
                   alt="Back"
                   className="rotate-180"
-                  width={34}
-                  height={34}
+                  width={24}
+                  height={24}
                 />
               </Button>
             </Link>

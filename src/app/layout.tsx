@@ -5,6 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "@/components/Navbar";
 import { currentUser } from "@clerk/nextjs/server";
 import { Toaster } from "sonner";
+import Image from "next/image";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,7 +51,19 @@ export default async function RootLayout({
             >
               {isAdmin ? <AdminBackgroundDecor /> : <BackgroundDecor />}
 
-              <div className="relative z-10 min-h-screen ">{children}</div>
+              <div className="relative z-10 min-h-screen">
+                <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center -bottom-12 -left-[700px]">
+                  <Image
+                    src="/icons/bg-logo.png"
+                    alt="Background logo"
+                    fill
+                    className="object-contain opacity-[0.05]"
+                    priority
+                  />
+                </div>
+
+                {children}
+              </div>
               <Toaster richColors position="top-right" />
             </main>
           </div>
