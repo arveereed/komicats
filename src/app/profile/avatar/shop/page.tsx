@@ -20,21 +20,9 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 
   const params = await searchParams;
 
-  const user = await prisma.user.findUnique({
-    where: { clerkId },
-    select: {
-      id: true,
-      coins: true,
-    },
-  });
+  const user = await syncUserCoins();
 
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  await syncUserCoins();
-
-  const [plans, totalPurchasedCoins, coins] = await Promise.all([
+  const [plans, totalPurchasedCoins, coins, totalPlayed] = await Promise.all([
     prisma.coinPlan.findMany({
       where: { isActive: true },
       include: {
@@ -59,6 +47,12 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
         coins: true,
       },
     }),
+
+    prisma.gameHistory.count({
+      where: {
+        userId: user.id,
+      },
+    }),
   ]);
 
   return (
@@ -66,7 +60,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
       stats={{
         coins: coins?.coins ?? 0,
         purchased: totalPurchasedCoins,
-        played: 0,
+        played: totalPlayed,
       }}
       plans={plans}
       paymentStatus={params.status}

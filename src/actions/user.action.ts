@@ -17,7 +17,6 @@ export async function syncUser() {
   });
 
   if (existingUser) {
-    console.log(existingUser);
     return existingUser;
   }
 

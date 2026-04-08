@@ -18,21 +18,9 @@ export default async function MyCoinsPage() {
     redirect("/auth/sign-in");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { clerkId },
-    select: {
-      id: true,
-      coins: true,
-    },
-  });
+  const user = await syncUserCoins();
 
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  await syncUserCoins();
-
-  const [plans, totalPurchasedCoins] = await Promise.all([
+  const [plans, totalPurchasedCoins, totalPlayed] = await Promise.all([
     prisma.coinPlan.findMany({
       where: { isActive: true },
       include: {
@@ -49,6 +37,12 @@ export default async function MyCoinsPage() {
         status: "PAID",
       },
     }),
+
+    prisma.gameHistory.count({
+      where: {
+        userId: user.id,
+      },
+    }),
   ]);
 
   const coins = user.coins ?? 0;
@@ -59,7 +53,7 @@ export default async function MyCoinsPage() {
         stats={{
           coins,
           purchased: totalPurchasedCoins,
-          played: 0,
+          played: totalPlayed,
         }}
       />
     </div>

@@ -101,3 +101,72 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .opening,
+  .result,
+  .loading {
+    @apply flex flex-col items-center text-center;
+  }
+
+  .questions-container {
+    @apply flex flex-col items-center;
+  }
+
+  .playButton,
+  .submitButton,
+  .playAgain {
+    @apply w-[200px] cursor-pointer rounded-[20px] border-none bg-[rgb(255,127,80)] p-5 text-[20px] font-bold text-white font-['Rubik',sans-serif];
+  }
+
+  .playButton:active,
+  .submitButton:active,
+  .playAgain:active {
+    @apply bg-[#0e2058] transition-all duration-200;
+  }
+
+  .submitButton:disabled {
+    @apply opacity-50;
+  }
+
+  .headline {
+    @apply text-[60px] bg-gradient-to-r from-[rgb(255,127,80)] to-[rgb(255,68,51)] bg-clip-text text-transparent;
+  }
+
+  .questionCard {
+    @apply m-[30px] rounded-[15px] border-none bg-white p-5 text-[#0e2058] shadow-[5px_5px_10px_1px_#888888];
+  }
+
+  .questionCard > h4 {
+    @apply bg-gradient-to-r from-[rgb(255,127,80)] to-[rgb(255,68,51)] bg-clip-text text-transparent;
+  }
+
+  .answers {
+    @apply inline-block;
+  }
+
+  label {
+    @apply mr-[30px] text-[16px] text-[#0e2058];
+  }
+
+  input[type="radio"] {
+    @apply mr-2 mt-2;
+  }
+
+  .result > h1,
+  .result > p {
+    @apply bg-gradient-to-r from-[rgb(255,127,80)] to-[rgb(255,68,51)] bg-clip-text text-transparent;
+  }
+
+  .result > h1 {
+    @apply text-[60px];
+  }
+
+  .result > p {
+    @apply mt-[10px] text-[30px];
+  }
+
+  .loading > h1 {
+    @apply mb-0 text-[60px] text-[rgb(255,127,80)];
+  }
+}

@@ -55,6 +55,8 @@ export default function DesktopNavbar({
     pathname.includes("/profile/avatar/notifications") ||
     pathname.includes("/profile/avatar/downloads");
 
+  const inGamePath = pathname.includes("/profile/avatar/my-coins/game");
+
   const isProfileAvatarSetting = pathname.includes("/profile/avatar/setting");
 
   const handleSearch = () => {
@@ -99,7 +101,7 @@ export default function DesktopNavbar({
     router.push("/profile/avatar");
   };
 
-  if (isOnRead) return null;
+  if (isOnRead || inGamePath) return null;
 
   return (
     <div className="hidden items-center justify-between md:flex">

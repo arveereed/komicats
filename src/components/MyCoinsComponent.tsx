@@ -6,15 +6,15 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 const missions = [
   {
     id: 1,
-    title: "Love Water - Color Sort Puzzle",
-    subtitle: "Multi Reward Mission",
-    reward: 123,
-    image:
-      "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop",
+    title: "Quiz Challenge",
+    subtitle: "Challenge yourself",
+    reward: 10,
+    image: "/quiz.png",
   },
   /* {
     id: 2,
@@ -200,20 +200,24 @@ function MissionCard({
           </div>
 
           <div className="shrink-0">
-            <Button
-              variant="secondary"
-              className="h-auto rounded-xl border border-white/10 bg-white/90 px-4 py-2 text-slate-950 hover:bg-white"
+            <Link
+              href={`/profile/avatar/my-coins/game/quiz?missionId=${mission.id}`}
             >
-              <div className="text-right leading-tight">
-                <div className="text-xs font-medium text-slate-600">
-                  Earn up to
+              <Button
+                variant="secondary"
+                className="h-auto rounded-xl border border-white/10 bg-white/90 px-4 py-2 text-slate-950 hover:bg-white"
+              >
+                <div className="text-right leading-tight">
+                  <div className="text-xs font-medium text-slate-600">
+                    Earn up to
+                  </div>
+                  <div className="mt-1 flex items-center justify-end gap-1 text-sm font-semibold">
+                    <Coins className="h-3.5 w-3.5" />
+                    {mission.reward}
+                  </div>
                 </div>
-                <div className="mt-1 flex items-center justify-end gap-1 text-sm font-semibold">
-                  <Coins className="h-3.5 w-3.5" />
-                  {mission.reward}
-                </div>
-              </div>
-            </Button>
+              </Button>
+            </Link>
           </div>
         </div>
       </CardContent>

@@ -2,29 +2,18 @@
 
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
+import { getDbUserId } from "./user.action";
 
 export async function syncUserCoins() {
-  const { userId: clerkId } = await auth();
+  const userId = await getDbUserId();
 
-  if (!clerkId) {
-    throw new Error("Unauthorized");
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { clerkId },
-    select: {
-      id: true,
-      clerkId: true,
-    },
-  });
-
-  if (!user) {
+  if (!userId) {
     throw new Error("User not found");
   }
 
-  const totals = await prisma.coinPurchase.aggregate({
+  const totalCoinPurchases = await prisma.coinPurchase.aggregate({
     where: {
-      userId: user.id,
+      userId: userId,
       status: "PAID",
     },
     _sum: {
@@ -32,21 +21,29 @@ export async function syncUserCoins() {
     },
   });
 
+  const totalPlayed = await prisma.gameHistory.aggregate({
+    where: { userId },
+    _sum: { rewardCoins: true },
+  });
+
   const totalExpenses = await prisma.comicUnlock.aggregate({
     where: {
-      userId: user.id,
+      userId: userId,
     },
     _sum: {
       paidCoins: true,
     },
   });
 
-  const totalPurchased = totals._sum.totalCoins ?? 0;
+  const totalPurchased = totalCoinPurchases._sum.totalCoins ?? 0;
+  const totalGamesPlayed = totalPlayed._sum.rewardCoins ?? 0;
+  const totalCoinsEarned = totalPurchased + totalGamesPlayed;
+
   const totalSpent = totalExpenses._sum.paidCoins ?? 0;
-  const totalCoins = totalPurchased - totalSpent;
+  const totalCoins = totalCoinsEarned - totalSpent;
 
   const updatedUser = await prisma.user.update({
-    where: { id: user.id },
+    where: { id: userId },
     data: {
       coins: totalCoins,
     },

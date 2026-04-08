@@ -71,6 +71,8 @@ function MobileNavbar({
     pathname.includes("/profile/avatar/notifications") ||
     pathname.includes("/profile/avatar/downloads");
 
+  const inGamePath = pathname.includes("/profile/avatar/my-coins/game");
+
   const isProfileAvatarSetting = pathname.includes("/profile/avatar/setting");
 
   const handleSearch = () => {
@@ -110,7 +112,7 @@ function MobileNavbar({
     router.push("/profile/avatar");
   };
 
-  if (isOnRead) return null;
+  if (isOnRead || inGamePath) return null;
 
   return (
     <div className="flex h-16 items-center justify-between space-x-2 md:hidden">

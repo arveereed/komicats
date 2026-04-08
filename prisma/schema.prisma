@@ -24,6 +24,7 @@ model User {
   comicUnlocks  ComicUnlock[]
   comments      Comment[]
   likes         Like[]
+  gameHistories  GameHistory[]
 
   commentLikes      CommentLike[]
   commentDislikes   CommentDislike[]
@@ -294,4 +295,19 @@ enum PurchaseStatus {
 enum CoinTransactionType {
   CREDIT
   DEBIT
+}
+
+model GameHistory {
+  id            String   @id @default(cuid())
+  userId        String
+  gameType      String   @default("QUIZ")
+  totalQuestions Int
+  correctAnswers Int
+  rewardCoins   Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([gameType])
 }
