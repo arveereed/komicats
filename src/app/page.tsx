@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import PostCard from "@/components/PostCard";
+import InstallButton from "@/components/pwa/install-button";
 
 const MOCK_POSTS = [
   {
@@ -94,6 +95,7 @@ export default function AnimeBlog() {
           ))}
         </div>
       </div>
+      <InstallButton />
 
       {/* Ambient Red Glow */}
       <div className="absolute top-0 left-0 w-1/3 h-1/3 bg-red-600/10 blur-[120px] rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none" />

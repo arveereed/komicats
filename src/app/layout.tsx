@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import { currentUser } from "@clerk/nextjs/server";
 import { Toaster } from "sonner";
 import Image from "next/image";
+import PWARegister from "@/components/pwa/PWARegister";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -62,6 +63,7 @@ export default async function RootLayout({
                   />
                 </div>
 
+                <PWARegister />
                 {children}
               </div>
               <Toaster richColors position="top-right" />
