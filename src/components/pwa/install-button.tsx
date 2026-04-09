@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "../ui/button";
+import { Share, Plus } from "lucide-react";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -16,17 +16,26 @@ export default function InstallButton() {
     useState<BeforeInstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isSafari, setIsSafari] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     const ua = window.navigator.userAgent;
     const ios = /iPhone|iPad|iPod/i.test(ua);
+    const safari =
+      /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|mercury/i.test(ua);
+
     setIsIOS(ios);
+    setIsSafari(safari);
 
     const isStandalone = window.matchMedia(
       "(display-mode: standalone)",
     ).matches;
+    const iosStandalone =
+      "standalone" in window.navigator &&
+      (window.navigator as Navigator & { standalone?: boolean }).standalone;
 
-    if (isStandalone) {
+    if (isStandalone || iosStandalone) {
       setInstalled(true);
     }
 
@@ -64,31 +73,61 @@ export default function InstallButton() {
     }
   };
 
-  if (installed) {
-    return null;
-  }
+  if (installed || dismissed) return null;
 
-  if (isIOS) {
+  if (isIOS && isSafari) {
     return (
-      <div className="fixed bottom-4 right-4 z-50 max-w-xs rounded-xl bg-black/80 px-4 py-3 text-sm text-white shadow-lg backdrop-blur">
-        On iPhone, tap <strong>Share</strong> →{" "}
-        <strong>Add to Home Screen</strong>
+      <div className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-sm rounded-2xl border border-white/10 bg-neutral-950/95 p-4 text-white shadow-2xl backdrop-blur">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold">Install Komicats</p>
+            <p className="mt-1 text-sm text-white/70">
+              Add this app to your Home Screen for a full-screen experience.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setDismissed(true)}
+            className="rounded-md px-2 py-1 text-white/50 hover:bg-white/10 hover:text-white"
+            aria-label="Dismiss install hint"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="mt-3 rounded-xl bg-white/5 p-3">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-white/80">1.</span>
+            <span className="text-white/90">Tap the</span>
+            <span className="inline-flex items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-xs font-medium">
+              <Share className="h-4 w-4" />
+              Share
+            </span>
+            <span className="text-white/90">button</span>
+          </div>
+
+          <div className="mt-2 flex items-center gap-2 text-sm">
+            <span className="text-white/80">2.</span>
+            <span className="text-white/90">Choose</span>
+            <span className="inline-flex items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-xs font-medium">
+              <Plus className="h-4 w-4" />
+              Add to Home Screen
+            </span>
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (!deferredPrompt) {
-    return null;
-  }
+  if (!deferredPrompt) return null;
 
   return (
     <button
       onClick={handleInstallClick}
-      disabled={!deferredPrompt}
-      className="fixed bottom-4 right-4 z-50 rounded-xl bg-blue-600 px-4 py-2 text-white shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+      className="fixed bottom-4 right-4 z-50 rounded-xl bg-blue-600 px-4 py-2 text-white shadow-lg transition hover:bg-blue-500"
     >
-      {" "}
-      {deferredPrompt ? "Install App" : "Install not available yet"}{" "}
+      Install App
     </button>
   );
 }
