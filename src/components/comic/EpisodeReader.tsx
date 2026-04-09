@@ -11,6 +11,7 @@ import {
   FileImage,
   Heart,
   MessageCircle,
+  ArrowLeft,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -145,13 +146,7 @@ export default function EpisodeReader({
                 size="icon"
                 className="h-9 w-9 rounded-full text-white hover:bg-white/10 hover:text-white sm:h-10 sm:w-10"
               >
-                <Image
-                  src="/icons/Arrow.png"
-                  alt="Back"
-                  className="rotate-180"
-                  width={24}
-                  height={24}
-                />
+                <ArrowLeft className="size-6" />
               </Button>
             </Link>
           </div>
@@ -375,11 +370,11 @@ export default function EpisodeReader({
             </div>
           </div>
         ) : (
-          <div className="w-full space-y-3 sm:space-y-4">
+          <div className="w-full">
             {pages.map((page, index) => (
               <div
                 key={page.id}
-                className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-white/10 bg-white shadow-2xl sm:rounded-3xl"
+                className="mx-auto w-full max-w-3xl overflow-hidden  border border-white/10 bg-white shadow-2xl "
               >
                 <div className="relative w-full">
                   <Image
