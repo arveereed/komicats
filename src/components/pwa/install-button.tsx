@@ -1,56 +1,62 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Share, Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
-interface BeforeInstallPromptEvent extends Event {
+type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
-  userChoice: Promise<{
-    outcome: "accepted" | "dismissed";
-    platform: string;
-  }>;
-}
+  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+};
+
+type NavigatorWithStandalone = Navigator & { standalone?: boolean };
 
 export default function InstallButton() {
-  const [deferredPrompt, setDeferredPrompt] =
+  const [promptEvent, setPromptEvent] =
     useState<BeforeInstallPromptEvent | null>(null);
-  const [installed, setInstalled] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
-  const [isSafari, setIsSafari] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+
+  const isAndroid = useMemo(() => {
+    if (typeof navigator === "undefined") return false;
+    return /Android/i.test(navigator.userAgent);
+  }, []);
+
+  const isIOS = useMemo(() => {
+    if (typeof navigator === "undefined") return false;
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }, []);
 
   useEffect(() => {
-    const ua = window.navigator.userAgent;
-    const ios = /iPhone|iPad|iPod/i.test(ua);
-    const safari =
-      /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|mercury/i.test(ua);
+    const mediaQuery = window.matchMedia("(display-mode: standalone)");
 
-    setIsIOS(ios);
-    setIsSafari(safari);
+    const checkInstalled = () => {
+      const standalone =
+        mediaQuery.matches ||
+        (window.navigator as NavigatorWithStandalone).standalone === true;
 
-    const isStandalone = window.matchMedia(
-      "(display-mode: standalone)",
-    ).matches;
-    const iosStandalone =
-      "standalone" in window.navigator &&
-      (window.navigator as Navigator & { standalone?: boolean }).standalone;
+      setIsInstalled(standalone);
 
-    if (isStandalone || iosStandalone) {
-      setInstalled(true);
-    }
+      if (standalone) {
+        setPromptEvent(null);
+        setShowHelp(false);
+      }
+    };
 
-    const handleBeforeInstallPrompt = (event: Event) => {
-      event.preventDefault();
-      setDeferredPrompt(event as BeforeInstallPromptEvent);
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setPromptEvent(e as BeforeInstallPromptEvent);
     };
 
     const handleAppInstalled = () => {
-      setInstalled(true);
-      setDeferredPrompt(null);
+      setIsInstalled(true);
+      setPromptEvent(null);
+      setShowHelp(false);
     };
+
+    checkInstalled();
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     window.addEventListener("appinstalled", handleAppInstalled);
+    mediaQuery.addEventListener("change", checkInstalled);
 
     return () => {
       window.removeEventListener(
@@ -58,76 +64,67 @@ export default function InstallButton() {
         handleBeforeInstallPrompt,
       );
       window.removeEventListener("appinstalled", handleAppInstalled);
+      mediaQuery.removeEventListener("change", checkInstalled);
     };
   }, []);
 
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
+  const onInstall = async () => {
+    if (promptEvent) {
+      await promptEvent.prompt();
+      const choice = await promptEvent.userChoice;
 
-    await deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
+      setPromptEvent(null);
 
-    if (choice.outcome === "accepted") {
-      setInstalled(true);
-      setDeferredPrompt(null);
+      if (choice.outcome === "accepted") {
+        setIsInstalled(true);
+      }
+
+      return;
+    }
+
+    if (isAndroid || isIOS) {
+      setShowHelp((prev) => !prev);
     }
   };
 
-  if (installed || dismissed) return null;
+  if (isInstalled) return null;
 
-  if (isIOS && isSafari) {
-    return (
-      <div className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-sm rounded-2xl border border-white/10 bg-neutral-950/95 p-4 text-white shadow-2xl backdrop-blur">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold">Install Komicats</p>
-            <p className="mt-1 text-sm text-white/70">
-              Add this app to your Home Screen for a full-screen experience.
-            </p>
-          </div>
+  const canPrompt = !!promptEvent;
+  const shouldShowButton = canPrompt || isAndroid || isIOS;
 
-          <button
-            type="button"
-            onClick={() => setDismissed(true)}
-            className="rounded-md px-2 py-1 text-white/50 hover:bg-white/10 hover:text-white"
-            aria-label="Dismiss install hint"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="mt-3 rounded-xl bg-white/5 p-3">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-white/80">1.</span>
-            <span className="text-white/90">Tap the</span>
-            <span className="inline-flex items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-xs font-medium">
-              <Share className="h-4 w-4" />
-              Share
-            </span>
-            <span className="text-white/90">button</span>
-          </div>
-
-          <div className="mt-2 flex items-center gap-2 text-sm">
-            <span className="text-white/80">2.</span>
-            <span className="text-white/90">Choose</span>
-            <span className="inline-flex items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-xs font-medium">
-              <Plus className="h-4 w-4" />
-              Add to Home Screen
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!deferredPrompt) return null;
+  if (!shouldShowButton) return null;
 
   return (
-    <button
-      onClick={handleInstallClick}
-      className="fixed bottom-4 right-4 z-50 rounded-xl bg-blue-600 px-4 py-2 text-white shadow-lg transition hover:bg-blue-500"
-    >
-      Install App
-    </button>
+    <div className="fixed bottom-4 right-4 z-50 flex max-w-xs flex-col items-end gap-2">
+      {showHelp && !canPrompt && isAndroid && (
+        <div className="rounded-xl bg-black px-4 py-3 text-xs text-white shadow-lg">
+          <div className="font-semibold">Install on Android</div>
+          <div className="mt-1">
+            Open this site in Chrome, tap the menu{" "}
+            <span className="font-semibold">⋮</span> then choose{" "}
+            <span className="font-semibold">Install app</span> or{" "}
+            <span className="font-semibold">Add to Home screen</span>.
+          </div>
+        </div>
+      )}
+
+      {showHelp && !canPrompt && isIOS && (
+        <div className="rounded-xl bg-black px-4 py-3 text-xs text-white shadow-lg">
+          <div className="font-semibold">Install on iPhone</div>
+          <div className="mt-1">
+            Open this site in Safari, tap the{" "}
+            <span className="font-semibold">Share</span> button, then choose{" "}
+            <span className="font-semibold">Add to Home Screen</span>.
+          </div>
+        </div>
+      )}
+
+      <button
+        onClick={onInstall}
+        className="cursor-pointer rounded-full bg-blue-600 px-5 py-3 text-white shadow-lg hover:bg-blue-700"
+      >
+        {canPrompt ? "Install App" : "How to Install"}
+      </button>
+    </div>
   );
 }
