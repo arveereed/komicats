@@ -6,6 +6,7 @@ import { AlertCircle, Eye, EyeOff, XCircle, Facebook } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Loading from "./loading";
 
 const REMEMBER_ME_KEY = "komicats_remember_me";
 const REMEMBERED_EMAIL_KEY = "komicats_remembered_email";
@@ -51,11 +52,7 @@ export default function SigninForm() {
   }, []);
 
   if (!userLoaded || !isLoaded) {
-    return (
-      <div className="flex min-h-svh items-center justify-center px-4 text-sm text-white/70">
-        Loading...
-      </div>
-    );
+    return Loading();
   }
 
   const persistRememberMe = () => {

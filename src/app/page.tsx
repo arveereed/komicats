@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import PostCard from "@/components/PostCard";
 import InstallButton from "@/components/pwa/install-button";
+import Loading from "./loading";
 
 const MOCK_POSTS = [
   {
@@ -40,7 +41,7 @@ export default function AnimeBlog() {
   }, [userLoaded, isSignedIn, router]);
 
   // Rest of your component logic...
-  if (!userLoaded || !isLoaded) return <div>Loading...</div>;
+  if (!userLoaded || !isLoaded) return Loading();
 
   return (
     <main className="relative min-h-screen w-full bg-black overflow-hidden font-sans">

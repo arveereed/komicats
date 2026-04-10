@@ -8,15 +8,16 @@ export default function Loading() {
       <div className="relative flex items-center justify-center">
         <div className="absolute h-20 w-20 animate-pulse rounded-full bg-cyan-500/20 blur-2xl" />
 
-        {/* Spinner */}
-        <div>
-          <span className="loading loading-dots text-green-600 loading-xl"></span>
-        </div>
+        {/* The Spinner */}
+        <Loader2
+          className="size-12 animate-spin text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]"
+          strokeWidth={1.5}
+        />
       </div>
 
       {/* Subtle Text */}
       <p className="mt-4 text-sm font-medium tracking-widest text-cyan-100/60 uppercase animate-pulse">
-        Loading Komicats, please wait a moment
+        Loading Komicats
       </p>
     </div>
   );

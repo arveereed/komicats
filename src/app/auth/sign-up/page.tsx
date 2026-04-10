@@ -7,6 +7,7 @@ import VerifyEmailUI from "../components/VerifyEmailUI";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
+import Loading from "./loading";
 
 export default function SignupForm() {
   const router = useRouter();
@@ -38,11 +39,7 @@ export default function SignupForm() {
   }, [userLoaded, isSignedIn, router]);
 
   if (!userLoaded || !isLoaded) {
-    return (
-      <div className="flex min-h-svh items-center justify-center px-4 text-sm text-white/70">
-        Loading...
-      </div>
-    );
+    return Loading();
   }
 
   const onSignUpPress = async () => {
