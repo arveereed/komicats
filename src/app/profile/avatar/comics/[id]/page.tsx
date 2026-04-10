@@ -7,6 +7,7 @@ import { getComicById } from "@/actions/comic.action";
 import { LockedEpisodeCard } from "@/components/comic/locked-episode-card";
 import { Button } from "@/components/ui/button";
 import { EpisodeRowCard } from "@/components/comic/EpisodeRowCard";
+import { ComicDownloadButton } from "@/components/comic/ComicDownloadButton";
 
 type PageProps = {
   params: Promise<{
@@ -96,6 +97,16 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                     Read
                   </Button>
                 )}
+
+                <ComicDownloadButton
+                  comicTitle={comic.title}
+                  episodes={comic.episodes.map((episode) => ({
+                    title: episode.title,
+                    images: episode.images.map((image) => ({
+                      imageUrl: image.imageUrl,
+                    })),
+                  }))}
+                />
               </div>
               <p className="mt-6 max-w-5xl text-base leading-8 text-white/90 sm:text-lg">
                 {comic.description?.trim() ||
