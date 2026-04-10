@@ -73,7 +73,7 @@ export default function DesktopNavbar({
     : "/profile/avatar";
 
   const navLinkClass = (active: boolean) =>
-    `relative text-[15px] font-medium transition-colors ${
+    `relative text-[15px] font-medium shrink-0 transition-colors ${
       active ? "text-teal-300" : "text-white/75 hover:text-white"
     }`;
 
@@ -142,7 +142,7 @@ export default function DesktopNavbar({
                 pathname.includes("/profile/avatar/my-coins"),
               )}
             >
-              My Coins
+              Games
               {pathname.includes("/profile/avatar/my-coins") && (
                 <span className="absolute -bottom-1 left-0 h-px w-full bg-teal-300" />
               )}
@@ -154,13 +154,13 @@ export default function DesktopNavbar({
                 pathname.includes("/profile/avatar/shop"),
               )}
             >
-              Shop
+              My Coins
               {pathname.includes("/profile/avatar/shop") && (
                 <span className="absolute -bottom-1 left-0 h-px w-full bg-teal-300" />
               )}
             </Link>
 
-            <Link
+            {/* <Link
               href="/profile/avatar/downloads"
               className={navLinkClass(
                 pathname.includes("/profile/avatar/downloads"),
@@ -170,7 +170,7 @@ export default function DesktopNavbar({
               {pathname.includes("/profile/avatar/downloads") && (
                 <span className="absolute -bottom-1 left-0 h-px w-full bg-teal-300" />
               )}
-            </Link>
+            </Link> */}
           </div>
         )}
       </div>
@@ -187,7 +187,7 @@ export default function DesktopNavbar({
           <div className="flex items-center gap-3">
             <div className="ml-2 flex items-center space-x-4">
               {/* Search */}
-              <div className="flex h-12 w-[360px] items-center rounded-md bg-[#35535b] px-4">
+              <div className="flex  h-12 w-[360px] items-center rounded-md bg-[#35535b] px-4">
                 <Search className="mr-3 h-5 w-5 text-white/80" />
                 <Input
                   value={searchQuery}
@@ -216,7 +216,7 @@ export default function DesktopNavbar({
                   src="/icons/notif.png"
                 />
                 {notificationsCount > 0 && (
-                  <Badge className="absolute -right-2.5 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-300 px-1 text-[10px] text-slate-950">
+                  <Badge className="absolute -right-2.5 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-60000 px-1 text-[10px] text-slate-950">
                     {notificationsCount}
                   </Badge>
                 )}

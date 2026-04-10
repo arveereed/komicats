@@ -1,11 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BookOpen, ChevronLeft, Lock } from "lucide-react";
+import { BookOpen, ChevronLeft } from "lucide-react";
 
 import { getComicById } from "@/actions/comic.action";
-import { Button } from "@/components/ui/button";
 import { LockedEpisodeCard } from "@/components/comic/locked-episode-card";
+import { Button } from "@/components/ui/button";
+import { EpisodeRowCard } from "@/components/comic/EpisodeRowCard";
 
 type PageProps = {
   params: Promise<{
@@ -120,63 +121,6 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                       episodeNumber > FREE_EPISODE_LIMIT && !isUnlocked;
                     const episodeHref = `/profile/avatar/comics/${comic.id}/episode/${episode.id}`;
 
-                    const content = (
-                      <div className="group flex items-start gap-4 rounded-2xl p-2 transition hover:bg-white/5">
-                        <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-white/10 sm:h-28 sm:w-24">
-                          {previewImage ? (
-                            <>
-                              <Image
-                                src={previewImage}
-                                alt={episode.title}
-                                fill
-                                className={`object-cover transition duration-300 group-hover:scale-105 ${
-                                  isLocked ? "blur-[1px] brightness-50" : ""
-                                }`}
-                              />
-
-                              {isLocked && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/35">
-                                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black/60 ring-1 ring-white/20">
-                                    <Lock className="h-5 w-5 text-white" />
-                                  </div>
-                                </div>
-                              )}
-                            </>
-                          ) : (
-                            <div className="flex h-full items-center justify-center text-xs text-white/50">
-                              No image
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="min-w-0 flex-1 pt-1">
-                          <h3 className="line-clamp-1 text-xl font-semibold text-white">
-                            {episodeNumber}. {episode.title}
-                          </h3>
-
-                          <p className="mt-2 line-clamp-2 text-base leading-7 text-white/85">
-                            {isLocked
-                              ? "Unlock this episode by purchasing this comic."
-                              : episode.description ||
-                                "No description available."}
-                          </p>
-
-                          <div className="mt-2 flex items-center gap-3 text-sm text-white/55">
-                            <span>
-                              {episode.images?.length || 0} page
-                              {(episode.images?.length || 0) > 1 ? "s" : ""}
-                            </span>
-
-                            {isLocked && (
-                              <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-white/80">
-                                Locked
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-
                     if (isLocked) {
                       return (
                         <LockedEpisodeCard
@@ -192,13 +136,19 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                     }
 
                     return (
-                      <Link
+                      <EpisodeRowCard
                         key={episode.id}
                         href={episodeHref}
-                        className="block"
-                      >
-                        {content}
-                      </Link>
+                        title={`${episodeNumber}. ${episode.title}`}
+                        description={
+                          episode.description || "No description available."
+                        }
+                        imageUrl={previewImage}
+                        pages={episode.images?.length || 0}
+                        downloadImages={episode.images.map(
+                          (image) => image.imageUrl,
+                        )}
+                      />
                     );
                   })
                 )}
