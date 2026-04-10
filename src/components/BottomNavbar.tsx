@@ -50,10 +50,14 @@ export default function BottomNav({
     pathname.includes("/profile/avatar/downloads");
 
   const inGamePath = pathname.includes("/profile/avatar/my-coins/game");
+  const isOnRead =
+    pathname !== "/profile/avatar/downloads" &&
+    pathname.startsWith("/profile/avatar/downloads/");
 
   const isInstalledApp = useIsInstalledApp();
 
   if (!isInstalledApp || inGamePath) return null;
+  if (isOnRead) return null;
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 md:hidden border-t border-white/10 bg-black/95 backdrop-blur">

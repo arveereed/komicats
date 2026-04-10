@@ -10,7 +10,7 @@ export async function generateMetadata() {
 export default function DownloadsPage() {
   return (
     <div className="relative pb-24 z-10 max-w-7xl mx-auto px-4 py-8">
-      <DownloadsPageComponent />;
+      <DownloadsPageComponent />
     </div>
   );
 }

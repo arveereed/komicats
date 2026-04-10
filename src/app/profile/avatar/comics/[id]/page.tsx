@@ -8,6 +8,7 @@ import { LockedEpisodeCard } from "@/components/comic/locked-episode-card";
 import { Button } from "@/components/ui/button";
 import { EpisodeRowCard } from "@/components/comic/EpisodeRowCard";
 import { ComicDownloadButton } from "@/components/comic/ComicDownloadButton";
+import { DownloadForOfflineButton } from "@/components/comic/DownloadForOfflineButton";
 
 type PageProps = {
   params: Promise<{
@@ -106,6 +107,34 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                       imageUrl: image.imageUrl,
                     })),
                   }))}
+                />
+
+                <DownloadForOfflineButton
+                  comic={{
+                    id: comic.id,
+                    title: comic.title,
+                    description: comic.description,
+                    thumbnail: comic.thumbnail ?? null,
+                    createdAt: comic.createdAt.toISOString(),
+                    episodes: comic.episodes
+                      .filter((_, index) => {
+                        const episodeNumber = index + 1;
+                        const isLocked =
+                          episodeNumber > FREE_EPISODE_LIMIT && !isUnlocked;
+                        return !isLocked;
+                      })
+                      .map((episode) => ({
+                        id: episode.id,
+                        title: episode.title,
+                        description: episode.description,
+                        order: episode.order,
+                        images: episode.images.map((image) => ({
+                          id: image.id,
+                          imageUrl: image.imageUrl,
+                          order: image.order,
+                        })),
+                      })),
+                  }}
                 />
               </div>
               <p className="mt-6 max-w-5xl text-base leading-8 text-white/90 sm:text-lg">

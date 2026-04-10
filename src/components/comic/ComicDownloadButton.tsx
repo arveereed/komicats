@@ -1,5 +1,6 @@
 "use client";
 
+import { useIsInstalledApp } from "@/hooks/useIsInstalledApp";
 import JSZip from "jszip";
 import Image from "next/image";
 
@@ -83,15 +84,21 @@ export function ComicDownloadButton({
     }
   };
 
+  const isInstalledApp = useIsInstalledApp();
+
   return (
-    <button
-      type="button"
-      onClick={handleDownload}
-      disabled={!episodes.some((episode) => episode.images.length > 0)}
-      className="flex h-12 w-full items-center justify-center gap-3 rounded-md bg-[#3a555d] text-base font-semibold text-white transition hover:bg-[#45636c] disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      <Image src="/icons/dl.png" alt="Download" width={20} height={20} />
-      <span>Download</span>
-    </button>
+    <>
+      {!isInstalledApp && (
+        <button
+          type="button"
+          onClick={handleDownload}
+          disabled={!episodes.some((episode) => episode.images.length > 0)}
+          className="flex h-12 w-full items-center justify-center gap-3 rounded-md bg-[#3a555d] text-base font-semibold text-white transition hover:bg-[#45636c] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Image src="/icons/dl.png" alt="Download" width={20} height={20} />
+          <span>Download</span>
+        </button>
+      )}
+    </>
   );
 }

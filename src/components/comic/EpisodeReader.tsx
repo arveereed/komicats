@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { useUser } from "@clerk/nextjs";
 import { toggleLike } from "@/actions/like.action";
+import { useIsInstalledApp } from "@/hooks/useIsInstalledApp";
 
 type EpisodeImage = {
   id: string;
@@ -129,6 +130,8 @@ export default function EpisodeReader({
     });
   }
 
+  const isInstalledApp = useIsInstalledApp();
+
   return (
     <section className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white">
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-xl">
@@ -138,7 +141,9 @@ export default function EpisodeReader({
               href={
                 isAdmin
                   ? `/admin/comics/${comicId}`
-                  : `/profile/avatar/comics/${comicId}`
+                  : isInstalledApp
+                    ? `/profile/avatar/downloads/${comicId}`
+                    : `/profile/avatar/comics/${comicId}`
               }
             >
               <Button
@@ -201,7 +206,9 @@ export default function EpisodeReader({
                           href={
                             isAdmin
                               ? `/admin/comics/${comicId}/episode/${episode.id}`
-                              : `/profile/avatar/comics/${comicId}/episode/${episode.id}`
+                              : isInstalledApp
+                                ? `/profile/avatar/downloads/${comicId}/episode/${episode.id}`
+                                : `/profile/avatar/comics/${comicId}/episode/${episode.id}`
                           }
                           onClick={() => setEpisodesOpen(false)}
                           className={`block rounded-2xl border p-4 transition ${
