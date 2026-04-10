@@ -54,7 +54,7 @@ export default function ShopComponent({
   referenceNumber,
 }: Props) {
   return (
-    <section className="relative min-h-screen overflow-hidden px-4 py-6 sm:px-6 lg:px-8">
+    <section className="relative pb-24 min-h-screen overflow-hidden px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-8">
         <PaymentStatusBanner
           status={paymentStatus}

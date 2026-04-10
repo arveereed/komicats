@@ -38,6 +38,9 @@ export default function ProfileSelection() {
   const [manageOpen, setManageOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [newName, setNewName] = useState("");
+  const [switchingProfileId, setSwitchingProfileId] = useState<string | null>(
+    null,
+  );
 
   const { isSignedIn, isLoaded: userLoaded, user: clerkUser } = useUser();
 
@@ -65,8 +68,19 @@ export default function ProfileSelection() {
   }, []);
 
   const handleSelect = async (profileId: string) => {
-    await setActiveProfile(profileId);
+    setSwitchingProfileId(profileId);
     router.replace("/profile/avatar/home");
+
+    try {
+      await setActiveProfile(profileId);
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to set active profile:", error);
+      router.replace("/profile/avatar");
+      router.refresh();
+    } finally {
+      setSwitchingProfileId(null);
+    }
   };
 
   const handleAddProfile = async () => {
@@ -105,7 +119,7 @@ export default function ProfileSelection() {
     }
   };
 
-  if (isLoading)
+  if (isLoading && !userLoaded)
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Loader2 className="animate-spin" />
@@ -125,7 +139,8 @@ export default function ProfileSelection() {
             >
               <button
                 onClick={() => handleSelect(profile.id)}
-                className="relative w-32 h-32 md:w-40 md:h-40 rounded-md overflow-hidden ring-offset-4 ring-offset-black transition-all hover:ring-2 hover:ring-white"
+                disabled={switchingProfileId === profile.id}
+                className="relative h-32 w-32 overflow-hidden rounded-md ring-offset-4 ring-offset-black transition-all hover:ring-2 hover:ring-white disabled:opacity-70 md:h-40 md:w-40"
               >
                 <Image
                   src={profile.image}
@@ -134,6 +149,11 @@ export default function ProfileSelection() {
                   unoptimized
                   className="object-cover"
                 />
+                {switchingProfileId === profile.id && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/45">
+                    <Loader2 className="h-6 w-6 animate-spin text-white" />
+                  </div>
+                )}
               </button>
               <span className="text-lg text-zinc-400 group-hover:text-white">
                 {profile.name}

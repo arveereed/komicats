@@ -114,7 +114,7 @@ export default function DesktopNavbar({
 
   return (
     <div className="hidden items-center justify-between md:flex">
-      <div className="flex h-16 items-center gap-10">
+      <div className="flex h-16 items-center gap-10 ">
         {isProfileAvatarSetting ? (
           <Button
             asChild
@@ -132,7 +132,7 @@ export default function DesktopNavbar({
         ) : (
           <Link
             href={isSignedIn && user ? profileHref : "/"}
-            className="hidden font-mono text-xl font-bold tracking-wider text-white md:flex"
+            className="hidden shrink-0 font-mono text-xl font-bold tracking-wider text-white md:flex"
           >
             <Image
               src="/icons/logo.png"
@@ -144,7 +144,7 @@ export default function DesktopNavbar({
         )}
 
         {isProfileAvatarPath && (
-          <div className="hidden items-center gap-8 md:flex">
+          <div className="hidden mr-10 items-center gap-8 md:flex">
             <Link
               href="/profile/avatar/my-coins"
               className={navLinkClass(

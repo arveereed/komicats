@@ -33,7 +33,7 @@ export default async function Navbar() {
               user={user}
               notificationsCount={notificationsCount}
             />
-            {/* <MobileNavbar user={user} notificationsCount={notificationsCount} /> */}
+            <MobileNavbar user={user} notificationsCount={notificationsCount} />
           </>
         )}
       </div>

@@ -60,7 +60,7 @@ export default async function RootLayout({
             >
               {isAdmin ? <AdminBackgroundDecor /> : <BackgroundDecor />}
 
-              <div className="relative z-10 min-h-screen pb-20">
+              <div className="relative z-10 min-h-screen ">
                 <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center -bottom-12 -left-[700px]">
                   <Image
                     src="/icons/bg-logo.png"
