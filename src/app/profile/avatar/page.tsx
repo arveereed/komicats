@@ -124,7 +124,7 @@ export default function ProfileSelection() {
               className="group flex flex-col items-center gap-4"
             >
               <button
-                onClick={() => handleSelect(profile.id, profile.name)}
+                onClick={() => handleSelect(profile.id)}
                 className="relative w-32 h-32 md:w-40 md:h-40 rounded-md overflow-hidden ring-offset-4 ring-offset-black transition-all hover:ring-2 hover:ring-white"
               >
                 <Image
