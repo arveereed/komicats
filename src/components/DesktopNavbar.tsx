@@ -27,6 +27,7 @@ import {
   getUnreadNotificationCount,
   markAllNotificationsAsRead,
 } from "@/actions/notification.action";
+import { clearActiveProfile } from "@/actions/profile.action";
 
 type SyncedUserType = Awaited<ReturnType<typeof syncUser>>;
 type NotificationCount = Awaited<ReturnType<typeof getUnreadNotificationCount>>;
@@ -94,11 +95,19 @@ export default function DesktopNavbar({
   const isOnRead = pathname.includes("/profile/avatar/comics");
 
   const [openSwitchDialog, setOpenSwitchDialog] = useState(false);
+  const [isSwitching, setIsSwitching] = useState(false);
 
-  const handleConfirmSwitchUser = () => {
-    setOpenSwitchDialog(false);
-    localStorage.removeItem("komicats_active_profile");
-    router.push("/profile/avatar");
+  const handleConfirmSwitchUser = async () => {
+    try {
+      setIsSwitching(true);
+      setOpenSwitchDialog(false);
+      await clearActiveProfile();
+      router.push("/profile/avatar");
+    } catch (error) {
+      console.error("Failed to switch profile:", error);
+    } finally {
+      setIsSwitching(false);
+    }
   };
 
   if (isOnRead || inGamePath) return null;
@@ -273,9 +282,17 @@ export default function DesktopNavbar({
 
                         <AlertDialogAction
                           onClick={handleConfirmSwitchUser}
-                          className="rounded-xl border border-cyan-300/20 bg-gradient-to-r from-[#5699a0] via-[#48757e] to-[#2f5c63] text-white hover:opacity-90"
+                          disabled={isSwitching}
+                          className="rounded-xl border border-cyan-300/20 bg-gradient-to-r from-[#5699a0] via-[#48757e] to-[#2f5c63] text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                          Continue
+                          {isSwitching ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Switching...
+                            </>
+                          ) : (
+                            "Continue"
+                          )}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </div>

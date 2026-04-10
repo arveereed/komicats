@@ -14,6 +14,56 @@ export async function getProfiles() {
   });
 }
 
+export async function getActiveProfileId() {
+  const { userId } = await auth();
+  if (!userId) return null;
+
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    select: { activeProfileId: true },
+  });
+
+  return user?.activeProfileId ?? null;
+}
+
+export async function setActiveProfile(profileId: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const profile = await prisma.profile.findFirst({
+    where: {
+      id: profileId,
+      userId,
+    },
+    select: { id: true },
+  });
+
+  if (!profile) {
+    throw new Error("Profile not found");
+  }
+
+  await prisma.user.update({
+    where: { clerkId: userId },
+    data: { activeProfileId: profileId },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/profile/avatar");
+}
+
+export async function clearActiveProfile() {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  await prisma.user.update({
+    where: { clerkId: userId },
+    data: { activeProfileId: null },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/profile/avatar");
+}
+
 export async function createProfile(name: string, image: string) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");

@@ -7,6 +7,7 @@ import {
   getNotifications,
   getUnreadNotificationCount,
 } from "@/actions/notification.action";
+import BottomNav from "./BottomNavbar";
 
 export default async function Navbar() {
   const clerkUser = await currentUser();
@@ -32,7 +33,7 @@ export default async function Navbar() {
               user={user}
               notificationsCount={notificationsCount}
             />
-            <MobileNavbar user={user} notificationsCount={notificationsCount} />
+            {/* <MobileNavbar user={user} notificationsCount={notificationsCount} /> */}
           </>
         )}
       </div>

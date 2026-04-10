@@ -141,27 +141,10 @@ function StatCard({
 
 function MissionGrid() {
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-sm uppercase tracking-[0.2em] text-white/45">
-            Missions
-          </p>
-          <h2 className="text-2xl font-semibold tracking-tight text-white">
-            Earn more coins
-          </h2>
-        </div>
-
-        <p className="text-sm text-white/55">
-          Complete missions to unlock extra rewards.
-        </p>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        {missions.map((mission) => (
-          <MissionCard key={mission.id} mission={mission} />
-        ))}
-      </div>
+    <div className="grid gap-6 lg:grid-cols-2">
+      {missions.map((mission) => (
+        <MissionCard key={mission.id} mission={mission} />
+      ))}
     </div>
   );
 }

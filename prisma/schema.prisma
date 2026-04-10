@@ -17,6 +17,10 @@ model User {
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
+  activeProfileId String?
+  activeProfile   Profile?  @relation("ActiveProfile", fields: [activeProfileId], references: [id], onDelete: SetNull)
+
+
   profiles      Profile[]
   comics        Comic[]
   purchases     CoinPurchase[]
@@ -75,6 +79,8 @@ model Profile {
   userId    String
   user      User     @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
   createdAt DateTime @default(now())
+
+  activeForUsers User[] @relation("ActiveProfile")
 }
 
 model Comic {

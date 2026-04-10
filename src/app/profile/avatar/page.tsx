@@ -18,6 +18,7 @@ import {
   getProfiles,
   createProfile,
   deleteProfile,
+  setActiveProfile,
 } from "@/actions/profile.action";
 import { ProfileListItem } from "@/components/ProfileListItem";
 import { useUser } from "@clerk/nextjs";
@@ -63,10 +64,9 @@ export default function ProfileSelection() {
     load();
   }, []);
 
-  const handleSelect = (profileId: string, name: string) => {
-    // We still use localStorage to track which specific profile is "active" in the browser
-    localStorage.setItem("komicats_active_profile", profileId);
-    router.replace(`/profile/avatar/home`);
+  const handleSelect = async (profileId: string) => {
+    await setActiveProfile(profileId);
+    router.replace("/profile/avatar/home");
   };
 
   const handleAddProfile = async () => {

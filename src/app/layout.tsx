@@ -7,6 +7,9 @@ import { currentUser } from "@clerk/nextjs/server";
 import { Toaster } from "sonner";
 import Image from "next/image";
 import PWARegister from "@/components/pwa/PWARegister";
+import BottomNav from "@/components/BottomNavbar";
+import { getProfiles } from "@/actions/profile.action";
+import { syncUser } from "@/actions/user.action";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +37,11 @@ export default async function RootLayout({
   const isAdmin =
     !!adminEmail && clerkUser?.emailAddresses[0]?.emailAddress === adminEmail;
 
+  const profiles = await getProfiles();
+
+  const user = await syncUser();
+  const activeProfileId = user?.activeProfileId ?? null;
+
   return (
     <ClerkProvider>
       <html lang="en">
@@ -52,7 +60,7 @@ export default async function RootLayout({
             >
               {isAdmin ? <AdminBackgroundDecor /> : <BackgroundDecor />}
 
-              <div className="relative z-10 min-h-screen">
+              <div className="relative z-10 min-h-screen pb-20">
                 <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center -bottom-12 -left-[700px]">
                   <Image
                     src="/icons/bg-logo.png"
@@ -65,6 +73,10 @@ export default async function RootLayout({
 
                 <PWARegister />
                 {children}
+                <BottomNav
+                  profiles={profiles}
+                  activeProfileId={activeProfileId}
+                />
               </div>
               <Toaster richColors position="top-right" />
             </main>
