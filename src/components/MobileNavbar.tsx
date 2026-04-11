@@ -7,6 +7,8 @@ import {
   Loader2,
   MenuIcon,
   Search,
+  Settings,
+  Settings2,
   UserCircle2,
   UserIcon,
 } from "lucide-react";
@@ -400,18 +402,16 @@ function MobileNavbar({
               href="/profile/avatar/profile"
               className="inline-flex items-center gap-2"
             >
-              <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-              <span>Back</span>
+              <ArrowLeft className="size-6 text-white transition-transform group-hover:-translate-x-0.5" />
+              <span className="text-base text-white">Back</span>
             </Link>
           </Button>
         )}
         {isLoaded && isSignedIn && user && isProfileAvatarSetting && (
-          <Avatar className="h-9 w-9 rounded-full ring-1 ring-white/10">
-            <AvatarImage src={"profileImage"} alt={"profileName"} />
-            <AvatarFallback className="rounded-lg bg-white/10 text-white">
-              <UserCircle2 className="h-4 w-4" />
-            </AvatarFallback>
-          </Avatar>
+          <div className="flex items-center gap-3">
+            <span className="text-base">Settings</span>
+            <Settings />
+          </div>
         )}
         {isLoaded && !isSignedIn && (
           <div className="space-x-4">
