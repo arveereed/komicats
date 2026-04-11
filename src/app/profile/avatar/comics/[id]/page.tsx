@@ -8,7 +8,6 @@ import { LockedEpisodeCard } from "@/components/comic/locked-episode-card";
 import { Button } from "@/components/ui/button";
 import { EpisodeRowCard } from "@/components/comic/EpisodeRowCard";
 import { ComicDownloadButton } from "@/components/comic/ComicDownloadButton";
-import { DownloadForOfflineButton } from "@/components/comic/DownloadForOfflineButton";
 
 type PageProps = {
   params: Promise<{
