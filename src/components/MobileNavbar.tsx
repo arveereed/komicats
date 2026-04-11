@@ -43,6 +43,7 @@ import {
   markAllNotificationsAsRead,
 } from "@/actions/notification.action";
 import { useIsInstalledApp } from "@/hooks/useIsInstalledApp";
+import { clearActiveProfile } from "@/actions/profile.action";
 
 type SyncedUserType = Awaited<ReturnType<typeof syncUser>>;
 type NotificationCount = Awaited<ReturnType<typeof getUnreadNotificationCount>>;
@@ -109,11 +110,19 @@ function MobileNavbar({
   const isOnRead = pathname.includes("/profile/avatar/comics");
 
   const [openSwitchDialog, setOpenSwitchDialog] = useState(false);
+  const [isSwitching, setIsSwitching] = useState(false);
 
-  const handleConfirmSwitchUser = () => {
-    setOpenSwitchDialog(false);
-    localStorage.removeItem("komicats_active_profile");
-    router.push("/profile/avatar");
+  const handleConfirmSwitchUser = async () => {
+    try {
+      setIsSwitching(true);
+      setOpenSwitchDialog(false);
+      await clearActiveProfile();
+      router.push("/profile/avatar");
+    } catch (error) {
+      console.error("Failed to switch profile:", error);
+    } finally {
+      setIsSwitching(false);
+    }
   };
 
   if (isOnRead || inGamePath) return null;

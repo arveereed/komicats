@@ -1,5 +1,6 @@
 "use client";
 
+import { clearActiveProfile } from "@/actions/profile.action";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,10 +21,19 @@ export default function page() {
   const [openSwitchDialog, setOpenSwitchDialog] = useState(false);
   const router = useRouter();
 
-  const handleConfirmSwitchUser = () => {
-    setOpenSwitchDialog(false);
-    localStorage.removeItem("komicats_active_profile");
-    router.push("/profile/avatar");
+  const [isSwitching, setIsSwitching] = useState(false);
+
+  const handleConfirmSwitchUser = async () => {
+    try {
+      setIsSwitching(true);
+      setOpenSwitchDialog(false);
+      await clearActiveProfile();
+      router.push("/profile/avatar");
+    } catch (error) {
+      console.error("Failed to switch profile:", error);
+    } finally {
+      setIsSwitching(false);
+    }
   };
 
   return (
