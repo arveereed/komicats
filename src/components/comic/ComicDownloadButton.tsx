@@ -1,8 +1,8 @@
 "use client";
 
-import { useIsInstalledApp } from "@/hooks/useIsInstalledApp";
 import JSZip from "jszip";
 import Image from "next/image";
+import { useState } from "react";
 
 type ComicDownloadButtonProps = {
   comicTitle: string;
@@ -18,13 +18,15 @@ export function ComicDownloadButton({
   comicTitle,
   episodes,
 }: ComicDownloadButtonProps) {
+  const [loading, setLoading] = useState(false);
+
   const handleDownload = async () => {
     const downloadableEpisodes = episodes.filter(
       (episode) => episode.images.length > 0,
     );
 
     if (!downloadableEpisodes.length) return;
-
+    setLoading(true);
     try {
       const zip = new JSZip();
 
@@ -81,24 +83,29 @@ export function ComicDownloadButton({
       setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
     } catch (error) {
       console.error("DOWNLOAD_COMIC_IMAGES_ERROR", error);
+      setLoading(false);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const isInstalledApp = useIsInstalledApp();
-
   return (
-    <>
-      {!isInstalledApp && (
-        <button
-          type="button"
-          onClick={handleDownload}
-          disabled={!episodes.some((episode) => episode.images.length > 0)}
-          className="flex h-12 w-full items-center justify-center gap-3 rounded-md bg-[#3a555d] text-base font-semibold text-white transition hover:bg-[#45636c] disabled:cursor-not-allowed disabled:opacity-50"
-        >
+    <button
+      type="button"
+      onClick={handleDownload}
+      disabled={
+        !episodes.some((episode) => episode.images.length > 0) || loading
+      }
+      className="flex h-12 w-full items-center justify-center gap-3 rounded-md bg-[#3a555d] text-base font-semibold text-white transition hover:bg-[#45636c] disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {loading ? (
+        <span>Downloading...</span>
+      ) : (
+        <>
           <Image src="/icons/dl.png" alt="Download" width={20} height={20} />
           <span>Download</span>
-        </button>
+        </>
       )}
-    </>
+    </button>
   );
 }

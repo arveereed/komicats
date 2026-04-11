@@ -109,7 +109,7 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                   }))}
                 />
 
-                <DownloadForOfflineButton
+                {/* <DownloadForOfflineButton
                   comic={{
                     id: comic.id,
                     title: comic.title,
@@ -135,7 +135,7 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                         })),
                       })),
                   }}
-                />
+                /> */}
               </div>
               <p className="mt-6 max-w-5xl text-base leading-8 text-white/90 sm:text-lg">
                 {comic.description?.trim() ||

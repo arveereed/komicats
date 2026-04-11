@@ -17,7 +17,7 @@ const navItems = [
   { label: "Home", href: "/profile/avatar/profile", icon: Home },
   { label: "Shop", href: "/profile/avatar/shop", icon: ShoppingBag },
   { label: "Games", href: "/profile/avatar/my-coins", icon: Gamepad2 },
-  { label: "Downloads", href: "/profile/avatar/downloads", icon: Download },
+  // { label: "Downloads", href: "/profile/avatar/downloads", icon: Download },
 ];
 
 type Profiles = Awaited<
