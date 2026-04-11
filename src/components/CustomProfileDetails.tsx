@@ -5,7 +5,6 @@ import { useUser } from "@clerk/nextjs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Check,
-  Link2,
   Loader2,
   Mail,
   Pencil,
@@ -50,7 +49,7 @@ export default function CustomProfileDetails() {
   if (!isLoaded) {
     return (
       <div className="w-full max-w-3xl overflow-hidden rounded-3xl border border-white/10 bg-[#375055] text-white shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
-        <div className="flex items-center gap-2 px-6 py-6 text-sm text-white/70">
+        <div className="flex items-center gap-2 px-4 py-5 text-sm text-white/70 sm:px-6 sm:py-6">
           <Loader2 className="h-4 w-4 animate-spin" />
           Loading profile...
         </div>
@@ -279,9 +278,9 @@ export default function CustomProfileDetails() {
   };
 
   return (
-    <div className="w-full max-w-3xl overflow-hidden rounded-3xl border border-white/10 bg-[#375055] text-white shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
-      <div className="border-b border-white/10 bg-white/[0.03] px-6 py-5 backdrop-blur">
-        <h1 className="text-2xl font-semibold tracking-tight text-white">
+    <div className="w-full overflow-hidden rounded-3xl border border-white/10 bg-[#375055] text-white shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+      <div className="border-b border-white/10 bg-white/[0.03] px-4 py-5 backdrop-blur sm:px-6">
+        <h1 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
           Profile details
         </h1>
         <p className="mt-1 text-sm text-white/65">
@@ -297,7 +296,7 @@ export default function CustomProfileDetails() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="px-6 pt-4"
+            className="px-4 pt-4 sm:px-6"
           >
             {error ? (
               <div className="rounded-2xl border border-red-300/20 bg-red-400/10 px-4 py-3 text-sm text-red-100">
@@ -312,34 +311,34 @@ export default function CustomProfileDetails() {
         )}
       </AnimatePresence>
 
-      <section className="px-6 py-6">
+      <section className="px-4 py-5 sm:px-6 sm:py-6">
         <h2 className="mb-4 text-sm font-medium uppercase tracking-[0.12em] text-white/60">
           Profile
         </h2>
 
         <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16 ring-2 ring-white/10">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex min-w-0 items-center gap-4">
+              <Avatar className="h-14 w-14 shrink-0 ring-2 ring-white/10 sm:h-16 sm:w-16">
                 <AvatarImage
                   src={user.imageUrl}
                   alt={user.fullName || "User"}
                 />
                 <AvatarFallback className="bg-white/10 text-white">
-                  <UserCircle2 className="h-8 w-8" />
+                  <UserCircle2 className="h-7 w-7 sm:h-8 sm:w-8" />
                 </AvatarFallback>
               </Avatar>
 
-              <div>
-                <p className="text-base font-semibold text-white">
+              <div className="min-w-0">
+                <p className="truncate text-base font-semibold text-white">
                   {user.fullName || "Unnamed user"}
                 </p>
-                <p className="mt-1 text-sm text-white/70">{primaryEmail}</p>
+                <p className="truncate text-sm text-white/70">{primaryEmail}</p>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/15">
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
+              <label className="inline-flex w-full cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/15 sm:w-auto">
                 <input
                   type="file"
                   accept="image/*"
@@ -352,7 +351,7 @@ export default function CustomProfileDetails() {
               <button
                 type="button"
                 onClick={handleToggleEditName}
-                className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/90 transition hover:bg-white/10"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white/90 transition hover:bg-white/10 sm:w-auto"
               >
                 <motion.span
                   animate={{
@@ -388,21 +387,21 @@ export default function CustomProfileDetails() {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="First name"
-                    className="rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/40 focus:border-cyan-300/30 focus:bg-black/15"
+                    className="w-full rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/40 focus:border-cyan-300/30 focus:bg-black/15"
                   />
                   <input
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Last name"
-                    className="rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/40 focus:border-cyan-300/30 focus:bg-black/15"
+                    className="w-full rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/40 focus:border-cyan-300/30 focus:bg-black/15"
                   />
 
-                  <div className="flex gap-2 sm:col-span-2">
+                  <div className="flex flex-col gap-2 sm:col-span-2 sm:flex-row">
                     <button
                       type="button"
                       onClick={handleSaveName}
                       disabled={isSavingName}
-                      className="rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-[#375055] transition hover:opacity-90 disabled:opacity-70"
+                      className="w-full rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-[#375055] transition hover:opacity-90 disabled:opacity-70 sm:w-auto"
                     >
                       {isSavingName ? "Saving..." : "Save changes"}
                     </button>
@@ -410,7 +409,7 @@ export default function CustomProfileDetails() {
                     <button
                       type="button"
                       onClick={() => setShowEditName(false)}
-                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10"
+                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10 sm:w-auto"
                     >
                       Cancel
                     </button>
@@ -422,8 +421,8 @@ export default function CustomProfileDetails() {
         </div>
       </section>
 
-      <section className="border-t border-white/10 px-6 py-6">
-        <div className="mb-4 flex items-center justify-between">
+      <section className="border-t border-white/10 px-4 py-5 sm:px-6 sm:py-6">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-sm font-medium uppercase tracking-[0.12em] text-white/60">
             Email addresses
           </h2>
@@ -431,7 +430,7 @@ export default function CustomProfileDetails() {
           <button
             type="button"
             onClick={handleToggleAddEmail}
-            className="inline-flex items-center gap-2 rounded-xl border border-dashed border-white/15 bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-white/85 transition hover:bg-white/[0.06]"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-white/85 transition hover:bg-white/[0.06] sm:w-auto"
           >
             <motion.span
               animate={{
@@ -464,7 +463,7 @@ export default function CustomProfileDetails() {
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
                     placeholder="name@example.com"
-                    className="rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/40 focus:border-cyan-300/30 focus:bg-black/15"
+                    className="w-full rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/40 focus:border-cyan-300/30 focus:bg-black/15"
                   />
 
                   {!createdEmailId ? (
@@ -472,7 +471,7 @@ export default function CustomProfileDetails() {
                       type="button"
                       onClick={handleAddEmail}
                       disabled={isAddingEmail}
-                      className="w-fit rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-[#375055] transition hover:opacity-90 disabled:opacity-70"
+                      className="w-full rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-[#375055] transition hover:opacity-90 disabled:opacity-70 sm:w-fit"
                     >
                       {isAddingEmail
                         ? "Sending code..."
@@ -489,14 +488,14 @@ export default function CustomProfileDetails() {
                         value={verificationCode}
                         onChange={(e) => setVerificationCode(e.target.value)}
                         placeholder="Enter verification code"
-                        className="rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/40 focus:border-cyan-300/30 focus:bg-black/15"
+                        className="w-full rounded-xl border border-white/10 bg-black/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/40 focus:border-cyan-300/30 focus:bg-black/15"
                       />
 
                       <button
                         type="button"
                         onClick={handleVerifyEmail}
                         disabled={isVerifyingEmail}
-                        className="rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-[#375055] transition hover:opacity-90 disabled:opacity-70"
+                        className="w-full rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-[#375055] transition hover:opacity-90 disabled:opacity-70 sm:w-auto"
                       >
                         {isVerifyingEmail ? "Verifying..." : "Verify email"}
                       </button>
@@ -520,13 +519,13 @@ export default function CustomProfileDetails() {
                 key={email.id}
                 className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4 transition hover:bg-white/[0.06] sm:flex-row sm:items-center sm:justify-between"
               >
-                <div className="flex min-w-0 items-center gap-3">
+                <div className="flex min-w-0 items-start gap-3 sm:items-center">
                   <div className="rounded-xl bg-white/10 p-2">
                     <Mail className="h-4 w-4 text-cyan-200" />
                   </div>
 
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-white">
+                    <p className="break-all text-sm font-medium text-white sm:truncate">
                       {email.emailAddress}
                     </p>
 
@@ -550,13 +549,13 @@ export default function CustomProfileDetails() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
                   {!isPrimary && (
                     <button
                       type="button"
                       onClick={() => handleSetPrimary(email.id)}
                       disabled={settingPrimary || removingEmail}
-                      className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white transition hover:bg-white/10 disabled:opacity-70"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white transition hover:bg-white/10 disabled:opacity-70 sm:w-auto"
                     >
                       {settingPrimary ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -572,7 +571,7 @@ export default function CustomProfileDetails() {
                       type="button"
                       onClick={() => handleRemoveEmail(email.id)}
                       disabled={settingPrimary || removingEmail}
-                      className="inline-flex items-center gap-2 rounded-xl border border-red-300/20 bg-red-400/10 px-3 py-2 text-sm text-red-100 transition hover:bg-red-400/15 disabled:opacity-70"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-300/20 bg-red-400/10 px-3 py-2 text-sm text-red-100 transition hover:bg-red-400/15 disabled:opacity-70 sm:w-auto"
                     >
                       {removingEmail ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -589,50 +588,9 @@ export default function CustomProfileDetails() {
         </div>
       </section>
 
-      {/*  <section className="border-t border-white/10 px-6 py-6">
-        <h2 className="mb-4 text-sm font-medium uppercase tracking-[0.12em] text-white/60">
-          Connected accounts
-        </h2>
-
-        <div className="space-y-3">
-          {user.externalAccounts?.length ? (
-            user.externalAccounts.map((account) => (
-              <div
-                key={account.id}
-                className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4"
-              >
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="rounded-xl bg-white/10 p-2">
-                    <Link2 className="h-4 w-4 text-emerald-200" />
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium capitalize text-white">
-                      {account.provider}
-                    </p>
-                    <p className="text-xs text-white/65">
-                      {account.emailAddress || "Connected account"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-white/65">
-              No connected accounts yet.
-            </div>
-          )}
-
-          <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.03] px-4 py-4 text-sm text-white/70">
-            Add custom connect-account actions here after enabling providers in
-            Komicats.
-          </div>
-        </div>
-      </section> */}
-
-      <div className="border-t border-white/10 bg-black/10 px-6 py-4">
-        <div className="flex items-center justify-center gap-2 text-xs text-white/55">
-          <ShieldCheck className="h-4 w-4" />
+      <div className="border-t border-white/10 bg-black/10 px-4 py-4 sm:px-6">
+        <div className="flex items-center justify-center gap-2 text-center text-xs text-white/55">
+          <ShieldCheck className="h-4 w-4 shrink-0" />
           Secured by Komicats
         </div>
       </div>

@@ -252,8 +252,13 @@ export default function SigninForm() {
   }; */
 
   return (
-    <div className="flex min-h-svh items-center justify-center px-4 py-12 text-white">
-      <div className="w-full max-w-[480px]">
+    <div
+      className="relative flex min-h-svh items-center justify-center bg-cover bg-center bg-no-repeat px-4 py-12 text-white"
+      style={{ backgroundImage: "url('/BACKGROUND.png')" }}
+    >
+      <div className="absolute inset-0 bg-black/50" />
+
+      <div className="relative z-10 w-full max-w-[480px]">
         <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl sm:p-10">
           <div className="mb-8 text-center">
             <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
@@ -288,30 +293,6 @@ export default function SigninForm() {
 
           {!needsSecondFactor ? (
             <>
-              {/* <div className="mt-8">
-                <button
-                  type="button"
-                  onClick={onFacebookSignIn}
-                  disabled={isFacebookLoading}
-                  className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-medium text-white transition hover:bg-white/10 disabled:opacity-60"
-                >
-                  <Facebook size={18} />
-                  <span className="text-sm sm:text-base">
-                    {isFacebookLoading
-                      ? "Connecting..."
-                      : "Continue with Facebook"}
-                  </span>
-                </button>
-              </div>
-
-              <div className="my-6 flex items-center gap-3">
-                <div className="h-px flex-1 bg-white/10" />
-                <span className="text-xs uppercase tracking-[0.2em] text-white/40">
-                  or
-                </span>
-                <div className="h-px flex-1 bg-white/10" />
-              </div> */}
-
               <form
                 className="space-y-5"
                 onSubmit={(e) => {

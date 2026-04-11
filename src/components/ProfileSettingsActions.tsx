@@ -2,7 +2,6 @@
 
 import { clearActiveProfile, getProfiles } from "@/actions/profile.action";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useUser } from "@clerk/nextjs";
 import { ArrowRightLeft, Loader2, UserCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -17,7 +16,6 @@ export default function ProfileSettingsActions({
   activeProfileId: string | null;
 }) {
   const router = useRouter();
-  const { user } = useUser();
   const [isSwitching, setIsSwitching] = useState(false);
   const activeProfile =
     profiles.find((profile) => profile.id === activeProfileId) ?? null;

@@ -140,8 +140,13 @@ export default function SignupForm() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col justify-center px-4 py-12 text-white sm:px-8">
-      <div className="mx-auto w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl sm:p-10">
+    <div
+      className="relative flex min-h-svh flex-col justify-center bg-cover bg-center bg-no-repeat px-4 py-12 text-white sm:px-8"
+      style={{ backgroundImage: "url('/BACKGROUND.png')" }}
+    >
+      <div className="absolute inset-0 bg-black/50" />
+
+      <div className="relative z-10 mx-auto w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl sm:p-10">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
             Sign up
