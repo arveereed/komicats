@@ -40,7 +40,7 @@ export default function DownloadsPage() {
   if (!isInstalledApp) return null;
 
   return (
-    <div className="min-h-screen bg-[#060b10] px-4 py-8 text-white sm:px-6 lg:px-8">
+    <div className="min-h-screen px-4 py-8 text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <h1 className="text-3xl font-bold">Downloaded Comics</h1>
         <p className="mt-2 text-white/70">

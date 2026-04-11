@@ -136,6 +136,7 @@ export default function EpisodeReader({
     <section className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white">
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-3 sm:h-20 sm:px-4 lg:px-6">
+          {/* TOP left */}
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Link
               href={
@@ -156,6 +157,7 @@ export default function EpisodeReader({
             </Link>
           </div>
 
+          {/* TOP mid */}
           <div className="min-w-0">
             <h1 className="truncate text-sm font-semibold sm:text-base lg:text-lg">
               {comicTitle}
@@ -166,6 +168,7 @@ export default function EpisodeReader({
             </p>
           </div>
 
+          {/* TOP right */}
           <div className="flex items-center gap-1 sm:gap-2">
             <Sheet open={episodesOpen} onOpenChange={setEpisodesOpen}>
               <SheetTrigger asChild>
@@ -367,7 +370,9 @@ export default function EpisodeReader({
                 href={
                   isAdmin
                     ? `/admin/comics/${comicId}`
-                    : `/profile/avatar/comics/${comicId}`
+                    : isInstalledApp
+                      ? `/profile/avatar/downloads/${comicId}`
+                      : `/profile/avatar/comics/${comicId}`
                 }
               >
                 <Button variant="secondary" className="rounded-full px-6">
@@ -430,7 +435,9 @@ export default function EpisodeReader({
                 href={
                   isAdmin
                     ? `/admin/comics/${comicId}/episode/${previousEpisodeId}`
-                    : `/profile/avatar/comics/${comicId}/episode/${previousEpisodeId}`
+                    : isInstalledApp
+                      ? `/profile/avatar/downloads/${comicId}/episode/${previousEpisodeId}`
+                      : `/profile/avatar/comics/${comicId}/episode/${previousEpisodeId}`
                 }
               >
                 <button
@@ -455,7 +462,9 @@ export default function EpisodeReader({
                 href={
                   isAdmin
                     ? `/admin/comics/${comicId}/episode/${nextEpisodeId}`
-                    : `/profile/avatar/comics/${comicId}/episode/${nextEpisodeId}`
+                    : isInstalledApp
+                      ? `/profile/avatar/downloads/${comicId}/episode/${nextEpisodeId}`
+                      : `/profile/avatar/comics/${comicId}/episode/${nextEpisodeId}`
                 }
               >
                 <button
@@ -510,7 +519,9 @@ export default function EpisodeReader({
                   href={
                     isAdmin
                       ? `/admin/comics/${comicId}/episode/${previousEpisodeId}`
-                      : `/profile/avatar/comics/${comicId}/episode/${previousEpisodeId}`
+                      : isInstalledApp
+                        ? `/profile/avatar/downloads/${comicId}/episode/${previousEpisodeId}`
+                        : `/profile/avatar/comics/${comicId}/episode/${previousEpisodeId}`
                   }
                 >
                   <button
@@ -535,7 +546,9 @@ export default function EpisodeReader({
                   href={
                     isAdmin
                       ? `/admin/comics/${comicId}/episode/${nextEpisodeId}`
-                      : `/profile/avatar/comics/${comicId}/episode/${nextEpisodeId}`
+                      : isInstalledApp
+                        ? `/profile/avatar/downloads/${comicId}/episode/${nextEpisodeId}`
+                        : `/profile/avatar/comics/${comicId}/episode/${nextEpisodeId}`
                   }
                 >
                   <button
