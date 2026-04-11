@@ -26,7 +26,11 @@ export default function MobileAppHeader({
   user: SyncedUserType;
   notificationsCount: NotificationCount;
 }) {
-  const { isSignedIn, isLoaded } = useUser();
+  const { isSignedIn, isLoaded, user: clerkUser } = useUser();
+
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  const isAdmin =
+    !!adminEmail && clerkUser?.emailAddresses[0]?.emailAddress === adminEmail;
 
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
@@ -66,7 +70,7 @@ export default function MobileAppHeader({
   )
     return null;
 
-  if (!isInstalledApp) return null;
+  if (!isInstalledApp || isAdmin) return null;
 
   /* Mobile navbar Menu */
   return (

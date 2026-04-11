@@ -107,22 +107,6 @@ export default function DesktopNavbar({
 
   const isOnRead = pathname.includes("/profile/avatar/comics");
 
-  const [openSwitchDialog, setOpenSwitchDialog] = useState(false);
-  const [isSwitching, setIsSwitching] = useState(false);
-
-  const handleConfirmSwitchUser = async () => {
-    try {
-      setIsSwitching(true);
-      setOpenSwitchDialog(false);
-      await clearActiveProfile();
-      router.push("/profile/avatar");
-    } catch (error) {
-      console.error("Failed to switch profile:", error);
-    } finally {
-      setIsSwitching(false);
-    }
-  };
-
   if (isOnRead || inGamePath) return null;
 
   return (
