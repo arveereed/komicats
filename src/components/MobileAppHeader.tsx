@@ -49,14 +49,6 @@ export default function MobileAppHeader({
 
   if (isOnRead || inGamePath) return null;
 
-  if (
-    (!isInstalledApp && !isProfileAvatarPath) ||
-    !isSignedIn ||
-    isProfileAvatarSetting ||
-    pathname === "/profile/avatar"
-  )
-    return null;
-
   const handleSearch = () => {
     const query = searchQuery.trim();
     router.push(
@@ -65,6 +57,16 @@ export default function MobileAppHeader({
         : "/profile/avatar/search",
     );
   };
+
+  if (
+    (!isInstalledApp && !isProfileAvatarPath) ||
+    !isSignedIn ||
+    isProfileAvatarSetting ||
+    pathname === "/profile/avatar"
+  )
+    return null;
+
+  if (!isInstalledApp) return null;
 
   /* Mobile navbar Menu */
   return (
