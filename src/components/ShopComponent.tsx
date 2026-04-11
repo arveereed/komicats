@@ -189,7 +189,7 @@ function ShopStats({
   played: number;
 }) {
   return (
-    <Card className="overflow-hidden rounded-3xl border-white/10 bg-white/5 text-white shadow-2xl backdrop-blur-xl">
+    <Card className="overflow-hidden rounded-3xl border-white/10 bg-[#375055] text-white shadow-2xl backdrop-blur-xl">
       <CardContent className="p-5 sm:p-6 lg:p-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4 sm:gap-5">
@@ -253,10 +253,10 @@ function SubmitButton({ priceAmount }: { priceAmount: number }) {
 function PlanCard({ plan }: { plan: Plan }) {
   return (
     <Card
-      className={`relative rounded-3xl border text-white shadow-2xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${
+      className={`relative rounded-3xl border  text-white shadow-2xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${
         plan.isPopular
-          ? "border-teal-300/30 bg-gradient-to-br from-teal-400/10 via-white/5 to-cyan-400/10"
-          : "border-white/10 bg-white/5"
+          ? "border-teal-300/30 bg-gradient-to-br from-[#375055] via-white/5 to-cyan-400/10"
+          : "border-white/10 bg-[#375055]"
       }`}
     >
       <CardHeader className="space-y-4 pb-4">

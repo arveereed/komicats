@@ -3,11 +3,8 @@ import { syncUser } from "@/actions/user.action";
 import MobileNavbar from "./MobileNavbar";
 import { currentUser } from "@clerk/nextjs/server";
 import AdminNavbar from "./AdminNavbar";
-import {
-  getNotifications,
-  getUnreadNotificationCount,
-} from "@/actions/notification.action";
-import BottomNav from "./BottomNavbar";
+import { getUnreadNotificationCount } from "@/actions/notification.action";
+import MobileAppHeader from "./MobileAppHeader";
 
 export default async function Navbar() {
   const clerkUser = await currentUser();

@@ -10,6 +10,8 @@ import PWARegister from "@/components/pwa/PWARegister";
 import BottomNav from "@/components/BottomNavbar";
 import { getProfiles } from "@/actions/profile.action";
 import { syncUser } from "@/actions/user.action";
+import MobileAppHeader from "@/components/MobileAppHeader";
+import { getUnreadNotificationCount } from "@/actions/notification.action";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,6 +42,8 @@ export default async function RootLayout({
   const profiles = await getProfiles();
 
   const user = await syncUser();
+  const notificationsCount = await getUnreadNotificationCount();
+
   const activeProfileId = user?.activeProfileId ?? null;
 
   return (
@@ -49,8 +53,6 @@ export default async function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <div className="min-h-screen">
-            <Navbar />
-
             <main
               className={
                 isAdmin
@@ -61,17 +63,24 @@ export default async function RootLayout({
               {isAdmin ? <AdminBackgroundDecor /> : <BackgroundDecor />}
 
               <div className="relative z-10 min-h-screen ">
-                <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center -bottom-12 -left-[700px]">
+                <Navbar />
+
+                <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center -bottom-96 -left-[700px]">
                   <Image
                     src="/icons/bg-logo.png"
                     alt="Background logo"
                     fill
-                    className="object-contain opacity-[0.05]"
+                    className="object-contain mt-[100px] opacity-[0.05]"
                     priority
                   />
                 </div>
 
                 <PWARegister />
+                <MobileAppHeader
+                  user={user}
+                  notificationsCount={notificationsCount}
+                />
+
                 {children}
                 <BottomNav
                   profiles={profiles}

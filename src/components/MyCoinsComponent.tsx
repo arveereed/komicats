@@ -76,7 +76,7 @@ function CoinsOverview({
   played: number;
 }) {
   return (
-    <Card className="overflow-hidden rounded-3xl border-white/10 bg-white/5 text-white shadow-2xl backdrop-blur-xl">
+    <Card className="overflow-hidden rounded-3xl border-white/10 bg-[#375055]  text-white shadow-2xl backdrop-blur-xl">
       <CardContent className="p-5 sm:p-6 lg:p-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="flex flex-col gap-6">
@@ -161,7 +161,7 @@ function MissionCard({
   };
 }) {
   return (
-    <Card className="group overflow-hidden rounded-3xl border-white/10 bg-white/5 text-white shadow-2xl backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:bg-white/[0.07]">
+    <Card className="group overflow-hidden rounded-3xl border-white/10 bg-[#375055]  text-white shadow-2xl backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:bg-white/[0.07]">
       <div className="relative aspect-[16/9] w-full overflow-hidden">
         <img
           src={mission.image}
