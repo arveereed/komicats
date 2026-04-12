@@ -73,14 +73,16 @@ enum NotificationType {
 }
 
 model Profile {
-  id        String   @id @default(cuid())
-  name      String
-  image     String
-  userId    String
-  user      User     @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  id                 String   @id @default(cuid())
+  name               String
+  image              String
+  cloudinaryPublicId String?
+  userId             String
+  user               User     @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  activeForUsers User[] @relation("ActiveProfile")
+  activeForUsers     User[]   @relation("ActiveProfile")
 }
 
 model Comic {

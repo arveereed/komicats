@@ -45,18 +45,6 @@ export default function ProfileSelection() {
   const { isSignedIn, isLoaded: userLoaded, user: clerkUser } = useUser();
 
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
-  const isAdmin =
-    !!adminEmail && clerkUser?.emailAddresses[0].emailAddress === adminEmail;
-
-  // Move the navigation logic here
-  useEffect(() => {
-    if (userLoaded && isSignedIn && !isAdmin) {
-      router.push("/profile/avatar");
-    }
-    if (isAdmin) {
-      router.push("/admin");
-    }
-  }, [userLoaded, isSignedIn, router, isAdmin]);
 
   useEffect(() => {
     async function load() {
@@ -118,6 +106,23 @@ export default function ProfileSelection() {
       setDeletingId(null);
     }
   };
+
+  const isAdmin =
+    !!adminEmail && clerkUser?.emailAddresses[0].emailAddress === adminEmail;
+  const isGuest = !clerkUser && !isSignedIn;
+
+  useEffect(() => {
+    if (!userLoaded) return;
+
+    if (isGuest) {
+      router.replace("/auth/sign-in");
+      return;
+    }
+
+    if (isAdmin) {
+      router.replace("/admin");
+    }
+  }, [userLoaded, isGuest, isAdmin, router]);
 
   if (isLoading && !userLoaded)
     return (
