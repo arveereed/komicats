@@ -15,6 +15,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
 import CommentReplySection from "./CommentReplySection";
 import CommentActions from "./CommentActions";
+import Image from "next/image";
 
 type CommentsPageProps = {
   comicId: string;
@@ -29,20 +30,6 @@ type ServerComment = NonNullable<
 type OptimisticComment = ServerComment & {
   optimistic?: boolean;
 };
-
-function Watermark() {
-  return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 overflow-hidden"
-    >
-      <div className="absolute left-1/2 top-[18%] h-[520px] w-[520px] -translate-x-1/2 rounded-full border-[48px] border-white/[0.035] blur-[1px]" />
-      <div className="absolute left-1/2 top-[30%] h-[280px] w-[280px] -translate-x-1/2 rounded-full border-[42px] border-white/[0.03]" />
-      <div className="absolute left-1/2 top-[50%] h-[220px] w-[220px] -translate-x-1/2 rounded-full border-[34px] border-white/[0.025]" />
-      <div className="absolute left-1/2 top-[8%] h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.03),transparent_62%)]" />
-    </div>
-  );
-}
 
 export default function Comments({
   comicId,
@@ -119,7 +106,16 @@ export default function Comments({
 
   return (
     <main className="relative h-[100dvh] overflow-hidden bg-gradient-to-b from-[#27484e] via-[#11262b] to-[#020507] text-white">
-      <Watermark />
+      <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center -bottom-10 -left-[300px]">
+        <Image
+          src="/icons/bg-logo.png"
+          alt="Background logo"
+          className="object-contain mt-[100px] opacity-[0.05]"
+          width={1000}
+          height={1000}
+          priority
+        />
+      </div>
 
       <div className="relative z-10 flex h-full flex-col">
         <header className="sticky top-0 z-20 border-b border-white/10 bg-[#29474d]/80 backdrop-blur-md">
