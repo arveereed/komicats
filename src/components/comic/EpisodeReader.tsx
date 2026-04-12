@@ -353,7 +353,7 @@ export default function EpisodeReader({
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-6xl flex-col items-center px-2 py-4 pb-24 sm:px-4 sm:py-6 sm:pb-6 lg:px-6">
+      <main className="mx-auto flex w-full max-w-6xl flex-col items-center px-2 py-4 pb-24  sm:px-4 sm:py-6 sm:pb-6 lg:px-6">
         {pages.length === 0 ? (
           <div className="mt-10 w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-8 text-center shadow-2xl backdrop-blur-md">
             <div className="space-y-2">
@@ -382,7 +382,7 @@ export default function EpisodeReader({
             </div>
           </div>
         ) : (
-          <div className="w-full">
+          <div className="w-full pt-14">
             {pages.map((page, index) => (
               <div
                 key={page.id}
@@ -487,7 +487,7 @@ export default function EpisodeReader({
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-50 sm:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-50 ">
         <div className="border-t border-white/10 bg-black/85 backdrop-blur-md">
           <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
             <div className="flex items-center divide-x divide-white/10 overflow-hidden rounded-md border border-white/10 bg-white/5">
