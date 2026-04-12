@@ -606,7 +606,7 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
             <AlertDialogAction
               onClick={confirmCloseDialog}
               disabled={isPending}
-              className="w-full bg-white text-black hover:bg-white/90 sm:w-auto"
+              className="w-full bg-white/50 text-black hover:bg-white/30 sm:w-auto"
             >
               Discard and close
             </AlertDialogAction>
