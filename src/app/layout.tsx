@@ -12,6 +12,7 @@ import { getProfiles } from "@/actions/profile.action";
 import { syncUser } from "@/actions/user.action";
 import MobileAppHeader from "@/components/MobileAppHeader";
 import { getUnreadNotificationCount } from "@/actions/notification.action";
+import Head from "next/head";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

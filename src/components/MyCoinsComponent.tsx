@@ -190,7 +190,7 @@ function MissionCard({
                 variant="secondary"
                 className="h-auto rounded-xl border border-white/10 bg-white/90 px-4 py-2 text-slate-950 hover:bg-white"
               >
-                <div className="text-right leading-tight">
+                <div className="text-right flex flex-col items-center justify-center leading-tight">
                   <div className="text-xs font-medium text-slate-600">
                     Earn up to
                   </div>

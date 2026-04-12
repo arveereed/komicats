@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BookOpen, ChevronLeft } from "lucide-react";
+import { ChevronLeft, Play } from "lucide-react";
 
 import { getComicById } from "@/actions/comic.action";
 import { Button } from "@/components/ui/button";
+import { ComicDownloadButton } from "@/components/comic/ComicDownloadButton";
 
 type PageProps = {
   params: Promise<{
@@ -30,78 +31,104 @@ export default async function ComicDetailsPage({ params }: PageProps) {
     : "#";
 
   return (
-    <section className="min-h-screen overflow-hidden bg-[#0d1b1f] text-white">
+    <section className="min-h-screen overflow-hidden bg-[#05090c] text-white">
       <div className="relative">
-        <div className="relative h-[260px] w-full sm:h-[340px] lg:h-[430px]">
-          {heroImage ? (
-            <Image
-              src={heroImage}
-              alt={comic.title}
-              fill
-              priority
-              className="object-cover"
-            />
-          ) : (
-            <div className="h-full w-full bg-slate-700" />
-          )}
+        {/* HERO AREA */}
+        <div className="relative min-h-[720px] w-full overflow-hidden bg-black">
+          {/* background */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_#1b2d34_0%,_#0c1519_45%,_#05090c_100%)]" />
 
-          <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-[#173139]/60 to-[#13292f]" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#173139]/10 via-transparent to-transparent" />
+          {/* centered portrait image */}
+          <div className="relative z-10 flex justify-center px-4 pt-0">
+            <div className="relative h-[430px] w-[290px] overflow-hidden bg-[#9b7b47] shadow-2xl sm:h-[500px] sm:w-[330px]">
+              {heroImage ? (
+                <Image
+                  src={heroImage}
+                  alt={comic.title}
+                  fill
+                  priority
+                  className="object-cover"
+                />
+              ) : (
+                <div className="h-full w-full bg-[#9b7b47]" />
+              )}
+            </div>
+          </div>
 
-          <div className="absolute left-4 top-4 z-10 sm:left-6 sm:top-6">
+          {/* optional back button */}
+          <div className="absolute left-4 top-4 z-30 sm:left-6 sm:top-6">
             <Link href="/admin">
               <Button
                 variant="secondary"
-                className="border-0 bg-black/35 text-white backdrop-blur hover:bg-black/50"
+                className="h-10 w-10 rounded-full border-0 bg-black/35 p-0 text-white backdrop-blur hover:bg-black/50"
               >
-                <ChevronLeft className="mr-2 h-4 w-4" />
-                Back
+                <ChevronLeft className="h-5 w-5" />
               </Button>
             </Link>
           </div>
-        </div>
 
-        <div className="relative z-10 -mt-6 px-4 pb-8 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-7xl rounded-[28px] bg-gradient-to-b from-[#28464d] to-[#13292f] p-4 shadow-2xl ring-1 ring-white/10 sm:p-7">
-            <div className="max-w-5xl">
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                {comic.title}
-              </h1>
+          {/* bottom overlay card */}
+          <div className="absolute inset-x-0 bottom-0 z-20">
+            <div className="bg-[linear-gradient(180deg,rgba(19,31,36,0.72)_0%,rgba(8,15,18,0.94)_100%)] px-4 pb-6 pt-4 backdrop-blur-md sm:px-6">
+              <div className="mx-auto max-w-5xl">
+                <h1 className="text-[18px] font-semibold leading-tight sm:text-[32px]">
+                  {comic.title}
+                </h1>
 
-              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-white/80">
-                <span>{new Date(comic.createdAt).getFullYear()}</span>
-                <span className="rounded-md bg-white/15 px-2 py-0.5 text-xs font-medium text-white">
-                  16+
-                </span>
-                <span>{totalEpisodes} Episodes</span>
-              </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-white/80 sm:text-sm">
+                  <span>{new Date(comic.createdAt).getFullYear()}</span>
+                  <span className="rounded bg-white/15 px-1.5 py-0.5 text-[10px] font-medium text-white sm:text-xs">
+                    16+
+                  </span>
+                  <span>{totalEpisodes} Episodes</span>
+                </div>
 
-              <div className="mt-6 flex flex-col gap-3 sm:max-w-xl">
-                {firstEpisode ? (
-                  <Link href={readHref}>
-                    <Button className="h-12 w-full rounded-2xl bg-white text-base font-semibold text-black hover:bg-white/90">
-                      <BookOpen className="mr-2 h-5 w-5" />
+                <div className="mt-4 flex flex-col gap-2">
+                  {firstEpisode ? (
+                    <Link href={readHref} className="block">
+                      <Button className="h-12 w-full rounded-[4px] bg-white text-base font-semibold text-black hover:bg-white/90">
+                        <Play className="mr-2 h-4 w-4 fill-current" />
+                        Read
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button
+                      disabled
+                      className="h-12 w-full rounded-[4px] bg-white text-base font-semibold text-black"
+                    >
+                      <Play className="mr-2 h-4 w-4 fill-current" />
                       Read
                     </Button>
-                  </Link>
-                ) : (
-                  <Button
-                    disabled
-                    className="h-12 rounded-2xl bg-white text-base font-semibold text-black"
-                  >
-                    <BookOpen className="mr-2 h-5 w-5" />
-                    Read
-                  </Button>
-                )}
+                  )}
+
+                  <div className="[&>button]:h-12 [&>button]:w-full [&>button]:rounded-[4px] [&>button]:border [&>button]:border-white/10 [&>button]:bg-[#39535e] [&>button]:text-base [&>button]:font-semibold [&>button]:text-white [&>button]:hover:bg-[#43616d]">
+                    <ComicDownloadButton
+                      comicTitle={comic.title}
+                      episodes={comic.episodes.map((episode) => ({
+                        title: episode.title,
+                        images: episode.images.map((image) => ({
+                          imageUrl: image.imageUrl,
+                        })),
+                      }))}
+                    />
+                  </div>
+                </div>
+
+                <p className="mt-4 max-w-4xl text-xs leading-5 text-white/75 sm:text-sm">
+                  {comic.description?.trim() ||
+                    comic.episodes?.[0]?.description ||
+                    "No description available yet."}
+                </p>
               </div>
+            </div>
+          </div>
+        </div>
 
-              <p className="mt-6 max-w-5xl text-base leading-8 text-white/90 sm:text-lg">
-                {comic.description?.trim() ||
-                  comic.episodes?.[0]?.description ||
-                  "No description available yet."}
-              </p>
-
-              <div className="mt-4 flex flex-wrap gap-6 border-b border-white/10 text-sm font-semibold">
+        {/* KEEPING YOUR LOWER UI */}
+        <div className="relative z-10 -mt-2 px-4 pb-8 sm:px-6">
+          <div className="mx-auto w-full max-w-5xl">
+            <div className="w-full">
+              <div className="flex flex-wrap gap-6 border-b border-white/10 text-sm font-semibold">
                 <button className="border-b-2 border-cyan-300 pb-3 text-white">
                   Episodes
                 </button>

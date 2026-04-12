@@ -158,7 +158,7 @@ export default function EpisodeReader({
           </div>
 
           {/* TOP mid */}
-          <div className="min-w-0">
+          <div className="min-w-0 flex flex-col items-center justify-center">
             <h1 className="truncate text-sm font-semibold sm:text-base lg:text-lg">
               {comicTitle}
             </h1>
