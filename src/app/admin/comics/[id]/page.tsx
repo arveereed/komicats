@@ -128,7 +128,7 @@ export default async function ComicDetailsPage({ params }: PageProps) {
         <div className="relative z-10 -mt-2 px-4 pb-8 sm:px-6">
           <div className="mx-auto w-full max-w-5xl">
             <div className="w-full">
-              <div className="flex flex-wrap gap-6 border-b border-white/10 text-sm font-semibold">
+              <div className="mt-4 flex flex-wrap gap-6 border-b border-white/10 text-sm font-semibold">
                 <button className="border-b-2 border-cyan-300 pb-3 text-white">
                   Episodes
                 </button>
