@@ -128,7 +128,7 @@ export default function AdminCreatePlanComponent() {
                 name="priceAmount"
                 type="number"
                 min={1}
-                placeholder="19900"
+                placeholder="199"
                 className="border-slate-700 bg-slate-900/80 text-white placeholder:text-slate-500 focus-visible:border-cyan-400 focus-visible:ring-cyan-400/30"
                 required
               />
