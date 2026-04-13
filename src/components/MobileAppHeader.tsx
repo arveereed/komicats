@@ -45,6 +45,7 @@ export default function MobileAppHeader({
     pathname.includes("/profile/avatar/shop") ||
     pathname.includes("/profile/avatar/search") ||
     pathname.includes("/profile/avatar/notifications") ||
+    pathname.includes("/profile/avatar/my-list") ||
     pathname.includes("/profile/avatar/downloads");
 
   const inGamePath = pathname.includes("/profile/avatar/my-coins/game");

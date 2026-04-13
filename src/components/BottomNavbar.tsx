@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Download,
-  Home,
-  ShoppingBag,
-  Gamepad2,
-  UserCircle2,
-} from "lucide-react";
+import { Plus, Home, ShoppingBag, Gamepad2, UserCircle2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useUser } from "@clerk/nextjs";
 import { useIsInstalledApp } from "@/hooks/useIsInstalledApp";
@@ -17,7 +11,7 @@ const navItems = [
   { label: "Home", href: "/profile/avatar/profile", icon: Home },
   { label: "Shop", href: "/profile/avatar/shop", icon: ShoppingBag },
   { label: "Games", href: "/profile/avatar/my-coins", icon: Gamepad2 },
-  // { label: "Downloads", href: "/profile/avatar/downloads", icon: Download },
+  { label: "My List", href: "/profile/avatar/my-list", icon: Plus },
 ];
 
 type Profiles = Awaited<
@@ -47,6 +41,7 @@ export default function BottomNav({
     pathname.includes("/profile/avatar/shop") ||
     pathname.includes("/profile/avatar/search") ||
     pathname.includes("/profile/avatar/notifications") ||
+    pathname.includes("/profile/avatar/my-list") ||
     pathname.includes("/profile/avatar/downloads");
 
   const inGamePath = pathname.includes("/profile/avatar/my-coins/game");

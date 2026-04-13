@@ -47,8 +47,21 @@ export default function SignupForm() {
     setIsLoading(true);
     setError(null);
 
-    if (!emailAddress || !confirmPassword || !password || !fullname) {
+    const fullNameTrimmed = fullname.trim();
+
+    if (!emailAddress || !confirmPassword || !password || !fullNameTrimmed) {
       setError("All fields are required.");
+      setIsLoading(false);
+      return;
+    }
+
+    const fullNameRegex =
+      /^[A-Za-z]+(?:[.'-]?[A-Za-z]+)*(?:\s+[A-Za-z]+(?:[.'-]?[A-Za-z]+)*)+$/;
+
+    if (!fullNameRegex.test(fullNameTrimmed)) {
+      setError(
+        "Enter your valid full name (first and last name, letters only).",
+      );
       setIsLoading(false);
       return;
     }
@@ -64,7 +77,7 @@ export default function SignupForm() {
         emailAddress,
         password,
         unsafeMetadata: {
-          fullname,
+          fullname: fullNameTrimmed,
         },
       });
 

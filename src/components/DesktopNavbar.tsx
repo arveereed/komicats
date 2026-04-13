@@ -17,23 +17,12 @@ import {
   UserCircle2,
 } from "lucide-react";
 import { syncUser } from "@/actions/user.action";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "./ui/alert-dialog";
 import Image from "next/image";
 import {
   getUnreadNotificationCount,
   markAllNotificationsAsRead,
 } from "@/actions/notification.action";
-import { clearActiveProfile, getProfiles } from "@/actions/profile.action";
+import { getProfiles } from "@/actions/profile.action";
 
 type SyncedUserType = Awaited<ReturnType<typeof syncUser>>;
 type NotificationCount = Awaited<ReturnType<typeof getUnreadNotificationCount>>;
@@ -64,6 +53,7 @@ export default function DesktopNavbar({
     pathname.includes("/profile/avatar/shop") ||
     pathname.includes("/profile/avatar/search") ||
     pathname.includes("/profile/avatar/notifications") ||
+    pathname.includes("/profile/avatar/my-list") ||
     pathname.includes("/profile/avatar/downloads");
 
   const inGamePath = pathname.includes("/profile/avatar/my-coins/game");
@@ -166,17 +156,17 @@ export default function DesktopNavbar({
               )}
             </Link>
 
-            {/* <Link
-              href="/profile/avatar/downloads"
+            <Link
+              href="/profile/avatar/my-list"
               className={navLinkClass(
-                pathname.includes("/profile/avatar/downloads"),
+                pathname.includes("/profile/avatar/my-list"),
               )}
             >
-              Downloads
-              {pathname.includes("/profile/avatar/downloads") && (
+              My list
+              {pathname.includes("/profile/avatar/my-list") && (
                 <span className="absolute -bottom-1 left-0 h-px w-full bg-teal-300" />
               )}
-            </Link> */}
+            </Link>
           </div>
         )}
       </div>
@@ -193,7 +183,7 @@ export default function DesktopNavbar({
           <div className="flex items-center gap-3">
             <div className="ml-2 flex items-center space-x-4">
               {/* Search */}
-              <div className="flex  h-12 w-[360px] items-center rounded-md bg-[#35535b] px-4">
+              <div className="flex  h-12  items-center rounded-md bg-[#35535b] px-4">
                 <Search className="mr-3 h-5 w-5 text-white/80" />
                 <Input
                   value={searchQuery}

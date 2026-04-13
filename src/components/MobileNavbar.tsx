@@ -6,6 +6,7 @@ import {
   HomeIcon,
   Loader2,
   MenuIcon,
+  Plus,
   Search,
   Settings,
   Settings2,
@@ -82,6 +83,7 @@ function MobileNavbar({
     pathname.includes("/profile/avatar/shop") ||
     pathname.includes("/profile/avatar/search") ||
     pathname.includes("/profile/avatar/notifications") ||
+    pathname.includes("/profile/avatar/my-list") ||
     pathname.includes("/profile/avatar/downloads");
 
   const inGamePath = pathname.includes("/profile/avatar/my-coins/game");
@@ -518,9 +520,9 @@ function MobileNavbar({
                       className="justify-start gap-3 text-white hover:bg-white/10 hover:text-white"
                       asChild
                     >
-                      <Link href="/profile/avatar/downloads">
-                        <UserIcon className="h-4 w-4" />
-                        Downloads
+                      <Link href="/profile/avatar/my-list">
+                        <Plus className="h-4 w-4" />
+                        My list
                       </Link>
                     </Button>
                   </div>

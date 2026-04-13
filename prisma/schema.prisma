@@ -8,56 +8,53 @@ datasource db {
 }
 
 model User {
-  id            String            @id @default(cuid())
-  email         String            @unique
-  clerkId       String            @unique
-  fullname      String
-  image         String?
-  coins         Int               @default(0)
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  id              String            @id @default(cuid())
+  email           String            @unique
+  clerkId         String            @unique
+  fullname        String
+  image           String?
+  coins           Int               @default(0)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
   activeProfileId String?
-  activeProfile   Profile?  @relation("ActiveProfile", fields: [activeProfileId], references: [id], onDelete: SetNull)
+  activeProfile   Profile?          @relation("ActiveProfile", fields: [activeProfileId], references: [id], onDelete: SetNull)
 
-
-  profiles      Profile[]
-  comics        Comic[]
-  purchases     CoinPurchase[]
-  transactions  CoinTransaction[]
-  comicUnlocks  ComicUnlock[]
-  comments      Comment[]
-  likes         Like[]
-  gameHistories  GameHistory[]
-
-  commentLikes      CommentLike[]
-  commentDislikes   CommentDislike[]
-  commentReplies    CommentReply[] @relation("ReplyAuthor")
-
+  profiles              Profile[]
+  comics                Comic[]
+  purchases             CoinPurchase[]
+  transactions          CoinTransaction[]
+  comicUnlocks          ComicUnlock[]
+  comments              Comment[]
+  likes                 Like[]
+  gameHistories         GameHistory[]
+  commentLikes          CommentLike[]
+  commentDislikes       CommentDislike[]
+  commentReplies        CommentReply[] @relation("ReplyAuthor")
   notifications         Notification[] @relation("userNotifications")
   notificationsCreated  Notification[] @relation("notificationCreator")
 }
 
 model Notification {
-  id         String           @id @default(cuid())
+  id         String            @id @default(cuid())
   userId     String
   creatorId  String
   type       NotificationType
-  read       Boolean          @default(false)
+  read       Boolean           @default(false)
 
   comicId    String?
   episodeId  String?
   commentId  String?
   replyId    String?
 
-  createdAt  DateTime         @default(now())
+  createdAt  DateTime          @default(now())
 
-  user       User         @relation("userNotifications", fields: [userId], references: [id], onDelete: Cascade)
-  creator    User         @relation("notificationCreator", fields: [creatorId], references: [id], onDelete: Cascade)
-  comic      Comic?       @relation(fields: [comicId], references: [id], onDelete: Cascade)
-  episode    Episode?     @relation(fields: [episodeId], references: [id], onDelete: Cascade)
-  comment    Comment?     @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  reply      CommentReply? @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  user       User              @relation("userNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  creator    User              @relation("notificationCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  comic      Comic?            @relation(fields: [comicId], references: [id], onDelete: Cascade)
+  episode    Episode?          @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  comment    Comment?          @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  reply      CommentReply?     @relation(fields: [replyId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([commentId])
@@ -73,33 +70,71 @@ enum NotificationType {
 }
 
 model Profile {
-  id                 String   @id @default(cuid())
+  id                 String            @id @default(cuid())
   name               String
   image              String
   cloudinaryPublicId String?
   userId             String
-  user               User     @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  user               User              @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
 
-  activeForUsers     User[]   @relation("ActiveProfile")
+  activeForUsers     User[]            @relation("ActiveProfile")
+  myListComics       ComicMyList[]
+  comicReactions     ComicReaction[]
 }
 
 model Comic {
-  id                String         @id @default(cuid())
+  id                String             @id @default(cuid())
   title             String
   description       String
   thumbnail         String?
   thumbnailPublicId String?
   cloudinaryFolder  String?
   userId            String
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
-  user              User           @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
+  user              User               @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
   episodes          Episode[]
   unlocks           ComicUnlock[]
   notifications     Notification[]
+  myListedBy        ComicMyList[]
+  reactions         ComicReaction[]
+}
+
+model ComicMyList {
+  id        String   @id @default(cuid())
+  profileId String
+  comicId   String
+  createdAt DateTime @default(now())
+
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  comic     Comic    @relation(fields: [comicId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, comicId])
+  @@index([profileId])
+  @@index([comicId])
+}
+
+enum ComicReactionType {
+  LIKE
+  DISLIKE
+}
+
+model ComicReaction {
+  id        String            @id @default(cuid())
+  comicId   String
+  profileId String
+  type      ComicReactionType
+  createdAt DateTime          @default(now())
+
+  comic     Comic             @relation(fields: [comicId], references: [id], onDelete: Cascade)
+  profile   Profile           @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([comicId, profileId, type])
+  @@index([comicId])
+  @@index([profileId])
 }
 
 model ComicUnlock {
@@ -118,18 +153,18 @@ model ComicUnlock {
 }
 
 model Episode {
-  id          String         @id @default(cuid())
-  title       String
-  description String
-  comicId     String
-  order       Int
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id            String           @id @default(cuid())
+  title         String
+  description   String
+  comicId       String
+  order         Int
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
-  comments    Comment[]
-  images      EpisodeImage[]
-  comic       Comic          @relation(fields: [comicId], references: [id], onDelete: Cascade)
-  like        Like[]
+  comments      Comment[]
+  images        EpisodeImage[]
+  comic         Comic            @relation(fields: [comicId], references: [id], onDelete: Cascade)
+  like          Like[]
   notifications Notification[]
 
   @@index([comicId])
@@ -150,19 +185,19 @@ model Like {
 }
 
 model Comment {
-  id          String           @id @default(cuid())
-  content     String
-  authorId    String
-  episodeId   String
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  id            String             @id @default(cuid())
+  content       String
+  authorId      String
+  episodeId     String
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
 
-  author      User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  episode     Episode          @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  author        User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  episode       Episode            @relation(fields: [episodeId], references: [id], onDelete: Cascade)
 
-  likes       CommentLike[]
-  dislikes    CommentDislike[]
-  replies     CommentReply[]
+  likes         CommentLike[]
+  dislikes      CommentDislike[]
+  replies       CommentReply[]
   notifications Notification[]
 
   @@index([authorId, episodeId])
@@ -197,15 +232,15 @@ model CommentDislike {
 }
 
 model CommentReply {
-  id          String   @id @default(cuid())
-  content     String
-  commentId   String
-  authorId    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String             @id @default(cuid())
+  content       String
+  commentId     String
+  authorId      String
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
 
-  comment     Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  author      User     @relation("ReplyAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  comment       Comment            @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  author        User               @relation("ReplyAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   notifications Notification[]
 
   @@index([commentId])
@@ -253,25 +288,25 @@ model CoinPlanFeature {
 }
 
 model CoinPurchase {
-  id                   String         @id @default(cuid())
-  userId               String
-  planId               String
-  planName             String
-  planSlug             String
-  amount               Int
-  coins                Int
-  bonusCoins           Int            @default(0)
-  totalCoins           Int
-  status               PurchaseStatus @default(PENDING)
-  paymongoCheckoutId   String?        @unique
-  paymongoPaymentId    String?        @unique
-  referenceNumber      String         @unique
-  createdAt            DateTime       @default(now())
-  updatedAt            DateTime       @updatedAt
+  id                  String             @id @default(cuid())
+  userId              String
+  planId              String
+  planName            String
+  planSlug            String
+  amount              Int
+  coins               Int
+  bonusCoins          Int                @default(0)
+  totalCoins          Int
+  status              PurchaseStatus     @default(PENDING)
+  paymongoCheckoutId  String?            @unique
+  paymongoPaymentId   String?            @unique
+  referenceNumber     String             @unique
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 
-  transactions         CoinTransaction[]
-  plan                 CoinPlan       @relation(fields: [planId], references: [id])
-  user                 User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions        CoinTransaction[]
+  plan                CoinPlan           @relation(fields: [planId], references: [id])
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([planId])
@@ -306,15 +341,15 @@ enum CoinTransactionType {
 }
 
 model GameHistory {
-  id            String   @id @default(cuid())
-  userId        String
-  gameType      String   @default("QUIZ")
+  id             String   @id @default(cuid())
+  userId         String
+  gameType       String   @default("QUIZ")
   totalQuestions Int
   correctAnswers Int
-  rewardCoins   Int      @default(0)
-  createdAt     DateTime @default(now())
+  rewardCoins    Int      @default(0)
+  createdAt      DateTime @default(now())
 
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([gameType])

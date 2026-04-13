@@ -1,13 +1,23 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Play } from "lucide-react";
+import {
+  ChevronLeft,
+  Play,
+  Bookmark,
+  ThumbsUp,
+  ThumbsDown,
+  Plus,
+} from "lucide-react";
 
 import { getComicById } from "@/actions/comic.action";
 import { LockedEpisodeCard } from "@/components/comic/locked-episode-card";
 import { Button } from "@/components/ui/button";
 import { EpisodeRowCard } from "@/components/comic/EpisodeRowCard";
 import { ComicDownloadButton } from "@/components/comic/ComicDownloadButton";
+import { ComicReactionButtons } from "@/components/comic/ComicReactionButtons";
+import { auth } from "@clerk/nextjs/server";
+import prisma from "@/lib/prisma";
 
 type PageProps = {
   params: Promise<{
@@ -18,9 +28,51 @@ type PageProps = {
 export default async function ComicDetailsPage({ params }: PageProps) {
   const { id } = await params;
   const comic = await getComicById(id);
+  const { userId: clerkId } = await auth();
 
   if (!comic) {
     notFound();
+  }
+
+  let initialIsInMyList = false;
+  let initialIsLiked = false;
+  let initialIsDisliked = false;
+
+  if (clerkId) {
+    const user = await prisma.user.findUnique({
+      where: { clerkId },
+      select: {
+        activeProfileId: true,
+      },
+    });
+
+    if (user?.activeProfileId) {
+      const [myListItem, reactions] = await Promise.all([
+        prisma.comicMyList.findUnique({
+          where: {
+            profileId_comicId: {
+              profileId: user.activeProfileId,
+              comicId: comic.id,
+            },
+          },
+        }),
+        prisma.comicReaction.findMany({
+          where: {
+            profileId: user.activeProfileId,
+            comicId: comic.id,
+          },
+          select: {
+            type: true,
+          },
+        }),
+      ]);
+
+      initialIsInMyList = !!myListItem;
+      initialIsLiked = reactions.some((reaction) => reaction.type === "LIKE");
+      initialIsDisliked = reactions.some(
+        (reaction) => reaction.type === "DISLIKE",
+      );
+    }
   }
 
   const totalEpisodes = comic.episodes.length;
@@ -85,7 +137,7 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                   <span>{totalEpisodes} Episodes</span>
                 </div>
 
-                <div className="mt-4 flex  flex-col gap-2">
+                <div className="mt-4 flex flex-col gap-2">
                   {firstEpisode ? (
                     <Link href={readHref} className="block">
                       <Button className="h-12 w-full rounded-[4px] bg-white text-base font-semibold text-black hover:bg-white/90">
@@ -114,34 +166,6 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                       }))}
                     />
                   </div>
-
-                  {/* <DownloadForOfflineButton
-                    comic={{
-                      id: comic.id,
-                      title: comic.title,
-                      description: comic.description,
-                      thumbnail: comic.thumbnail ?? null,
-                      createdAt: comic.createdAt.toISOString(),
-                      episodes: comic.episodes
-                        .filter((_, index) => {
-                          const episodeNumber = index + 1;
-                          const isLocked =
-                            episodeNumber > FREE_EPISODE_LIMIT && !isUnlocked;
-                          return !isLocked;
-                        })
-                        .map((episode) => ({
-                          id: episode.id,
-                          title: episode.title,
-                          description: episode.description,
-                          order: episode.order,
-                          images: episode.images.map((image) => ({
-                            id: image.id,
-                            imageUrl: image.imageUrl,
-                            order: image.order,
-                          })),
-                        })),
-                    }}
-                  /> */}
                 </div>
 
                 <p className="mt-4 max-w-4xl text-xs leading-5 text-white/75 sm:text-sm">
@@ -149,6 +173,15 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                     comic.episodes?.[0]?.description ||
                     "No description available yet."}
                 </p>
+
+                {/* NEW: My List / Like / Dislike */}
+                <ComicReactionButtons
+                  comicId={comic.id}
+                  pathname={`/profile/avatar/comics/${comic.id}`}
+                  initialIsInMyList={initialIsInMyList}
+                  initialIsLiked={initialIsLiked}
+                  initialIsDisliked={initialIsDisliked}
+                />
               </div>
             </div>
           </div>
