@@ -621,7 +621,7 @@ function MobileNavbar({
 
               <Link
                 href="/profile/avatar/notifications"
-                className="relative"
+                className="relative ml-2 shrink-0"
                 onClick={async () => {
                   if (notificationsCount > 0) {
                     await markAllNotificationsAsRead();
@@ -633,6 +633,7 @@ function MobileNavbar({
                   width={24}
                   height={24}
                   src="/icons/notif.png"
+                  className="shrink-0"
                 />
                 {notificationsCount > 0 && (
                   <Badge className="absolute -right-2.5 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-300 px-1 text-[10px] text-slate-950">
@@ -643,7 +644,7 @@ function MobileNavbar({
 
               <Link
                 href="/profile/avatar/settings"
-                className="group flex min-w-0 flex-1 items-center justify-center"
+                className="group flex min-w-7 flex-1 items-center justify-center"
               >
                 <div className="flex w-full max-w-[96px] flex-col items-center justify-center rounded-2xl px-3 py-2 text-white transition-all duration-200">
                   <Avatar className="size-7 rounded-md ring-2 ring-white/10 transition group-hover:ring-cyan-300/30">
