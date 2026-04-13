@@ -22,19 +22,21 @@ export default async function AdminPage() {
           <p className="text-sm text-zinc-500">Manage comics and coin plans</p>
         </div>
 
-        <Link
-          href="/admin/posts"
-          className="rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-        >
-          PostCard
-        </Link>
+        <div className="flex flex-col space-y-2">
+          <Link
+            href="/admin/posts"
+            className="rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+          >
+            PostCard
+          </Link>
 
-        <Link
-          href="/admin/plans"
-          className="rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
-        >
-          Manage Plans
-        </Link>
+          <Link
+            href="/admin/plans"
+            className="rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+          >
+            Manage Plans
+          </Link>
+        </div>
       </div>
 
       <AdminAddNewComicComponent />

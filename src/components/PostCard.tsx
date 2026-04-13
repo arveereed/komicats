@@ -30,7 +30,7 @@ export default function PostCard({ image, date, title, index }: PostCardProps) {
       </div>
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2 text-[10px] tracking-widest text-white/70 font-bold">
-          <span className="text-orange-500">COMIC</span>
+          <span className="text-orange-500">SOON</span>
           <span>•</span>
           <span>{date}</span>
         </div>

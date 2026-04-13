@@ -21,11 +21,21 @@ type Post = {
   updatedAt: Date;
 };
 
-type Props = {
-  posts: Post[];
+type HeroSection = {
+  id: string;
+  title: string;
+  backgroundImage: string;
+  imagePublicId: string;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
-export default function AnimeBlogClient({ posts }: Props) {
+type Props = {
+  posts: Post[];
+  hero: HeroSection | null;
+};
+
+export default function AnimeBlogClient({ posts, hero }: Props) {
   const router = useRouter();
   const { isSignedIn, isLoaded: userLoaded } = useUser();
   const { isLoaded } = useSignIn();
@@ -42,7 +52,7 @@ export default function AnimeBlogClient({ posts }: Props) {
     <main className="relative min-h-screen w-full bg-black overflow-hidden font-sans">
       <div className="absolute inset-0 z-0">
         <Image
-          src="/landing.jpg"
+          src={hero?.backgroundImage || "/landing.jpg"}
           alt="Hero Background"
           fill
           priority
@@ -66,7 +76,7 @@ export default function AnimeBlogClient({ posts }: Props) {
               Komicats
             </span>
             <h1 className="mt-4 text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[0.9] tracking-tighter uppercase drop-shadow-2xl">
-              Mistaken Idea Of Denouncing Pleasure
+              {hero?.title || "Mistaken Idea Of Denouncing Pleasure"}
             </h1>
           </motion.div>
         </div>
