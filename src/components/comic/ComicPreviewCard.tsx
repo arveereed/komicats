@@ -6,8 +6,8 @@ import { BookOpen, CalendarDays, UserRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { deleteComic } from "@/actions/comic.action";
-import EditComicDialog from "../../components/admin/EditComicDialog";
-import { DeleteComicDialog } from "../../components/admin/DeleteComic";
+import EditComicDialog from "../admin/EditComicDialog";
+import { DeleteComicDialog } from "../admin/DeleteComic";
 
 type ComicPreviewCardProps = {
   comic: {

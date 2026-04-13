@@ -1,23 +1,16 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ChevronLeft,
-  Play,
-  Bookmark,
-  ThumbsUp,
-  ThumbsDown,
-  Plus,
-} from "lucide-react";
+import { ChevronLeft, Play } from "lucide-react";
 
 import { getComicById } from "@/actions/comic.action";
-import { LockedEpisodeCard } from "@/app/comic/locked-episode-card";
+import { LockedEpisodeCard } from "@/components/comic/locked-episode-card";
 import { Button } from "@/components/ui/button";
-import { EpisodeRowCard } from "@/app/comic/EpisodeRowCard";
-import { ComicDownloadButton } from "@/app/comic/ComicDownloadButton";
-import { ComicReactionButtons } from "@/app/comic/ComicReactionButtons";
+import { EpisodeRowCard } from "@/components/comic/EpisodeRowCard";
+import { ComicDownloadButton } from "@/components/comic/ComicDownloadButton";
+import { ComicReactionButtons } from "@/components/comic/ComicReactionButtons";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
+import ComicHeroPreview from "@/components/comic/ComicHeroPreview";
 
 type PageProps = {
   params: Promise<{
@@ -90,7 +83,6 @@ export default async function ComicDetailsPage({ params }: PageProps) {
   return (
     <section className="min-h-screen bg-[#04080b] text-white">
       <div className="relative">
-        {/* HERO */}
         <div className="relative min-h-[720px] overflow-hidden bg-black">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_#1a2f36_0%,_#0d171b_42%,_#05080b_100%)]" />
           <div className="absolute inset-0 bg-black/20" />
@@ -106,20 +98,12 @@ export default async function ComicDetailsPage({ params }: PageProps) {
             </Link>
           </div>
 
-          <div className="relative z-10 flex justify-center px-4 pt-0">
-            <div className="relative h-[430px] w-[290px] overflow-hidden bg-[#9a7a49] shadow-2xl ring-1 ring-white/10 sm:h-[500px] sm:w-[330px]">
-              {heroImage ? (
-                <Image
-                  src={heroImage}
-                  alt={comic.title}
-                  fill
-                  priority
-                  className="object-cover"
-                />
-              ) : (
-                <div className="h-full w-full bg-[#9a7a49]" />
-              )}
-            </div>
+          <div className="relative z-10 min-h-screen pb-[260px] sm:pb-[300px]">
+            <ComicHeroPreview
+              thumbnail={heroImage}
+              previewVideo={comic.previewVideo ?? null}
+              title={comic.title}
+            />
           </div>
 
           <div className="absolute inset-x-0 bottom-0 z-20">
@@ -174,7 +158,6 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                     "No description available yet."}
                 </p>
 
-                {/* NEW: My List / Like / Dislike */}
                 <ComicReactionButtons
                   comicId={comic.id}
                   pathname={`/profile/avatar/comics/${comic.id}`}
@@ -187,7 +170,6 @@ export default async function ComicDetailsPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* LOWER UI KEPT INTACT */}
         <div className="relative z-10 -mt-2 px-4 pb-8 sm:px-6">
           <div className="mx-auto w-full max-w-5xl">
             <div className="w-full">

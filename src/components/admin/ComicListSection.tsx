@@ -1,5 +1,5 @@
 import { getAllComics } from "@/actions/comic.action";
-import ComicPreviewCard from "../../app/comic/ComicPreviewCard";
+import ComicPreviewCard from "../comic/ComicPreviewCard";
 
 export default async function ComicListSection() {
   const comics = await getAllComics();

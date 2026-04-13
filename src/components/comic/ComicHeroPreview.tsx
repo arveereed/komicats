@@ -24,10 +24,10 @@ export default function ComicHeroPreview({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsVisible(entry.isIntersecting && entry.intersectionRatio >= 0.4);
+        setIsVisible(entry.isIntersecting && entry.intersectionRatio >= 0.35);
       },
       {
-        threshold: [0, 0.25, 0.4, 0.75, 1],
+        threshold: [0, 0.2, 0.35, 0.6, 1],
       },
     );
 
@@ -52,20 +52,23 @@ export default function ComicHeroPreview({
   return (
     <div
       ref={containerRef}
-      className="relative h-[320px] w-full overflow-hidden rounded-[28px] bg-white/5"
+      className="relative h-[72vh] min-h-[520px] w-full overflow-hidden bg-black sm:h-[78vh] sm:min-h-[640px] lg:h-[82vh]"
     >
-      {thumbnail && (
+      {thumbnail ? (
         <Image
           src={thumbnail}
           alt={title}
           fill
-          className={`object-cover transition duration-300 ${
+          priority
+          className={`object-cover transition duration-500 ${
             isVisible && previewVideo ? "opacity-0" : "opacity-100"
           }`}
         />
+      ) : (
+        <div className="h-full w-full bg-[#9b7b47]" />
       )}
 
-      {previewVideo && (
+      {previewVideo ? (
         <video
           ref={videoRef}
           src={previewVideo}
@@ -73,13 +76,14 @@ export default function ComicHeroPreview({
           loop
           playsInline
           preload="metadata"
-          className={`absolute inset-0 h-full w-full object-cover transition duration-300 ${
+          className={`absolute inset-0 h-full w-full object-cover transition duration-500 ${
             isVisible ? "opacity-100" : "opacity-0"
           }`}
         />
-      )}
+      ) : null}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#071015] via-black/15 to-black/20" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#071015]/65 via-transparent to-[#071015]/65" />
     </div>
   );
 }

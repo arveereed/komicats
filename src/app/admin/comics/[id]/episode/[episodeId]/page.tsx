@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getComicById } from "@/actions/comic.action";
-import EpisodeReader from "@/app/comic/EpisodeReader";
+import EpisodeReader from "@/components/comic/EpisodeReader";
 import { getCommentsCount } from "@/actions/comment.action";
 import { getLikeStatus } from "@/actions/like.action";
 

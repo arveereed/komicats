@@ -4,8 +4,8 @@ import { ChevronLeft, Play } from "lucide-react";
 
 import { getComicById } from "@/actions/comic.action";
 import { Button } from "@/components/ui/button";
-import { ComicDownloadButton } from "@/app/comic/ComicDownloadButton";
-import ComicHeroPreview from "@/app/comic/ComicHeroPreview";
+import { ComicDownloadButton } from "@/components/comic/ComicDownloadButton";
+import ComicHeroPreview from "@/components/comic/ComicHeroPreview";
 
 type PageProps = {
   params: Promise<{
@@ -33,10 +33,11 @@ export default async function ComicDetailsPage({ params }: PageProps) {
   return (
     <section className="min-h-screen overflow-hidden bg-[#05090c] text-white">
       <div className="relative">
-        <div className="relative min-h-[720px] w-full overflow-hidden bg-black">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_#1b2d34_0%,_#0c1519_45%,_#05090c_100%)]" />
+        <div className="relative min-h-[720px] overflow-hidden bg-black">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_#1a2f36_0%,_#0d171b_42%,_#05080b_100%)]" />
+          <div className="absolute inset-0 bg-black/20" />
 
-          <div className="relative z-10 flex justify-center px-4 pt-0">
+          <div className="relative z-10 min-h-screen pb-[260px] sm:pb-[300px]">
             <ComicHeroPreview
               thumbnail={heroImage}
               previewVideo={comic.previewVideo ?? null}
