@@ -377,7 +377,7 @@ export default function EpisodeReader({
             {pages.map((page, index) => (
               <div
                 key={page.id}
-                className="mx-auto w-full max-w-3xl overflow-hidden  border border-white/10 bg-white shadow-2xl "
+                className="mx-auto w-full max-w-3xl overflow-hidden bg-white shadow-2xl "
               >
                 <div className="relative w-full">
                   <Image
