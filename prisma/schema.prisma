@@ -21,6 +21,7 @@ model User {
   activeProfile   Profile?          @relation("ActiveProfile", fields: [activeProfileId], references: [id], onDelete: SetNull)
 
   profiles              Profile[]
+  posts                 Post[]
   comics                Comic[]
   purchases             CoinPurchase[]
   transactions          CoinTransaction[]
@@ -33,6 +34,22 @@ model User {
   commentReplies        CommentReply[] @relation("ReplyAuthor")
   notifications         Notification[] @relation("userNotifications")
   notificationsCreated  Notification[] @relation("notificationCreator")
+}
+
+model Post {
+  id            String   @id @default(cuid())
+  title         String
+  date          String
+  image         String
+  imagePublicId String
+
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId, createdAt])
 }
 
 model Notification {

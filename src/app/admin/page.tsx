@@ -23,6 +23,13 @@ export default async function AdminPage() {
         </div>
 
         <Link
+          href="/admin/posts"
+          className="rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+        >
+          PostCard
+        </Link>
+
+        <Link
           href="/admin/plans"
           className="rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
         >

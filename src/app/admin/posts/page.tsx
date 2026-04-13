@@ -1,8 +1,9 @@
 import { getDbUserId } from "@/actions/user.action";
-import AnimeBlogClient from "@/components/AnimeBlogClient";
+import PostsCrud from "@/components/admin/PostsCrud";
+import PostCard from "@/components/PostCard";
 import prisma from "@/lib/prisma";
 
-export default async function AnimeBlogPage() {
+export default async function PostsPage() {
   const userId = await getDbUserId();
 
   if (!userId) {
@@ -18,5 +19,5 @@ export default async function AnimeBlogPage() {
     },
   });
 
-  return <AnimeBlogClient posts={posts} />;
+  return <PostsCrud posts={posts} />;
 }
