@@ -1,11 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Play } from "lucide-react";
 
 import { getComicById } from "@/actions/comic.action";
 import { Button } from "@/components/ui/button";
-import { ComicDownloadButton } from "@/components/comic/ComicDownloadButton";
+import { ComicDownloadButton } from "@/app/comic/ComicDownloadButton";
+import ComicHeroPreview from "@/app/comic/ComicHeroPreview";
 
 type PageProps = {
   params: Promise<{
@@ -33,29 +33,17 @@ export default async function ComicDetailsPage({ params }: PageProps) {
   return (
     <section className="min-h-screen overflow-hidden bg-[#05090c] text-white">
       <div className="relative">
-        {/* HERO AREA */}
         <div className="relative min-h-[720px] w-full overflow-hidden bg-black">
-          {/* background */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_#1b2d34_0%,_#0c1519_45%,_#05090c_100%)]" />
 
-          {/* centered portrait image */}
           <div className="relative z-10 flex justify-center px-4 pt-0">
-            <div className="relative h-[430px] w-[290px] overflow-hidden bg-[#9b7b47] shadow-2xl sm:h-[500px] sm:w-[330px]">
-              {heroImage ? (
-                <Image
-                  src={heroImage}
-                  alt={comic.title}
-                  fill
-                  priority
-                  className="object-cover"
-                />
-              ) : (
-                <div className="h-full w-full bg-[#9b7b47]" />
-              )}
-            </div>
+            <ComicHeroPreview
+              thumbnail={heroImage}
+              previewVideo={comic.previewVideo ?? null}
+              title={comic.title}
+            />
           </div>
 
-          {/* optional back button */}
           <div className="absolute left-4 top-4 z-30 sm:left-6 sm:top-6">
             <Link href="/admin">
               <Button
@@ -67,7 +55,6 @@ export default async function ComicDetailsPage({ params }: PageProps) {
             </Link>
           </div>
 
-          {/* bottom overlay card */}
           <div className="absolute inset-x-0 bottom-0 z-20">
             <div className="bg-[linear-gradient(180deg,rgba(19,31,36,0.72)_0%,rgba(8,15,18,0.94)_100%)] px-4 pb-6 pt-4 backdrop-blur-md sm:px-6">
               <div className="mx-auto max-w-5xl">
@@ -124,7 +111,6 @@ export default async function ComicDetailsPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* KEEPING YOUR LOWER UI */}
         <div className="relative z-10 -mt-2 px-4 pb-8 sm:px-6">
           <div className="mx-auto w-full max-w-5xl">
             <div className="w-full">
@@ -153,11 +139,10 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                         <div className="group flex items-start gap-4 rounded-2xl p-2 transition hover:bg-white/5">
                           <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-white/10 sm:h-28 sm:w-24">
                             {previewImage ? (
-                              <Image
+                              <img
                                 src={previewImage}
                                 alt={episode.title}
-                                fill
-                                className="object-cover transition duration-300 group-hover:scale-105"
+                                className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                               />
                             ) : (
                               <div className="flex h-full items-center justify-center text-xs text-white/50">

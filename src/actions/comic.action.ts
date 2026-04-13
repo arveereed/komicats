@@ -87,6 +87,9 @@ export async function createComic(formData: FormData) {
       formData.get("thumbnailPublicId")?.toString().trim() || "";
     const cloudinaryFolder =
       formData.get("cloudinaryFolder")?.toString().trim() || "";
+    const previewVideo = formData.get("previewVideo")?.toString().trim() || "";
+    const previewVideoPublicId =
+      formData.get("previewVideoPublicId")?.toString().trim() || "";
 
     // start of Validation
     if (!title) {
@@ -135,6 +138,8 @@ export async function createComic(formData: FormData) {
         description,
         thumbnail: thumbnail || null,
         thumbnailPublicId: thumbnailPublicId || null,
+        previewVideo: previewVideo || null,
+        previewVideoPublicId: previewVideoPublicId || null,
         cloudinaryFolder: cloudinaryFolder || null,
         userId,
         episodes: {
@@ -206,7 +211,18 @@ export async function createComic(formData: FormData) {
 export async function getAllComics() {
   try {
     const comics = await prisma.comic.findMany({
-      include: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        thumbnail: true,
+        thumbnailPublicId: true,
+        previewVideo: true,
+        previewVideoPublicId: true,
+        cloudinaryFolder: true,
+        userId: true,
+        createdAt: true,
+        updatedAt: true,
         user: {
           select: {
             fullname: true,
@@ -218,10 +234,25 @@ export async function getAllComics() {
           orderBy: {
             order: "asc",
           },
-          include: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            comicId: true,
+            order: true,
+            createdAt: true,
+            updatedAt: true,
             images: {
               orderBy: {
                 order: "asc",
+              },
+              select: {
+                id: true,
+                imageUrl: true,
+                publicId: true,
+                order: true,
+                createdAt: true,
+                episodeId: true,
               },
             },
           },
@@ -251,13 +282,49 @@ export async function getComicById(id: string) {
 
   const comic = await prisma.comic.findUnique({
     where: { id },
-    include: {
-      user: true,
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      thumbnail: true,
+      thumbnailPublicId: true,
+      previewVideo: true,
+      previewVideoPublicId: true,
+      cloudinaryFolder: true,
+      userId: true,
+      createdAt: true,
+      updatedAt: true,
+      user: {
+        select: {
+          id: true,
+          fullname: true,
+          email: true,
+          clerkId: true,
+          image: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
       episodes: {
         orderBy: { order: "asc" },
-        include: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          comicId: true,
+          order: true,
+          createdAt: true,
+          updatedAt: true,
           images: {
             orderBy: { order: "asc" },
+            select: {
+              id: true,
+              imageUrl: true,
+              publicId: true,
+              order: true,
+              createdAt: true,
+              episodeId: true,
+            },
           },
         },
       },
@@ -297,6 +364,9 @@ export async function updateComic(formData: FormData) {
     const title = formData.get("title")?.toString().trim() || "";
     const description = formData.get("description")?.toString().trim() || "";
     const thumbnail = formData.get("thumbnail")?.toString().trim() || "";
+    const previewVideo = formData.get("previewVideo")?.toString().trim() || "";
+    const previewVideoPublicId =
+      formData.get("previewVideoPublicId")?.toString().trim() || "";
     const episodesRaw = formData.get("episodes")?.toString() || "[]";
 
     if (!comicId || !title) {
@@ -321,6 +391,8 @@ export async function updateComic(formData: FormData) {
         title,
         description,
         thumbnail: thumbnail || null,
+        previewVideo: previewVideo || null,
+        previewVideoPublicId: previewVideoPublicId || null,
         episodes: {
           deleteMany: {},
           create: episodes.map((item, episodeIndex) => ({
@@ -415,6 +487,7 @@ export async function deleteComic(comicId: string) {
 
   const publicIds = [
     comic.thumbnailPublicId,
+    comic.previewVideoPublicId,
     ...comic.episodes.flatMap((episode) =>
       episode.images.map((image) => image.publicId),
     ),

@@ -91,6 +91,10 @@ model Comic {
   thumbnail         String?
   thumbnailPublicId String?
   cloudinaryFolder  String?
+
+  previewVideo      String?
+  previewVideoPublicId String?
+
   userId            String
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt

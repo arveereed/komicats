@@ -27,8 +27,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import ImageUploadPreview from "./ImageUploadPreview";
 import EpisodeImagesUpload from "./EpisodeImagesUpload";
-import { uploadFileToCloudinary } from "@/actions/cloudinary.action";
 import { updateComic } from "@/actions/comic.action";
+import { uploadFileToCloudinary } from "@/actions/cloudinary.action";
+import { uploadPreviewVideoClient } from "@/lib/uploadPreviewVideoClient";
 
 type ExistingImage = {
   imageUrl: string;
@@ -48,6 +49,9 @@ type EditComicDialogProps = {
     title: string;
     description?: string | null;
     thumbnail: string | null;
+    thumbnailPublicId?: string | null;
+    previewVideo?: string | null;
+    previewVideoPublicId?: string | null;
     cloudinaryFolder?: string | null;
     episodes: {
       id: string;
@@ -88,10 +92,29 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
 
   const [title, setTitle] = useState(comic.title);
   const [description, setDescription] = useState(comic.description ?? "");
+
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [currentThumbnail, setCurrentThumbnail] = useState<string | null>(
     comic.thumbnail,
   );
+
+  const [previewVideo, setPreviewVideo] = useState<File | null>(null);
+  const [currentPreviewVideo, setCurrentPreviewVideo] = useState<string | null>(
+    comic.previewVideo ?? null,
+  );
+  const [uploadedPreviewVideo, setUploadedPreviewVideo] = useState<{
+    url: string;
+    publicId: string | null;
+  } | null>(
+    comic.previewVideo
+      ? {
+          url: comic.previewVideo,
+          publicId: comic.previewVideoPublicId ?? null,
+        }
+      : null,
+  );
+  const [isUploadingPreviewVideo, setIsUploadingPreviewVideo] = useState(false);
+
   const [episodes, setEpisodes] = useState<Episode[]>(
     buildInitialEpisodes(comic),
   );
@@ -109,6 +132,16 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
     setDescription(comic.description ?? "");
     setThumbnail(null);
     setCurrentThumbnail(comic.thumbnail);
+    setPreviewVideo(null);
+    setCurrentPreviewVideo(comic.previewVideo ?? null);
+    setUploadedPreviewVideo(
+      comic.previewVideo
+        ? {
+            url: comic.previewVideo,
+            publicId: comic.previewVideoPublicId ?? null,
+          }
+        : null,
+    );
     setEpisodes(buildInitialEpisodes(comic));
   };
 
@@ -145,6 +178,8 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
     if (description.trim() !== (comic.description ?? "").trim()) return true;
     if (thumbnail) return true;
     if (currentThumbnail !== comic.thumbnail) return true;
+    if (previewVideo) return true;
+    if (currentPreviewVideo !== (comic.previewVideo ?? null)) return true;
 
     const initialEpisodes = buildInitialEpisodes(comic);
     return JSON.stringify(episodes) !== JSON.stringify(initialEpisodes);
@@ -190,6 +225,51 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
     };
   };
 
+  const handlePreviewVideoChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0] ?? null;
+    setPreviewVideo(file);
+
+    if (!file) return;
+
+    if (!file.type.startsWith("video/")) {
+      showAlert(
+        "Invalid preview video",
+        "Please upload a valid video file for the preview.",
+      );
+      setPreviewVideo(null);
+      return;
+    }
+
+    try {
+      setIsUploadingPreviewVideo(true);
+
+      const uploaded = await uploadPreviewVideoClient(file);
+
+      setUploadedPreviewVideo({
+        url: uploaded.url,
+        publicId: uploaded.publicId,
+      });
+
+      setCurrentPreviewVideo(uploaded.url);
+    } catch (error) {
+      console.error(error);
+      setPreviewVideo(null);
+      setUploadedPreviewVideo(null);
+
+      showAlert(
+        "Preview video upload failed",
+        error instanceof Error
+          ? error.message
+          : "Unable to upload preview video.",
+      );
+    } finally {
+      setIsUploadingPreviewVideo(false);
+      e.target.value = "";
+    }
+  };
+
   const toCloudinarySlug = (value: string) =>
     value
       .trim()
@@ -210,6 +290,14 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
       showAlert(
         "Missing comic thumbnail",
         "Please upload a thumbnail image for your comic.",
+      );
+      return;
+    }
+
+    if (isUploadingPreviewVideo) {
+      showAlert(
+        "Preview video still uploading",
+        "Please wait for the preview video upload to finish before updating the comic.",
       );
       return;
     }
@@ -274,6 +362,10 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
           comic.cloudinaryFolder || `comics/${comicSlug}-${comic.id}`;
 
         let thumbnailUrl = currentThumbnail;
+        let previewVideoUrl =
+          uploadedPreviewVideo?.url ?? currentPreviewVideo ?? "";
+        let previewVideoPublicId =
+          uploadedPreviewVideo?.publicId ?? comic.previewVideoPublicId ?? "";
 
         if (thumbnail) {
           const thumbnailUpload = await uploadSingleImage(
@@ -281,6 +373,11 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
             `${comicFolder}/thumbnail`,
           );
           thumbnailUrl = thumbnailUpload.url;
+        }
+
+        if (!currentPreviewVideo && !uploadedPreviewVideo) {
+          previewVideoUrl = "";
+          previewVideoPublicId = "";
         }
 
         const uploadedEpisodes = await Promise.all(
@@ -313,6 +410,11 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
         formData.append("title", title.trim());
         formData.append("description", description.trim());
         formData.append("thumbnail", thumbnailUrl || "");
+        formData.append("previewVideo", previewVideoUrl || "");
+        formData.append(
+          "previewVideoPublicId",
+          typeof previewVideoPublicId === "string" ? previewVideoPublicId : "",
+        );
         formData.append("cloudinaryFolder", comicFolder);
         formData.append("episodes", JSON.stringify(uploadedEpisodes));
 
@@ -359,6 +461,12 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
   const removeCurrentThumbnail = () => {
     setCurrentThumbnail(null);
     setThumbnail(null);
+  };
+
+  const removeCurrentPreviewVideo = () => {
+    setCurrentPreviewVideo(null);
+    setPreviewVideo(null);
+    setUploadedPreviewVideo(null);
   };
 
   return (
@@ -439,6 +547,47 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
                 value={thumbnail}
                 onChange={setThumbnail}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-white/80">
+                Preview Video <span className="text-white/40">(Optional)</span>
+              </Label>
+
+              {currentPreviewVideo ? (
+                <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+                  <div className="relative h-40 w-full bg-white/5 sm:h-48">
+                    <video
+                      src={currentPreviewVideo}
+                      controls
+                      className="h-full w-full object-cover"
+                    />
+
+                    <Button
+                      type="button"
+                      size="icon"
+                      className="absolute right-2 top-2 z-10 h-8 w-8 rounded-full border border-red-500/20 bg-red-500/90 text-white hover:bg-red-500"
+                      onClick={removeCurrentPreviewVideo}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+
+              <Input
+                type="file"
+                accept="video/mp4,video/webm,video/ogg"
+                onChange={handlePreviewVideoChange}
+                disabled={isUploadingPreviewVideo}
+                className="border-white/10 bg-white/5 text-white file:mr-4 file:rounded-xl file:border-0 file:bg-white file:px-3 file:py-2 file:text-sm file:font-medium file:text-black hover:file:bg-white/90 disabled:opacity-60"
+              />
+
+              <p className="text-xs text-white/45">
+                {isUploadingPreviewVideo
+                  ? "Uploading preview video..."
+                  : "Upload a short preview video that plays on hover and on the hero section when visible."}
+              </p>
             </div>
 
             <div className="space-y-4">
@@ -575,7 +724,7 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
 
               <Button
                 type="submit"
-                disabled={isPending}
+                disabled={isPending || isUploadingPreviewVideo}
                 className="w-full rounded-2xl bg-white text-black hover:bg-white/90 sm:w-auto"
               >
                 {isPending ? "Updating..." : "Update Comic"}

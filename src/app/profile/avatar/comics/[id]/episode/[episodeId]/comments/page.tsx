@@ -1,5 +1,5 @@
 import { getComments } from "@/actions/comment.action";
-import Comments from "@/components/comic/Comments";
+import Comments from "@/app/comic/Comments";
 
 type CommentsPageProps = {
   params: Promise<{

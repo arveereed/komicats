@@ -11,11 +11,11 @@ import {
 } from "lucide-react";
 
 import { getComicById } from "@/actions/comic.action";
-import { LockedEpisodeCard } from "@/components/comic/locked-episode-card";
+import { LockedEpisodeCard } from "@/app/comic/locked-episode-card";
 import { Button } from "@/components/ui/button";
-import { EpisodeRowCard } from "@/components/comic/EpisodeRowCard";
-import { ComicDownloadButton } from "@/components/comic/ComicDownloadButton";
-import { ComicReactionButtons } from "@/components/comic/ComicReactionButtons";
+import { EpisodeRowCard } from "@/app/comic/EpisodeRowCard";
+import { ComicDownloadButton } from "@/app/comic/ComicDownloadButton";
+import { ComicReactionButtons } from "@/app/comic/ComicReactionButtons";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 
