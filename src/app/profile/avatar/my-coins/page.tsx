@@ -48,7 +48,7 @@ export default async function MyCoinsPage() {
   const coins = user.coins ?? 0;
 
   return (
-    <div className="relative pb-24 z-10 max-w-7xl mx-auto px-4 py-8">
+    <div className="relative pb-24 z-10 max-w-7xl mx-auto px-4">
       <MyCoinsComponent
         stats={{
           coins,
