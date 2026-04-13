@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Trash2, X } from "lucide-react";
+import { ChevronUp, Plus, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -73,6 +73,7 @@ export default function AddNewComic() {
   const [episodes, setEpisodes] = useState<Episode[]>(createInitialEpisodes());
   const [isUploadingPages, setIsUploadingPages] = useState(false);
 
+  const episodesHeaderRef = useRef<HTMLDivElement | null>(null);
   const episodesEndRef = useRef<HTMLDivElement | null>(null);
 
   const showAlert = (title: string, message: string) => {
@@ -86,6 +87,13 @@ export default function AddNewComic() {
       ...prev,
       { episode: "", description: "", images: [] },
     ]);
+  };
+
+  const scrollToEpisodesTop = () => {
+    episodesHeaderRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
   const removeEpisode = (index: number) => {
@@ -480,40 +488,109 @@ export default function AddNewComic() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-white/80">
+            <div className="space-y-3">
+              <Label className="text-sm font-medium text-white">
                 Preview Video <span className="text-white/40">(Optional)</span>
               </Label>
 
-              {previewVideoPreviewUrl ? (
-                <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-                  <div className="relative h-40 w-full bg-white/5 sm:h-48">
-                    <video
-                      src={previewVideoPreviewUrl}
-                      controls
-                      className="h-full w-full object-cover"
-                    />
-                    <Button
-                      type="button"
-                      size="icon"
-                      className="absolute right-2 top-2 z-10 h-8 w-8 rounded-full border border-red-500/20 bg-red-500/90 text-white hover:bg-red-500"
-                      onClick={removePreviewVideo}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ) : null}
+              <div className="overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-white/[0.07] to-white/[0.03] shadow-[0_20px_60px_rgba(0,0,0,0.25)] backdrop-blur-xl">
+                {previewVideoPreviewUrl ? (
+                  <div className="space-y-0">
+                    <div className="relative h-52 w-full overflow-hidden bg-black sm:h-64">
+                      <video
+                        src={previewVideoPreviewUrl}
+                        controls
+                        className="h-full w-full object-cover"
+                      />
 
-              <Input
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+                      <Button
+                        type="button"
+                        size="icon"
+                        className="absolute right-3 top-3 z-10 h-9 w-9 rounded-full border border-red-400/20 bg-red-500/90 text-white shadow-lg backdrop-blur-md hover:bg-red-500"
+                        onClick={removePreviewVideo}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+
+                      {isUploadingPreviewVideo && (
+                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/55 backdrop-blur-sm">
+                          <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-medium text-white shadow-xl">
+                            Uploading preview video...
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3 border-t border-white/10 px-4 py-3">
+                      <div>
+                        <p className="text-sm font-medium text-white/90">
+                          Preview ready
+                        </p>
+                        <p className="text-xs text-white/50">
+                          Users will see this as the comic preview video
+                        </p>
+                      </div>
+
+                      <label htmlFor="preview-video-upload">
+                        <span className="inline-flex cursor-pointer items-center rounded-2xl border border-white/10 bg-white/10 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-white/20 hover:bg-white/15">
+                          Replace video
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative overflow-hidden px-6 py-10">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_45%)]" />
+
+                    <div className="relative flex flex-col items-center justify-center text-center">
+                      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/10 shadow-inner">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          className="h-8 w-8 text-white/70"
+                        >
+                          <path d="M4 6.75A2.75 2.75 0 0 1 6.75 4h6.5A2.75 2.75 0 0 1 16 6.75v1.69l2.72-1.814A1.75 1.75 0 0 1 21 8.091v7.818a1.75 1.75 0 0 1-2.28 1.456L16 15.56v1.69A2.75 2.75 0 0 1 13.25 20h-6.5A2.75 2.75 0 0 1 4 17.25v-10.5Z" />
+                        </svg>
+                      </div>
+
+                      <h4 className="text-sm font-semibold text-white">
+                        Upload preview video
+                      </h4>
+                      <p className="mt-1 max-w-md text-xs leading-relaxed text-white/50">
+                        Add a short teaser video that helps users preview the
+                        comic before opening it.
+                      </p>
+
+                      <label
+                        htmlFor="preview-video-upload"
+                        className="mt-5 inline-flex cursor-pointer items-center rounded-2xl border border-white/10 bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:border-white/20 hover:bg-white/15"
+                      >
+                        {isUploadingPreviewVideo
+                          ? "Uploading..."
+                          : "Choose video"}
+                      </label>
+
+                      <p className="mt-3 text-[11px] text-white/40">
+                        Supports MP4, WEBM, and OGG
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <input
+                id="preview-video-upload"
                 type="file"
                 accept="video/mp4,video/webm,video/ogg"
                 onChange={handlePreviewVideoChange}
                 disabled={isUploadingPreviewVideo}
-                className="border-white/10 bg-white/5 text-white file:mr-4 file:rounded-xl file:border-0 file:bg-white file:px-3 file:py-2 file:text-sm file:font-medium file:text-black hover:file:bg-white/90 disabled:opacity-60"
+                className="hidden"
               />
 
-              <p className="text-xs text-white/45">
+              <p className="px-1 text-xs text-white/45">
                 {isUploadingPreviewVideo
                   ? "Uploading preview video..."
                   : "Upload a short preview video that plays on hover."}
@@ -521,18 +598,23 @@ export default function AddNewComic() {
             </div>
 
             <div className="space-y-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div
+                ref={episodesHeaderRef}
+                className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+              >
                 <Label className="text-white/80">Episodes</Label>
 
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={addEpisode}
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-white sm:w-auto"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Episode
-                </Button>
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={addEpisode}
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-white sm:w-auto"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Episode
+                  </Button>
+                </div>
               </div>
 
               {episodes.map((item, index) => (
@@ -643,6 +725,15 @@ export default function AddNewComic() {
                 </div>
               ))}
 
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={scrollToEpisodesTop}
+                className="w-full rounded-2xl border border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-white sm:w-auto"
+              >
+                <ChevronUp className="mr-2 h-4 w-4" />
+                Back to Top
+              </Button>
               <div ref={episodesEndRef} />
             </div>
 
