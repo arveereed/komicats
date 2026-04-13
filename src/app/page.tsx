@@ -1,21 +1,12 @@
-import { getDbUserId } from "@/actions/user.action";
-import AnimeBlogClient from "@/components/AnimeBlogClient";
 import prisma from "@/lib/prisma";
+import AnimeBlogClient from "@/components/AnimeBlogClient";
 
-export default async function AnimeBlogPage() {
-  const userId = await getDbUserId();
-
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
-
+export default async function HomePage() {
   const posts = await prisma.post.findMany({
-    where: {
-      userId,
-    },
     orderBy: {
       createdAt: "desc",
     },
+    take: 6,
   });
 
   return <AnimeBlogClient posts={posts} />;
