@@ -1,11 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import { Pencil, Plus, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -30,17 +32,17 @@ import EpisodeImagesUpload from "./EpisodeImagesUpload";
 import { updateComic } from "@/actions/comic.action";
 import { uploadFileToCloudinary } from "@/actions/cloudinary.action";
 import { uploadPreviewVideoClient } from "@/lib/uploadPreviewVideoClient";
+import { uploadImageClient } from "@/lib/uploadImageClient";
 
-type ExistingImage = {
-  imageUrl: string;
-  publicId?: string | null;
+type UploadedImage = {
+  url: string;
+  publicId: string | null;
 };
 
 type Episode = {
   episode: string;
   description: string;
-  images: File[];
-  existingImages: ExistingImage[];
+  images: UploadedImage[];
 };
 
 type EditComicDialogProps = {
@@ -73,13 +75,12 @@ const buildInitialEpisodes = (
     ? comic.episodes.map((ep) => ({
         episode: ep.title,
         description: ep.description,
-        images: [],
-        existingImages: ep.images.map((img) => ({
-          imageUrl: img.imageUrl,
+        images: ep.images.map((img) => ({
+          url: img.imageUrl,
           publicId: img.publicId ?? null,
         })),
       }))
-    : [{ episode: "", description: "", images: [], existingImages: [] }];
+    : [{ episode: "", description: "", images: [] }];
 
 export default function EditComicDialog({ comic }: EditComicDialogProps) {
   const [alertOpen, setAlertOpen] = useState(false);
@@ -118,6 +119,7 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
   const [episodes, setEpisodes] = useState<Episode[]>(
     buildInitialEpisodes(comic),
   );
+  const [isUploadingPages, setIsUploadingPages] = useState(false);
 
   const episodesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -148,7 +150,7 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
   const addEpisode = () => {
     setEpisodes((prev) => [
       ...prev,
-      { episode: "", description: "", images: [], existingImages: [] },
+      { episode: "", description: "", images: [] },
     ]);
   };
 
@@ -270,6 +272,42 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
     }
   };
 
+  const handleEpisodeImagesChange = async (
+    episodeIndex: number,
+    files: File[],
+  ) => {
+    if (!files.length) return;
+
+    try {
+      setIsUploadingPages(true);
+
+      const uploaded = await Promise.all(
+        files.map((file) => uploadImageClient(file)),
+      );
+
+      setEpisodes((prev) =>
+        prev.map((item, i) =>
+          i === episodeIndex
+            ? {
+                ...item,
+                images: [...item.images, ...uploaded],
+              }
+            : item,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+      showAlert(
+        "Episode image upload failed",
+        error instanceof Error
+          ? error.message
+          : "Unable to upload episode images.",
+      );
+    } finally {
+      setIsUploadingPages(false);
+    }
+  };
+
   const toCloudinarySlug = (value: string) =>
     value
       .trim()
@@ -302,6 +340,14 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
       return;
     }
 
+    if (isUploadingPages) {
+      showAlert(
+        "Episode pages still uploading",
+        "Please wait for the episode image upload to finish before updating the comic.",
+      );
+      return;
+    }
+
     if (episodes.length === 0) {
       showAlert(
         "No episodes added",
@@ -314,7 +360,7 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
       (item) =>
         !item.episode.trim() ||
         !item.description.trim() ||
-        item.existingImages.length + item.images.length === 0,
+        item.images.length === 0,
     );
 
     if (invalidEpisodeIndex !== -1) {
@@ -337,10 +383,7 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
         return;
       }
 
-      if (
-        invalidEpisode.existingImages.length + invalidEpisode.images.length ===
-        0
-      ) {
+      if (invalidEpisode.images.length === 0) {
         showAlert(
           `Episode ${episodeNumber} is incomplete`,
           `Please upload at least one image for Episode ${episodeNumber}.`,
@@ -380,30 +423,11 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
           previewVideoPublicId = "";
         }
 
-        const uploadedEpisodes = await Promise.all(
-          episodes.map(async (item, episodeIndex) => {
-            const newImageUploads = await Promise.all(
-              item.images.map((imageFile, imageIndex) =>
-                uploadSingleImage(
-                  imageFile,
-                  `${comicFolder}/episodes/episode-${episodeIndex + 1}/pages/page-${imageIndex + 1}`,
-                ),
-              ),
-            );
-
-            return {
-              episode: item.episode.trim(),
-              description: item.description.trim(),
-              images: [
-                ...item.existingImages.map((img) => ({
-                  url: img.imageUrl,
-                  publicId: img.publicId ?? null,
-                })),
-                ...newImageUploads,
-              ],
-            };
-          }),
-        );
+        const uploadedEpisodes = episodes.map((item) => ({
+          episode: item.episode.trim(),
+          description: item.description.trim(),
+          images: item.images,
+        }));
 
         const formData = new FormData();
         formData.append("comicId", comic.id);
@@ -443,15 +467,13 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
     });
   };
 
-  const removeExistingImage = (episodeIndex: number, imageIndex: number) => {
+  const removeEpisodeImage = (episodeIndex: number, imageIndex: number) => {
     setEpisodes((prev) =>
       prev.map((episode, i) =>
         i === episodeIndex
           ? {
               ...episode,
-              existingImages: episode.existingImages.filter(
-                (_, imgI) => imgI !== imageIndex,
-              ),
+              images: episode.images.filter((_, imgI) => imgI !== imageIndex),
             }
           : episode,
       ),
@@ -663,48 +685,92 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
                     />
                   </div>
 
-                  {item.existingImages.length > 0 && (
-                    <div className="space-y-2">
-                      <Label className="text-white/80">Current Pages</Label>
-                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                        {item.existingImages.map((img, imgIndex) => (
-                          <div
-                            key={`${img.imageUrl}-${imgIndex}`}
-                            className="overflow-hidden rounded-2xl border border-white/10 bg-white/5"
-                          >
-                            <div className="relative h-28 w-full bg-white/5 sm:h-32">
-                              <img
-                                src={img.imageUrl}
-                                alt={`Episode ${index + 1} page ${imgIndex + 1}`}
-                                className="h-full w-full object-cover"
-                              />
-
-                              <Button
-                                type="button"
-                                size="icon"
-                                className="absolute right-2 top-2 z-10 h-7 w-7 rounded-full border border-red-500/20 bg-red-500/90 text-white hover:bg-red-500"
-                                onClick={() =>
-                                  removeExistingImage(index, imgIndex)
-                                }
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-
-                            <div className="border-t border-white/10 px-3 py-2 text-xs text-white/55">
-                              Existing page {imgIndex + 1}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
                   <EpisodeImagesUpload
                     label={`Add More Pages to Episode ${index + 1}`}
-                    value={item.images}
-                    onChange={(files) => updateEpisode(index, "images", files)}
+                    onChange={(files) =>
+                      handleEpisodeImagesChange(index, files)
+                    }
+                    disabled={isUploadingPages}
+                    isUploading={isUploadingPages}
+                    hasImages={item.images.length > 0}
                   />
+
+                  {item.images.length > 0 && (
+                    <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                      {item.images.map((img, imgIndex) => (
+                        <div
+                          key={`${img.url}-${imgIndex}`}
+                          className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-xl backdrop-blur-md"
+                        >
+                          <div className="relative h-40 w-full bg-white/5">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="relative block h-full w-full cursor-zoom-in"
+                                >
+                                  <Image
+                                    src={img.url}
+                                    alt={`Episode ${index + 1} page ${imgIndex + 1}`}
+                                    fill
+                                    className="object-cover transition duration-300 hover:scale-105"
+                                    unoptimized
+                                  />
+                                </button>
+                              </DialogTrigger>
+
+                              <DialogContent className="w-[95vw] max-w-6xl border-none bg-transparent p-0 shadow-none">
+                                <DialogTitle className="sr-only">
+                                  Episode {index + 1} page {imgIndex + 1} full
+                                  preview
+                                </DialogTitle>
+
+                                <div className="relative flex max-h-[90vh] min-h-[300px] w-full items-center justify-center overflow-hidden rounded-[28px] border border-white/10 bg-slate-950/95 p-2 shadow-2xl backdrop-blur-xl sm:p-4">
+                                  <DialogClose asChild>
+                                    <Button
+                                      type="button"
+                                      size="icon"
+                                      className="absolute right-3 top-3 z-50 rounded-full border border-white/10 bg-white/10 text-white hover:bg-white/20"
+                                    >
+                                      <X className="h-5 w-5" />
+                                    </Button>
+                                  </DialogClose>
+
+                                  <div className="relative h-[75vh] w-full">
+                                    <Image
+                                      src={img.url}
+                                      alt={`Episode ${index + 1} page ${imgIndex + 1} full preview`}
+                                      fill
+                                      className="object-contain"
+                                      unoptimized
+                                    />
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+
+                            <Button
+                              type="button"
+                              size="icon"
+                              className="absolute right-2 top-2 z-10 h-7 w-7 rounded-full border border-red-500/20 bg-red-500/90 text-white hover:bg-red-500"
+                              onClick={() =>
+                                removeEpisodeImage(index, imgIndex)
+                              }
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+
+                          <div className="border-t border-white/10 px-3 py-2 text-xs text-white/55">
+                            <div>Page {imgIndex + 1}</div>
+                            <div className="truncate">
+                              URL: {img.url.split("/").pop()}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
 
@@ -724,7 +790,9 @@ export default function EditComicDialog({ comic }: EditComicDialogProps) {
 
               <Button
                 type="submit"
-                disabled={isPending || isUploadingPreviewVideo}
+                disabled={
+                  isPending || isUploadingPreviewVideo || isUploadingPages
+                }
                 className="w-full rounded-2xl bg-white text-black hover:bg-white/90 sm:w-auto"
               >
                 {isPending ? "Updating..." : "Update Comic"}
