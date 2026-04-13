@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -30,11 +30,17 @@ import { createComic } from "@/actions/comic.action";
 import { uploadFileToCloudinary } from "@/actions/cloudinary.action";
 import EpisodeImagesUpload from "./EpisodeImagesUpload";
 import { uploadPreviewVideoClient } from "@/lib/uploadPreviewVideoClient";
+import { uploadImageClient } from "@/lib/uploadImageClient";
+
+type UploadedImage = {
+  url: string;
+  publicId: string | null;
+};
 
 type Episode = {
   episode: string;
   description: string;
-  images: File[];
+  images: UploadedImage[];
 };
 
 const createInitialEpisodes = (): Episode[] => [
@@ -65,6 +71,7 @@ export default function AddNewComic() {
   const [isUploadingPreviewVideo, setIsUploadingPreviewVideo] = useState(false);
 
   const [episodes, setEpisodes] = useState<Episode[]>(createInitialEpisodes());
+  const [isUploadingPages, setIsUploadingPages] = useState(false);
 
   const episodesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -214,10 +221,59 @@ export default function AddNewComic() {
     }
   };
 
+  const handleEpisodeImagesChange = async (
+    episodeIndex: number,
+    files: File[],
+  ) => {
+    if (!files.length) return;
+
+    try {
+      setIsUploadingPages(true);
+
+      const uploaded = await Promise.all(
+        files.map((file) => uploadImageClient(file)),
+      );
+
+      setEpisodes((prev) =>
+        prev.map((item, i) =>
+          i === episodeIndex
+            ? {
+                ...item,
+                images: [...item.images, ...uploaded],
+              }
+            : item,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+      showAlert(
+        "Episode image upload failed",
+        error instanceof Error
+          ? error.message
+          : "Unable to upload episode images.",
+      );
+    } finally {
+      setIsUploadingPages(false);
+    }
+  };
+
   const removePreviewVideo = () => {
     setPreviewVideo(null);
     setUploadedPreviewVideo(null);
     setPreviewVideoPreviewUrl(null);
+  };
+
+  const removeEpisodeImage = (episodeIndex: number, imageIndex: number) => {
+    setEpisodes((prev) =>
+      prev.map((episode, i) =>
+        i === episodeIndex
+          ? {
+              ...episode,
+              images: episode.images.filter((_, imgI) => imgI !== imageIndex),
+            }
+          : episode,
+      ),
+    );
   };
 
   const toCloudinarySlug = (value: string) =>
@@ -256,6 +312,14 @@ export default function AddNewComic() {
       showAlert(
         "Preview video still uploading",
         "Please wait for the preview video upload to finish before saving.",
+      );
+      return;
+    }
+
+    if (isUploadingPages) {
+      showAlert(
+        "Episode pages still uploading",
+        "Please wait for the episode image upload to finish before saving.",
       );
       return;
     }
@@ -319,24 +383,11 @@ export default function AddNewComic() {
           `${comicFolder}/thumbnail`,
         );
 
-        const uploadedEpisodes = await Promise.all(
-          episodes.map(async (item, episodeIndex) => {
-            const imageUploads = await Promise.all(
-              item.images.map((imageFile, imageIndex) =>
-                uploadSingleImage(
-                  imageFile,
-                  `${comicFolder}/episodes/episode-${episodeIndex + 1}/pages/page-${imageIndex + 1}`,
-                ),
-              ),
-            );
-
-            return {
-              episode: item.episode.trim(),
-              description: item.description.trim(),
-              images: imageUploads,
-            };
-          }),
-        );
+        const uploadedEpisodes = episodes.map((item) => ({
+          episode: item.episode.trim(),
+          description: item.description.trim(),
+          images: item.images,
+        }));
 
         const formData = new FormData();
         formData.append("title", title.trim());
@@ -448,7 +499,7 @@ export default function AddNewComic() {
                       className="absolute right-2 top-2 z-10 h-8 w-8 rounded-full border border-red-500/20 bg-red-500/90 text-white hover:bg-red-500"
                       onClick={removePreviewVideo}
                     >
-                      ×
+                      <X className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -543,10 +594,51 @@ export default function AddNewComic() {
                     />
                   </div>
 
+                  {item.images.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-white/80">Uploaded Pages</Label>
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                        {item.images.map((img, imgIndex) => (
+                          <div
+                            key={`${img.url}-${imgIndex}`}
+                            className="overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+                          >
+                            <div className="relative h-28 w-full bg-white/5 sm:h-32">
+                              <img
+                                src={img.url}
+                                alt={`Episode ${index + 1} page ${imgIndex + 1}`}
+                                className="h-full w-full object-cover"
+                              />
+
+                              <Button
+                                type="button"
+                                size="icon"
+                                className="absolute right-2 top-2 z-10 h-7 w-7 rounded-full border border-red-500/20 bg-red-500/90 text-white hover:bg-red-500"
+                                onClick={() =>
+                                  removeEpisodeImage(index, imgIndex)
+                                }
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+
+                            <div className="border-t border-white/10 px-3 py-2 text-xs text-white/55">
+                              Uploaded page {imgIndex + 1}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <EpisodeImagesUpload
                     label={`Episode ${index + 1} Pages`}
-                    value={item.images}
-                    onChange={(files) => updateEpisode(index, "images", files)}
+                    onChange={(files) =>
+                      handleEpisodeImagesChange(index, files)
+                    }
+                    disabled={isUploadingPages}
+                    isUploading={isUploadingPages}
+                    hasImages={item.images.length > 0}
                   />
                 </div>
               ))}
@@ -567,7 +659,9 @@ export default function AddNewComic() {
 
               <Button
                 type="submit"
-                disabled={isPending || isUploadingPreviewVideo}
+                disabled={
+                  isPending || isUploadingPreviewVideo || isUploadingPages
+                }
                 className="w-full rounded-2xl bg-white text-black hover:bg-white/90 sm:w-auto"
               >
                 {isPending ? "Saving..." : "Save Comic"}
