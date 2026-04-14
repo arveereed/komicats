@@ -242,7 +242,12 @@ export default function PostsCrud({ posts, hero }: Props) {
     startTransition(async () => {
       try {
         if (isEditingPost) {
-          await updatePostAction(formData);
+          const result = await updatePostAction(formData);
+
+          if (!result.ok) {
+            setPostError(result.message ?? "Something went wrong");
+            return;
+          }
         } else {
           await createPostAction(formData);
         }
