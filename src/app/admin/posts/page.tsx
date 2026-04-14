@@ -1,4 +1,4 @@
-import PostsCrud from "@/components/admin/PostsCrud";
+import PostsCrud from "@/components/admin/posts/PostsCrud";
 import prisma from "@/lib/prisma";
 import { currentUser } from "@clerk/nextjs/server";
 import { notFound } from "next/navigation";
