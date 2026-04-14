@@ -6,6 +6,7 @@ import { getComicById } from "@/actions/comic.action";
 import { Button } from "@/components/ui/button";
 import { ComicDownloadButton } from "@/components/comic/ComicDownloadButton";
 import ComicHeroPreview from "@/components/comic/ComicHeroPreview";
+import ExpandableDescription from "@/components/comic/ExpandableDescription";
 
 type PageProps = {
   params: Promise<{
@@ -56,7 +57,7 @@ export default async function ComicDetailsPage({ params }: PageProps) {
             </Link>
           </div>
 
-          <div className="absolute inset-x-0 bottom-0 z-20">
+          <div className="absolute inset-x-0 bottom-5 z-20">
             <div className="bg-[linear-gradient(180deg,rgba(19,31,36,0.72)_0%,rgba(8,15,18,0.94)_100%)] px-4 pb-6 pt-4 backdrop-blur-md sm:px-6">
               <div className="mx-auto max-w-5xl">
                 <h1 className="text-[18px] font-semibold leading-tight sm:text-[32px]">
@@ -102,11 +103,14 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                   </div>
                 </div>
 
-                <p className="mt-4 max-w-4xl text-xs leading-5 text-white/75 sm:text-sm">
-                  {comic.description?.trim() ||
+                <ExpandableDescription
+                  collapsedLines={4}
+                  text={
+                    comic.description?.trim() ||
                     comic.episodes?.[0]?.description ||
-                    "No description available yet."}
-                </p>
+                    "No description available yet."
+                  }
+                />
               </div>
             </div>
           </div>
