@@ -162,6 +162,7 @@ export default function NotificationCard({
               <ExpandableDescription
                 collapsedLines={4}
                 text={meta.description?.trim()}
+                isNotificationCard={true}
               />
 
               <p className="pt-1 text-sm text-white/45 sm:text-base">

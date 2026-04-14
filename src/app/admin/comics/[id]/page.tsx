@@ -105,11 +105,8 @@ export default async function ComicDetailsPage({ params }: PageProps) {
 
                 <ExpandableDescription
                   collapsedLines={4}
-                  text={
-                    comic.description?.trim() ||
-                    comic.episodes?.[0]?.description ||
-                    "No description available yet."
-                  }
+                  text={comic.description?.trim()}
+                  isNotificationCard={false}
                 />
               </div>
             </div>
