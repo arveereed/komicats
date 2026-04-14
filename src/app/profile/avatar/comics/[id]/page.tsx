@@ -11,6 +11,7 @@ import { ComicReactionButtons } from "@/components/comic/ComicReactionButtons";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import ComicHeroPreview from "@/components/comic/ComicHeroPreview";
+import ExpandableDescription from "@/components/comic/ExpandableDescription";
 
 type PageProps = {
   params: Promise<{
@@ -152,11 +153,14 @@ export default async function ComicDetailsPage({ params }: PageProps) {
                   </div>
                 </div>
 
-                <p className="mt-4 max-w-4xl text-xs leading-5 text-white/75 sm:text-sm">
-                  {comic.description?.trim() ||
+                <ExpandableDescription
+                  collapsedLines={4}
+                  text={
+                    comic.description?.trim() ||
                     comic.episodes?.[0]?.description ||
-                    "No description available yet."}
-                </p>
+                    "No description available yet."
+                  }
+                />
 
                 <ComicReactionButtons
                   comicId={comic.id}
