@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { getNotifications } from "@/actions/notification.action";
+import ExpandableDescription from "./comic/ExpandableDescription";
 
 type Notifications = Awaited<ReturnType<typeof getNotifications>>;
 type NotificationItem = Notifications[number];
@@ -158,9 +159,10 @@ export default function NotificationCard({
                 ) : null}
               </div>
 
-              <p className="max-w-3xl text-sm leading-7 text-white/70 sm:text-base">
-                {meta.description}
-              </p>
+              <ExpandableDescription
+                collapsedLines={4}
+                text={meta.description?.trim()}
+              />
 
               <p className="pt-1 text-sm text-white/45 sm:text-base">
                 {new Date(item.createdAt).toLocaleString("en-PH", {

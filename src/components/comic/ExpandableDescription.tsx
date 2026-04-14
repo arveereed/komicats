@@ -27,7 +27,7 @@ export default function ExpandableDescription({
     <div className="mt-4">
       <p
         className={[
-          "max-w-4xl text-xs leading-5 text-white/75 sm:text-sm",
+          "max-w-4xl text-sm leading-5 text-white/75 sm:text-base",
           !expanded ? clampClass : "",
         ].join(" ")}
       >
