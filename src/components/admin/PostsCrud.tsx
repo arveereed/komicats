@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import PostCard from "@/components/PostCard";
 import InstallButton from "@/components/pwa/install-button";
 import {
@@ -36,6 +36,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { notFound, useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 type Post = {
   id: string;
@@ -116,6 +118,30 @@ export default function PostsCrud({ posts, hero }: Props) {
   const isEditingPost = !!postForm.postId;
   const isEditingHero = !!heroForm.heroId;
   const isBusy = isPending || isUploadingPost || isUploadingHero;
+
+  const { isSignedIn, isLoaded: userLoaded, user: clerkUser } = useUser();
+
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  const router = useRouter();
+
+  const isAdmin =
+    !!adminEmail && clerkUser?.emailAddresses[0].emailAddress === adminEmail;
+  const isGuest = !clerkUser && !isSignedIn;
+
+  useEffect(() => {
+    if (!userLoaded) return;
+
+    if (isGuest) {
+      router.replace("/auth/sign-in");
+      return;
+    }
+
+    if (isAdmin) {
+      router.replace("/admin/posts");
+    } else {
+      return notFound();
+    }
+  }, [userLoaded, isGuest, isAdmin, router]);
 
   function resetPostForm() {
     setPostForm(initialPostForm);
