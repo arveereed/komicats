@@ -500,7 +500,7 @@ function MobileNavbar({
                     >
                       <Link href="/profile/avatar/my-coins">
                         <BellIcon className="h-4 w-4" />
-                        My Coins
+                        Games
                       </Link>
                     </Button>
 

@@ -9,8 +9,8 @@ import { useIsInstalledApp } from "@/hooks/useIsInstalledApp";
 
 const navItems = [
   { label: "Home", href: "/profile/avatar/profile", icon: Home },
-  { label: "Shop", href: "/profile/avatar/shop", icon: ShoppingBag },
   { label: "Games", href: "/profile/avatar/my-coins", icon: Gamepad2 },
+  { label: "Shop", href: "/profile/avatar/shop", icon: ShoppingBag },
   { label: "My List", href: "/profile/avatar/my-list", icon: Plus },
 ];
 

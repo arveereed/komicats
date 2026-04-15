@@ -150,7 +150,7 @@ export default function DesktopNavbar({
                 pathname.includes("/profile/avatar/shop"),
               )}
             >
-              My Coins
+              Shop
               {pathname.includes("/profile/avatar/shop") && (
                 <span className="absolute -bottom-1 left-0 h-px w-full bg-teal-300" />
               )}
