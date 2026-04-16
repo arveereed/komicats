@@ -24,8 +24,7 @@ export default function OfflinePage() {
   }, []);
 
   const handleGoBack = () => {
-    const lastOnlinePath = sessionStorage.getItem("last-online-path") || "/";
-    router.replace(lastOnlinePath);
+    router.replace("/");
     router.refresh();
   };
 
