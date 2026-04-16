@@ -12,18 +12,33 @@ export default function OfflineWatcher() {
       sessionStorage.setItem("last-online-path", pathname);
     }
 
-    const handleOffline = () => {
+    const redirectToOffline = () => {
       if (!navigator.onLine && pathname !== "/offline") {
         router.replace("/offline");
       }
     };
 
-    handleOffline();
+    const handleOnline = () => {
+      if (pathname === "/offline") {
+        const lastOnlinePath =
+          sessionStorage.getItem("last-online-path") || "/";
+        router.replace(lastOnlinePath);
+        router.refresh();
+      }
+    };
 
-    window.addEventListener("offline", handleOffline);
+    redirectToOffline();
+
+    window.addEventListener("offline", redirectToOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("pageshow", redirectToOffline);
+    document.addEventListener("visibilitychange", redirectToOffline);
 
     return () => {
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("offline", redirectToOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("pageshow", redirectToOffline);
+      document.removeEventListener("visibilitychange", redirectToOffline);
     };
   }, [pathname, router]);
 

@@ -1,9 +1,10 @@
-// src/app/(protected)/layout.tsx
+export const dynamic = "force-dynamic";
+
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNavbar";
 import MobileAppHeader from "@/components/MobileAppHeader";
 import Image from "next/image";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { getProfiles } from "@/actions/profile.action";
 import { syncUser } from "@/actions/user.action";
 import { getUnreadNotificationCount } from "@/actions/notification.action";
@@ -13,25 +14,51 @@ export default async function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const clerkUser = await currentUser();
+  let userId: string | null = null;
 
-  const adminEmail = process.env.ADMIN_EMAIL;
-  const isAdmin =
-    !!adminEmail && clerkUser?.emailAddresses[0]?.emailAddress === adminEmail;
+  try {
+    const authData = await auth();
+    userId = authData.userId;
+  } catch (error) {
+    console.error("Clerk auth failed in protected layout:", error);
+    userId = null;
+  }
 
-  const profiles = await getProfiles();
-  const user = await syncUser();
-  const notificationsCount = await getUnreadNotificationCount();
+  type Profiles = Awaited<ReturnType<typeof getProfiles>>;
+  type UserData = Awaited<ReturnType<typeof syncUser>>;
+  type NotificationCount = Awaited<
+    ReturnType<typeof getUnreadNotificationCount>
+  >;
+
+  let profiles: Profiles = [];
+  let user: UserData = null;
+  let notificationsCount: NotificationCount = 0;
+
+  if (userId) {
+    try {
+      profiles = await getProfiles();
+    } catch (error) {
+      console.error("getProfiles failed:", error);
+    }
+
+    try {
+      user = await syncUser();
+    } catch (error) {
+      console.error("syncUser failed:", error);
+    }
+
+    try {
+      notificationsCount = await getUnreadNotificationCount();
+    } catch (error) {
+      console.error("getUnreadNotificationCount failed:", error);
+    }
+  }
+
+  const isAdmin = false;
   const activeProfileId = user?.activeProfileId ?? null;
 
   return (
-    <main
-      className={
-        isAdmin
-          ? "relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white"
-          : "relative min-h-screen overflow-hidden bg-[#07141a] text-white"
-      }
-    >
+    <main className="relative min-h-screen overflow-hidden bg-[#07141a] text-white">
       <Navbar />
 
       <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center -bottom-96 -left-[700px]">

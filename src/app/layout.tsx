@@ -6,6 +6,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import PWARegister from "@/components/pwa/PWARegister";
 import OfflineWatcher from "@/components/pwa/OfflineWatcher";
+import StartupNetworkGuard from "@/components/pwa/StartupNetworkGuard";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
+          <StartupNetworkGuard />
           <PWARegister />
           <OfflineWatcher />
           {children}

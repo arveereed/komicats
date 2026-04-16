@@ -1,34 +1,44 @@
-// public/sw.js
-const CACHE_NAME = "komicats-v3";
-const OFFLINE_URL = "/offline";
+const CACHE_NAME = "komicats-v6";
+const OFFLINE_HTML_URL = "/offline.html";
 
 const PRECACHE_URLS = [
-  OFFLINE_URL,
+  "/",
+  OFFLINE_HTML_URL,
   "/manifest.webmanifest",
   "/pwa-icon.png",
   "/pwa-icon-2.png",
+  "/BACKGROUND.png",
+  "/icons/bg-logo.png",
 ];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(async (cache) => {
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
       await cache.addAll(PRECACHE_URLS);
-    }),
+      await self.skipWaiting();
+    })(),
   );
-  self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
       const keys = await caches.keys();
+
       await Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
             return caches.delete(key);
           }
+          return Promise.resolve();
         }),
       );
+
+      if ("navigationPreload" in self.registration) {
+        await self.registration.navigationPreload.enable();
+      }
+
       await self.clients.claim();
     })(),
   );
@@ -40,16 +50,29 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
+  const isSameOrigin = url.origin === self.location.origin;
 
-  // 1) Full page navigations: network first, offline fallback
   if (req.mode === "navigate") {
     event.respondWith(
       (async () => {
         try {
-          return await fetch(req);
+          const preloadResponse = await event.preloadResponse;
+          if (preloadResponse) return preloadResponse;
+
+          const networkResponse = await fetch(req);
+
+          if (networkResponse && networkResponse.status === 200) {
+            const cache = await caches.open(CACHE_NAME);
+            cache.put(req, networkResponse.clone());
+          }
+
+          return networkResponse;
         } catch (error) {
-          const cachedOffline = await caches.match(OFFLINE_URL);
-          if (cachedOffline) return cachedOffline;
+          const cachedPage = await caches.match(req);
+          if (cachedPage) return cachedPage;
+
+          const offlineResponse = await caches.match(OFFLINE_HTML_URL);
+          if (offlineResponse) return offlineResponse;
 
           return new Response("Offline", {
             status: 503,
@@ -61,42 +84,43 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 2) Only handle same-origin static assets
-  const isSameOrigin = url.origin === self.location.origin;
   const isStaticAsset =
-    url.pathname.startsWith("/_next/static/") ||
-    url.pathname.startsWith("/icons/") ||
-    url.pathname === "/pwa-icon.png" ||
-    url.pathname === "/pwa-icon-2.png" ||
-    url.pathname.endsWith(".css") ||
-    url.pathname.endsWith(".js") ||
-    url.pathname.endsWith(".png") ||
-    url.pathname.endsWith(".jpg") ||
-    url.pathname.endsWith(".jpeg") ||
-    url.pathname.endsWith(".svg") ||
-    url.pathname.endsWith(".webp") ||
-    url.pathname.endsWith(".woff") ||
-    url.pathname.endsWith(".woff2");
+    isSameOrigin &&
+    (url.pathname.startsWith("/_next/static/") ||
+      url.pathname.startsWith("/icons/") ||
+      url.pathname === "/pwa-icon.png" ||
+      url.pathname === "/pwa-icon-2.png" ||
+      url.pathname === "/BACKGROUND.png" ||
+      url.pathname.endsWith(".css") ||
+      url.pathname.endsWith(".js") ||
+      url.pathname.endsWith(".png") ||
+      url.pathname.endsWith(".jpg") ||
+      url.pathname.endsWith(".jpeg") ||
+      url.pathname.endsWith(".svg") ||
+      url.pathname.endsWith(".webp") ||
+      url.pathname.endsWith(".woff") ||
+      url.pathname.endsWith(".woff2"));
 
-  if (isSameOrigin && isStaticAsset) {
+  if (isStaticAsset) {
     event.respondWith(
       (async () => {
         const cached = await caches.match(req);
         if (cached) return cached;
 
         try {
-          const res = await fetch(req);
+          const networkResponse = await fetch(req);
 
-          // cache only successful basic responses
-          if (res && res.status === 200 && res.type === "basic") {
+          if (
+            networkResponse &&
+            networkResponse.status === 200 &&
+            networkResponse.type === "basic"
+          ) {
             const cache = await caches.open(CACHE_NAME);
-            cache.put(req, res.clone());
+            cache.put(req, networkResponse.clone());
           }
 
-          return res;
+          return networkResponse;
         } catch (error) {
-          if (cached) return cached;
-
           return new Response("", { status: 504 });
         }
       })(),
