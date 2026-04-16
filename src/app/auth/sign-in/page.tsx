@@ -6,7 +6,6 @@ import { AlertCircle, Eye, EyeOff, XCircle, Facebook } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Loading from "./loading";
 
 const REMEMBER_ME_KEY = "komicats_remember_me";
 const REMEMBERED_EMAIL_KEY = "komicats_remembered_email";
@@ -50,10 +49,6 @@ export default function SigninForm() {
       setEmailAddress(savedEmail);
     }
   }, []);
-
-  if (!userLoaded || !isLoaded) {
-    return Loading();
-  }
 
   const persistRememberMe = () => {
     if (rememberMe) {

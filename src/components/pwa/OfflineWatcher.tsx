@@ -1,20 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function OfflineWatcher() {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const currentPath = searchParams?.toString()
-      ? `${pathname}?${searchParams.toString()}`
-      : pathname;
-
     if (pathname !== "/offline") {
-      sessionStorage.setItem("last-online-path", currentPath);
+      sessionStorage.setItem("last-online-path", pathname);
     }
 
     const handleOffline = () => {
@@ -30,7 +25,7 @@ export default function OfflineWatcher() {
     return () => {
       window.removeEventListener("offline", handleOffline);
     };
-  }, [pathname, searchParams, router]);
+  }, [pathname, router]);
 
   return null;
 }

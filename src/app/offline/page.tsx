@@ -30,14 +30,13 @@ export default function OfflinePage() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#07141a]/60 backdrop-blur-md">
-      <div className="relative flex items-center justify-center">
-        <div className="absolute h-20 w-20 animate-pulse rounded-full bg-cyan-500/20 blur-2xl" />
+    <main className="min-h-screen grid place-items-center bg-[#07141a] text-white p-6">
+      <div className="max-w-md text-center">
+        <h1 className="text-2xl font-bold">You are in offline page</h1>
+        <p className="mt-3 text-sm text-zinc-300">
+          Please reconnect to continue. Cached pages may still be available.
+        </p>
       </div>
-
-      <p className="mt-4 text-sm font-medium uppercase tracking-widest text-cyan-100/60 animate-pulse">
-        You are offline
-      </p>
 
       {!isOnline ? (
         <p className="mt-3 text-xs text-cyan-100/50">
@@ -51,6 +50,6 @@ export default function OfflinePage() {
           Go back
         </button>
       )}
-    </div>
+    </main>
   );
 }

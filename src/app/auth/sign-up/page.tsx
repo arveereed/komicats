@@ -7,7 +7,7 @@ import VerifyEmailUI from "../components/VerifyEmailUI";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import Loading from "./loading";
+import Loading from "@/components/Loading";
 
 export default function SignupForm() {
   const router = useRouter();
