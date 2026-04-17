@@ -1,9 +1,9 @@
-// src/app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
+import Image from "next/image";
 import PWARegister from "@/components/pwa/PWARegister";
 import OfflineWatcher from "@/components/pwa/OfflineWatcher";
 import StartupNetworkGuard from "@/components/pwa/StartupNetworkGuard";
@@ -32,12 +32,14 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} relative min-h-screen overflow-x-hidden bg-[#07141a] text-white antialiased`}
         >
           <StartupNetworkGuard />
           <PWARegister />
           <OfflineWatcher />
-          {children}
+
+          <div className="relative z-10 min-h-screen">{children}</div>
+
           <Toaster richColors position="top-right" />
         </body>
       </html>

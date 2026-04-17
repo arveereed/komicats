@@ -3,11 +3,11 @@ export const dynamic = "force-dynamic";
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNavbar";
 import MobileAppHeader from "@/components/MobileAppHeader";
-import Image from "next/image";
 import { auth } from "@clerk/nextjs/server";
 import { getProfiles } from "@/actions/profile.action";
 import { syncUser } from "@/actions/user.action";
 import { getUnreadNotificationCount } from "@/actions/notification.action";
+import Image from "next/image";
 
 export default async function ProtectedLayout({
   children,
@@ -54,28 +54,27 @@ export default async function ProtectedLayout({
     }
   }
 
-  const isAdmin = false;
   const activeProfileId = user?.activeProfileId ?? null;
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#07141a] text-white">
-      <Navbar />
+    <main className="relative min-h-screen overflow-hidden text-white">
+      <div className="relative z-10 min-h-screen">
+        <Navbar />
+        <MobileAppHeader user={user} notificationsCount={notificationsCount} />
 
-      <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center -bottom-96 -left-[700px]">
-        <Image
-          src="/icons/bg-logo.png"
-          alt="Background logo"
-          fill
-          className="object-contain mt-[100px] opacity-[0.05]"
-          priority
-        />
+        <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center -bottom-12 -left-[700px]  ">
+          <Image
+            src="/icons/bg-logo.png"
+            alt="Background logo"
+            fill
+            className="object-contain opacity-[0.05] "
+            priority
+          />
+        </div>
+
+        {children}
+        <BottomNav profiles={profiles} activeProfileId={activeProfileId} />
       </div>
-
-      <MobileAppHeader user={user} notificationsCount={notificationsCount} />
-
-      {children}
-
-      <BottomNav profiles={profiles} activeProfileId={activeProfileId} />
     </main>
   );
 }

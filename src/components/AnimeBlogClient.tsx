@@ -49,17 +49,17 @@ export default function AnimeBlogClient({ posts, hero }: Props) {
   if (!userLoaded || !isLoaded) return Loading();
 
   return (
-    <main className="relative min-h-screen w-full bg-black overflow-hidden font-sans">
+    <main className="relative min-h-screen w-full overflow-hidden font-sans">
       <div className="absolute inset-0 z-0">
         <Image
           src={hero?.backgroundImage || "/landing.jpg"}
           alt="Hero Background"
           fill
           priority
-          className="object-cover object-right lg:object-center"
+          className="object-cover object-right lg:object-center opacity-75"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-orange-950/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-orange-950/25 via-transparent to-transparent" />
       </div>
 
       <div className="relative z-10 flex flex-col min-h-screen px-6 lg:px-16 py-12 justify-between">
