@@ -36,7 +36,6 @@ export default function OfflinePage() {
           Please reconnect to continue. Cached pages may still be available.
         </p>
       </div>
-
       {!isOnline ? (
         <p className="mt-3 text-xs text-cyan-100/50">
           Waiting for connection...

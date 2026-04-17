@@ -1,17 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Play } from "lucide-react";
-
-import { getComicById } from "@/actions/comic.action";
-import { LockedEpisodeCard } from "@/components/comic/locked-episode-card";
-import { Button } from "@/components/ui/button";
-import { EpisodeRowCard } from "@/components/comic/EpisodeRowCard";
-import { ComicDownloadButton } from "@/components/comic/ComicDownloadButton";
-import { ComicReactionButtons } from "@/components/comic/ComicReactionButtons";
 import { auth } from "@clerk/nextjs/server";
+
 import prisma from "@/lib/prisma";
-import ComicHeroPreview from "@/components/comic/ComicHeroPreview";
-import ExpandableDescription from "@/components/comic/ExpandableDescription";
+import { getComicById } from "@/actions/comic.action";
+import { ComicDetailsView } from "@/components/comic/ComicDetailsView";
 
 type PageProps = {
   params: Promise<{
@@ -76,163 +68,75 @@ export default async function ComicDetailsPage({ params }: PageProps) {
   const firstEpisode = comic.episodes?.[0];
   const readHref = firstEpisode
     ? `/profile/avatar/comics/${comic.id}/episode/${firstEpisode.id}`
-    : "#";
+    : null;
 
   const FREE_EPISODE_LIMIT = 5;
   const isUnlocked = comic.isUnlocked;
 
+  const downloadEpisodes = comic.episodes.map((episode) => ({
+    id: episode.id,
+    title: episode.title,
+    images: episode.images.map((image) => ({
+      imageUrl: image.imageUrl,
+    })),
+  }));
+
+  const offlineEpisodes = comic.episodes
+    .filter((_, index) => index + 1 <= FREE_EPISODE_LIMIT || isUnlocked)
+    .map((episode) => ({
+      id: episode.id,
+      title: episode.title,
+      images: episode.images.map((image) => ({
+        imageUrl: image.imageUrl,
+      })),
+    }));
+
   return (
-    <section className="min-h-screen bg-[#04080b] text-white">
-      <div className="relative">
-        <div className="relative min-h-[720px] overflow-hidden bg-black">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_#1a2f36_0%,_#0d171b_42%,_#05080b_100%)]" />
-          <div className="absolute inset-0 bg-black/20" />
+    <ComicDetailsView
+      mode="online"
+      backHref="/profile/avatar/profile"
+      title={comic.title}
+      createdYear={new Date(comic.createdAt).getFullYear()}
+      totalEpisodes={totalEpisodes}
+      heroImage={heroImage}
+      previewVideo={comic.previewVideo ?? null}
+      description={comic.description?.trim() ?? null}
+      readHref={readHref}
+      comicId={comic.id}
+      creatorLabel={`Added by ${comic.user.fullname || comic.user.email}`}
+      onlineButtons={{
+        comicId: comic.id,
+        comicTitle: comic.title,
+        coverImage: heroImage,
+        downloadEpisodes,
+        offlineEpisodes,
+      }}
+      reactions={{
+        comicId: comic.id,
+        pathname: `/profile/avatar/comics/${comic.id}`,
+        initialIsInMyList,
+        initialIsLiked,
+        initialIsDisliked,
+      }}
+      episodes={comic.episodes.map((episode, index) => {
+        const previewImage = episode.images?.[0]?.imageUrl ?? null;
+        const episodeNumber = index + 1;
+        const isLockedEpisode =
+          episodeNumber > FREE_EPISODE_LIMIT && !isUnlocked;
+        const episodeHref = `/profile/avatar/comics/${comic.id}/episode/${episode.id}`;
 
-          <div className="absolute left-4 top-4 z-30 sm:left-6 sm:top-6">
-            <Link href="/profile/avatar/profile">
-              <Button
-                variant="secondary"
-                className="h-10 w-10 rounded-full border-0 bg-black/35 p-0 text-white backdrop-blur hover:bg-black/50"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-          </div>
-
-          <div className="relative z-10 min-h-screen pb-[260px] sm:pb-[300px]">
-            <ComicHeroPreview
-              thumbnail={heroImage}
-              previewVideo={comic.previewVideo ?? null}
-              title={comic.title}
-            />
-          </div>
-
-          <div className="absolute inset-x-0 bottom-0 z-20">
-            <div className="border-t border-white/10 bg-[linear-gradient(180deg,rgba(18,29,34,0.78)_0%,rgba(8,14,18,0.96)_100%)] px-4 pb-6 pt-4 backdrop-blur-md sm:px-6">
-              <div className="mx-auto max-w-5xl">
-                <h1 className="text-[20px] font-semibold leading-tight sm:text-[30px]">
-                  {comic.title}
-                </h1>
-
-                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-white/80 sm:text-sm">
-                  <span>{new Date(comic.createdAt).getFullYear()}</span>
-                  <span className="rounded bg-white/15 px-1.5 py-0.5 text-[10px] font-medium text-white sm:text-xs">
-                    16+
-                  </span>
-                  <span>{totalEpisodes} Episodes</span>
-                </div>
-
-                <div className="mt-4 flex flex-col gap-2">
-                  {firstEpisode ? (
-                    <Link href={readHref} className="block">
-                      <Button className="h-12 w-full rounded-[4px] bg-white text-base font-semibold text-black hover:bg-white/90">
-                        <Play className="mr-2 h-4 w-4 fill-current" />
-                        Read
-                      </Button>
-                    </Link>
-                  ) : (
-                    <Button
-                      disabled
-                      className="h-12 w-full rounded-[4px] bg-white text-base font-semibold text-black"
-                    >
-                      <Play className="mr-2 h-4 w-4 fill-current" />
-                      Read
-                    </Button>
-                  )}
-
-                  <div className="[&>button]:h-12 [&>button]:w-full [&>button]:rounded-[4px] [&>button]:border [&>button]:border-white/10 [&>button]:bg-[#35505b] [&>button]:text-base [&>button]:font-semibold [&>button]:text-white [&>button]:hover:bg-[#40606d]">
-                    <ComicDownloadButton
-                      comicTitle={comic.title}
-                      episodes={comic.episodes.map((episode) => ({
-                        title: episode.title,
-                        images: episode.images.map((image) => ({
-                          imageUrl: image.imageUrl,
-                        })),
-                      }))}
-                    />
-                  </div>
-                </div>
-
-                <ExpandableDescription
-                  collapsedLines={4}
-                  text={comic.description?.trim()}
-                  isNotificationCard={false}
-                />
-
-                <ComicReactionButtons
-                  comicId={comic.id}
-                  pathname={`/profile/avatar/comics/${comic.id}`}
-                  initialIsInMyList={initialIsInMyList}
-                  initialIsLiked={initialIsLiked}
-                  initialIsDisliked={initialIsDisliked}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative z-10 -mt-2 px-4 pb-8 sm:px-6">
-          <div className="mx-auto w-full max-w-5xl">
-            <div className="w-full">
-              <div className="mt-4 flex flex-wrap gap-6 border-b border-white/10 text-sm font-semibold">
-                <button className="border-b-2 border-cyan-300 pb-3 text-white">
-                  Episodes
-                </button>
-              </div>
-
-              <div className="mt-5 space-y-4">
-                {comic.episodes.length === 0 ? (
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-white/70">
-                    No episodes found.
-                  </div>
-                ) : (
-                  comic.episodes.map((episode, index) => {
-                    const previewImage = episode.images?.[0]?.imageUrl ?? null;
-                    const episodeNumber = index + 1;
-                    const isLocked =
-                      episodeNumber > FREE_EPISODE_LIMIT && !isUnlocked;
-                    const episodeHref = `/profile/avatar/comics/${comic.id}/episode/${episode.id}`;
-
-                    if (isLocked) {
-                      return (
-                        <LockedEpisodeCard
-                          key={episode.id}
-                          comicId={comic.id}
-                          title={`${episodeNumber}. ${episode.title}`}
-                          description="Unlock this episode by purchasing this comic."
-                          imageUrl={previewImage}
-                          pages={episode.images?.length || 0}
-                          priceCoins={50}
-                        />
-                      );
-                    }
-
-                    return (
-                      <EpisodeRowCard
-                        key={episode.id}
-                        href={episodeHref}
-                        title={`${episodeNumber}. ${episode.title}`}
-                        description={
-                          episode.description || "No description available."
-                        }
-                        imageUrl={previewImage}
-                        pages={episode.images?.length || 0}
-                        downloadImages={episode.images.map(
-                          (image) => image.imageUrl,
-                        )}
-                      />
-                    );
-                  })
-                )}
-              </div>
-
-              <div className="mt-8 text-sm text-white/50">
-                Added by {comic.user.fullname || comic.user.email}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+        return {
+          id: episode.id,
+          title: episode.title,
+          description: episode.description || "No description available.",
+          imageUrl: previewImage,
+          pages: episode.images?.length || 0,
+          href: episodeHref,
+          downloadImages: episode.images.map((image) => image.imageUrl),
+          isLocked: isLockedEpisode,
+          priceCoins: 50,
+        };
+      })}
+    />
   );
 }

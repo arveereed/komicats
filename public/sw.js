@@ -1,5 +1,5 @@
 const CACHE_NAME = "komicats-v6";
-const OFFLINE_HTML_URL = "/offline.html";
+const OFFLINE_HTML_URL = "/profile/avatar/downloads";
 
 const PRECACHE_URLS = [
   "/",

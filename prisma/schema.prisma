@@ -134,6 +134,32 @@ model Comic {
   reactions         ComicReaction[]
 }
 
+enum ComicOfflineDownloadStatus {
+  QUEUED
+  DOWNLOADING
+  COMPLETED
+  FAILED
+  REMOVED
+}
+
+model ComicOfflineDownload {
+  id           String                     @id @default(cuid())
+  userId       String
+  profileId    String?
+  comicId      String
+  title        String
+  coverImage   String?
+  totalPages   Int                        @default(0)
+  cachedPages  Int                        @default(0)
+  status       ComicOfflineDownloadStatus @default(QUEUED)
+  downloadedAt DateTime?
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
+
+  @@unique([userId, comicId])
+  @@index([userId, status])
+}
+
 model ComicMyList {
   id        String   @id @default(cuid())
   profileId String

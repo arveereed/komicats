@@ -3,6 +3,7 @@
 import {
   ArrowLeft,
   BellIcon,
+  Download,
   HomeIcon,
   Loader2,
   MenuIcon,
@@ -88,7 +89,7 @@ function MobileNavbar({
 
   const inGamePath = pathname.includes("/profile/avatar/my-coins/game");
 
-  const isProfileAvatarSetting = pathname.includes("/profile/avatar/setting");
+  const isProfileAvatarSetting = pathname.includes("/profile/avatar/settings");
 
   const handleSearch = () => {
     const query = searchQuery.trim();
@@ -523,6 +524,17 @@ function MobileNavbar({
                       <Link href="/profile/avatar/my-list">
                         <Plus className="h-4 w-4" />
                         My list
+                      </Link>
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      className="justify-start gap-3 text-white hover:bg-white/10 hover:text-white"
+                      asChild
+                    >
+                      <Link href="/profile/avatar/downloads">
+                        <Download className="h-4 w-4" />
+                        Download
                       </Link>
                     </Button>
                   </div>

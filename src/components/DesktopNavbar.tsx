@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { Button } from "./ui/button";
-
 import { Input } from "./ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
@@ -43,9 +42,15 @@ export default function DesktopNavbar({
 
   const [searchQuery, setSearchQuery] = useState("");
   const [signingOut, setSigningOut] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  const pathname = usePathname() || "";
+  const rawPathname = usePathname() || "";
+  const pathname = mounted ? rawPathname : "";
   const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isProfileAvatarPath =
     pathname.includes("/profile/avatar/profile") ||
@@ -58,7 +63,7 @@ export default function DesktopNavbar({
 
   const inGamePath = pathname.includes("/profile/avatar/my-coins/game");
 
-  const isProfileAvatarSetting = pathname.includes("/profile/avatar/setting");
+  const isProfileAvatarSetting = pathname.includes("/profile/avatar/settings");
 
   const handleSearch = () => {
     const query = searchQuery.trim();
@@ -167,6 +172,18 @@ export default function DesktopNavbar({
                 <span className="absolute -bottom-1 left-0 h-px w-full bg-teal-300" />
               )}
             </Link>
+
+            <Link
+              href="/profile/avatar/downloads"
+              className={navLinkClass(
+                pathname.includes("/profile/avatar/downloads"),
+              )}
+            >
+              Downloads
+              {pathname.includes("/profile/avatar/downloads") && (
+                <span className="absolute -bottom-1 left-0 h-px w-full bg-teal-300" />
+              )}
+            </Link>
           </div>
         )}
       </div>
@@ -182,8 +199,7 @@ export default function DesktopNavbar({
         {isLoaded && isSignedIn && user && isProfileAvatarPath && (
           <div className="flex items-center gap-3">
             <div className="ml-2 flex items-center space-x-4">
-              {/* Search */}
-              <div className="flex  h-12  items-center rounded-md bg-[#35535b] px-4">
+              <div className="flex h-12 items-center rounded-md bg-[#35535b] px-4">
                 <Search className="mr-3 h-5 w-5 text-white/80" />
                 <Input
                   value={searchQuery}
@@ -272,6 +288,7 @@ export default function DesktopNavbar({
                   </div>
                 </Button>
               </Link>
+
               <Button
                 disabled={signingOut}
                 onClick={handleSignOut}

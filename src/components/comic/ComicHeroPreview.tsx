@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type ComicHeroPreviewProps = {
   thumbnail: string | null;
@@ -16,7 +16,20 @@ export default function ComicHeroPreview({
 }: ComicHeroPreviewProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+
   const [isVisible, setIsVisible] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+
+  const isLocalImageSrc = useMemo(() => {
+    if (!thumbnail) return false;
+
+    return (
+      thumbnail.startsWith("blob:") ||
+      thumbnail.startsWith("data:") ||
+      thumbnail.startsWith("file:")
+    );
+  }, [thumbnail]);
 
   useEffect(() => {
     const node = containerRef.current;
@@ -24,10 +37,10 @@ export default function ComicHeroPreview({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsVisible(entry.isIntersecting && entry.intersectionRatio >= 0.35);
+        setIsVisible(entry.isIntersecting && entry.intersectionRatio >= 0.2);
       },
       {
-        threshold: [0, 0.2, 0.35, 0.6, 1],
+        threshold: [0, 0.1, 0.2, 0.35, 0.6, 1],
       },
     );
 
@@ -37,38 +50,54 @@ export default function ComicHeroPreview({
   }, []);
 
   useEffect(() => {
+    setVideoReady(false);
+    setVideoError(false);
+  }, [previewVideo]);
+
+  useEffect(() => {
     const video = videoRef.current;
-    if (!video || !previewVideo) return;
+    if (!video || !previewVideo || videoError) return;
 
     if (isVisible) {
       const playPromise = video.play();
-      if (playPromise) playPromise.catch(() => {});
+      if (playPromise) {
+        playPromise.catch(() => {});
+      }
     } else {
       video.pause();
-      video.currentTime = 0;
     }
-  }, [isVisible, previewVideo]);
+  }, [isVisible, previewVideo, videoError]);
+
+  const showVideo = !!previewVideo && !videoError && videoReady;
+  const showThumbnail = !!thumbnail && !showVideo;
 
   return (
     <div
       ref={containerRef}
       className="relative h-[72vh] min-h-[520px] w-full overflow-hidden bg-black sm:h-[78vh] sm:min-h-[640px] lg:h-[82vh]"
     >
-      {thumbnail ? (
-        <Image
-          src={thumbnail}
-          alt={title}
-          fill
-          priority
-          className={`object-cover transition duration-500 ${
-            isVisible && previewVideo ? "opacity-0" : "opacity-100"
-          }`}
-        />
-      ) : (
+      {showThumbnail ? (
+        isLocalImageSrc ? (
+          <img
+            src={thumbnail}
+            alt={title}
+            className="absolute inset-0 h-full w-full object-cover transition duration-500 opacity-100"
+          />
+        ) : (
+          <Image
+            src={thumbnail}
+            alt={title}
+            fill
+            priority
+            className="object-cover transition duration-500 opacity-100"
+            unoptimized
+          />
+        )
+      ) : !thumbnail ? (
         <div className="h-full w-full bg-[#9b7b47]" />
-      )}
+      ) : null}
 
-      {previewVideo ? (
+      {previewVideo && !videoError ? (
         <video
           ref={videoRef}
           src={previewVideo}
@@ -76,8 +105,14 @@ export default function ComicHeroPreview({
           loop
           playsInline
           preload="metadata"
+          onCanPlay={() => setVideoReady(true)}
+          onLoadedData={() => setVideoReady(true)}
+          onError={() => {
+            setVideoError(true);
+            setVideoReady(false);
+          }}
           className={`absolute inset-0 h-full w-full object-cover transition duration-500 ${
-            isVisible ? "opacity-100" : "opacity-0"
+            showVideo ? "opacity-100" : "opacity-0"
           }`}
         />
       ) : null}
