@@ -8,10 +8,12 @@ export default function StartupNetworkGuard() {
           try {
             var isOffline = typeof navigator !== "undefined" && navigator.onLine === false;
             var path = typeof window !== "undefined" ? window.location.pathname : "";
-            var alreadyOfflinePage = path === "/offline" || path === "/offline.html";
 
-            if (isOffline && !alreadyOfflinePage) {
-              window.location.replace("/offline");
+            var isDownloadsRoute = path.indexOf("/profile/avatar/downloads") === 0;
+            var isOfflinePage = path === "/offline" || path === "/offline.html";
+
+            if (isOffline && !isDownloadsRoute && !isOfflinePage) {
+              window.location.replace("/profile/avatar/downloads");
             }
           } catch (error) {
             console.error("startup-network-guard", error);

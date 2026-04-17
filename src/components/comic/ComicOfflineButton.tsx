@@ -15,6 +15,7 @@ import {
   removeOfflineComic,
   saveComicOffline,
 } from "@/lib/offline-comic-db";
+import { warmOfflineComicRoutes } from "@/lib/offline-route-cache";
 
 type EpisodeInput = {
   id: string;
@@ -76,6 +77,19 @@ export function ComicOfflineButton({
     };
   }, [comicId]);
 
+  function prefetchOfflineRoutes() {
+    try {
+      router.prefetch("/profile/avatar/downloads");
+      router.prefetch(`/profile/avatar/downloads/${comicId}`);
+
+      episodes.forEach((episode) => {
+        router.prefetch(`/profile/avatar/downloads/${comicId}/${episode.id}`);
+      });
+    } catch (error) {
+      console.error("Failed to prefetch offline routes:", error);
+    }
+  }
+
   const handleSaveOffline = () => {
     startTransition(async () => {
       try {
@@ -114,6 +128,13 @@ export function ComicOfflineButton({
           status: "COMPLETED",
         });
 
+        await warmOfflineComicRoutes(
+          comicId,
+          episodes.map((episode) => episode.id),
+        );
+
+        prefetchOfflineRoutes();
+
         setSaved(true);
         setProgress({
           cached: result.cachedPages,
@@ -129,6 +150,8 @@ export function ComicOfflineButton({
           cachedPages: progress?.cached ?? 0,
           totalPages,
           status: "FAILED",
+        }).catch((syncError) => {
+          console.error("Failed to sync download failure status:", syncError);
         });
       }
     });
@@ -137,7 +160,13 @@ export function ComicOfflineButton({
   const handleRemove = () => {
     startTransition(async () => {
       await removeOfflineComic(comicId);
-      await removeComicOfflineDownload(comicId);
+
+      if (typeof navigator !== "undefined" && navigator.onLine) {
+        await removeComicOfflineDownload(comicId).catch((error) => {
+          console.error("Failed to sync offline removal:", error);
+        });
+      }
+
       setSaved(false);
       setProgress(null);
       router.refresh();

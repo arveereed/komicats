@@ -57,8 +57,15 @@ export default function OfflineComicDetailsPage() {
   async function handleRemove() {
     try {
       setRemoving(true);
+
       await removeOfflineComic(comicId);
-      await removeComicOfflineDownload(comicId);
+
+      if (typeof navigator !== "undefined" && navigator.onLine) {
+        await removeComicOfflineDownload(comicId).catch((error) => {
+          console.error("Failed to sync offline removal:", error);
+        });
+      }
+
       router.push("/profile/avatar/downloads");
       router.refresh();
     } finally {
@@ -77,7 +84,7 @@ export default function OfflineComicDetailsPage() {
   if (!comic) {
     return (
       <div className="min-h-screen bg-[#04080b] p-6 text-white">
-        Offline comic not found.
+        Offline comic not found on this device.
       </div>
     );
   }

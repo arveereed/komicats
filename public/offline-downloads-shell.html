@@ -1,0 +1,769 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Komicats Downloads</title>
+    <meta name="theme-color" content="#04080b" />
+    <style>
+      :root {
+        --bg: #04080b;
+        --bg-soft: #071015;
+        --panel: rgba(255, 255, 255, 0.05);
+        --panel-2: rgba(255, 255, 255, 0.08);
+        --border: rgba(255, 255, 255, 0.1);
+        --muted: rgba(255, 255, 255, 0.7);
+        --muted-2: rgba(255, 255, 255, 0.55);
+        --text: #ffffff;
+        --primary: #ffffff;
+        --primary-text: #000000;
+        --secondary: #35505b;
+        --secondary-hover: #40606d;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+
+      body {
+        min-height: 100vh;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+      }
+
+      .page-root {
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .container {
+        width: 100%;
+        max-width: 80rem;
+        margin: 0 auto;
+      }
+
+      .downloads-page {
+        min-height: 100vh;
+        background: #04080b;
+        padding: 24px 16px;
+      }
+
+      .downloads-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .downloads-header-icon {
+        width: 20px;
+        height: 20px;
+        opacity: 0.95;
+      }
+
+      .downloads-header-title {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+
+      .downloads-empty,
+      .downloads-loading {
+        border-radius: 1rem;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        padding: 24px;
+        color: var(--muted);
+      }
+
+      .downloads-grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      @media (min-width: 640px) {
+        .downloads-page {
+          padding-left: 24px;
+          padding-right: 24px;
+        }
+
+        .downloads-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (min-width: 1024px) {
+        .downloads-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+
+      .download-card {
+        overflow: hidden;
+        border-radius: 1rem;
+        border: 1px solid var(--border);
+        background: var(--panel);
+        transition: background 0.2s ease;
+      }
+
+      .download-card:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .download-card-cover {
+        aspect-ratio: 16 / 9;
+        background: #000;
+      }
+
+      .download-card-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .download-card-body {
+        padding: 16px;
+      }
+
+      .download-card-title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        line-height: 1.35;
+      }
+
+      .download-card-meta {
+        margin-top: 4px;
+        font-size: 0.875rem;
+        color: var(--muted-2);
+      }
+
+      .download-card-status {
+        margin-top: 8px;
+        font-size: 0.75rem;
+        color: #34d399;
+      }
+
+      .details-page {
+        min-height: 100vh;
+        background: #04080b;
+        color: #fff;
+      }
+
+      .details-hero-wrap {
+        position: relative;
+      }
+
+      .details-hero {
+        position: relative;
+        min-height: 720px;
+        overflow: hidden;
+        background: #000;
+      }
+
+      .details-bg-radial {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at top,
+          #1a2f36 0%,
+          #0d171b 42%,
+          #05080b 100%
+        );
+      }
+
+      .details-bg-dark {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.2);
+      }
+
+      .details-back {
+        position: absolute;
+        left: 16px;
+        top: 16px;
+        z-index: 30;
+      }
+
+      .back-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 9999px;
+        background: rgba(0, 0, 0, 0.35);
+        color: white;
+        backdrop-filter: blur(10px);
+        border: 0;
+      }
+
+      .details-hero-media {
+        position: relative;
+        z-index: 10;
+        min-height: 100vh;
+        padding-bottom: 260px;
+      }
+
+      .hero-preview {
+        position: relative;
+        height: 72vh;
+        min-height: 520px;
+        width: 100%;
+        overflow: hidden;
+        background: #000;
+      }
+
+      .hero-preview img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .hero-preview-overlay-1 {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to top,
+          #071015,
+          rgba(0, 0, 0, 0.15),
+          rgba(0, 0, 0, 0.2)
+        );
+      }
+
+      .hero-preview-overlay-2 {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to right,
+          rgba(7, 16, 21, 0.65),
+          transparent,
+          rgba(7, 16, 21, 0.65)
+        );
+      }
+
+      .details-bottom-panel-wrap {
+        position: absolute;
+        inset-inline: 0;
+        bottom: 0;
+        z-index: 20;
+      }
+
+      .details-bottom-panel {
+        border-top: 1px solid var(--border);
+        background: linear-gradient(
+          180deg,
+          rgba(18, 29, 34, 0.78) 0%,
+          rgba(8, 14, 18, 0.96) 100%
+        );
+        padding: 16px 16px 24px;
+        backdrop-filter: blur(14px);
+      }
+
+      .details-bottom-panel-inner {
+        max-width: 80rem;
+        margin: 0 auto;
+      }
+
+      .details-title {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.2;
+      }
+
+      .details-meta {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .details-age {
+        border-radius: 0.25rem;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 2px 6px;
+        font-size: 10px;
+        font-weight: 500;
+      }
+
+      .details-button-stack {
+        margin-top: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .button-primary,
+      .button-secondary,
+      .button-danger {
+        width: 100%;
+        height: 48px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-align: center;
+        border: 1px solid transparent;
+        cursor: pointer;
+      }
+
+      .button-primary {
+        background: var(--primary);
+        color: var(--primary-text);
+      }
+
+      .button-secondary {
+        border-color: var(--border);
+        background: var(--secondary);
+        color: white;
+      }
+
+      .button-danger {
+        border-color: var(--border);
+        background: #5b3535;
+        color: white;
+      }
+
+      .details-description {
+        margin-top: 16px;
+        max-width: 56rem;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.75);
+      }
+
+      .details-footer-label {
+        margin-top: 32px;
+        font-size: 0.875rem;
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .details-content {
+        position: relative;
+        z-index: 10;
+        margin-top: -8px;
+        padding: 0 16px 32px;
+      }
+
+      .details-content-inner {
+        max-width: 80rem;
+        margin: 0 auto;
+      }
+
+      .details-tabbar {
+        margin-top: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+
+      .details-tab-active {
+        border-bottom: 2px solid #67e8f9;
+        padding-bottom: 12px;
+        color: white;
+      }
+
+      .details-episodes {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .episode-row-link {
+        display: block;
+      }
+
+      .episode-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        border-radius: 1rem;
+        padding: 8px;
+        transition: background 0.2s ease;
+      }
+
+      .episode-row:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .episode-thumb {
+        position: relative;
+        width: 80px;
+        min-width: 80px;
+        height: 96px;
+        overflow: hidden;
+        border-radius: 0.75rem;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .episode-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .episode-main {
+        min-width: 0;
+        flex: 1;
+        padding-top: 4px;
+      }
+
+      .episode-title {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: white;
+        line-height: 1.2;
+      }
+
+      .episode-desc {
+        margin-top: 8px;
+        font-size: 1rem;
+        line-height: 1.65;
+        color: rgba(255, 255, 255, 0.85);
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+      }
+
+      .episode-pages {
+        margin-top: 8px;
+        font-size: 0.875rem;
+        color: rgba(255, 255, 255, 0.55);
+      }
+
+      .episode-open {
+        align-self: center;
+        margin-left: auto;
+        font-size: 0.875rem;
+        color: #67e8f9;
+        font-weight: 500;
+      }
+
+      .reader-page-shell {
+        min-height: 100vh;
+        background: linear-gradient(to bottom, #0f172a, #1e293b, #0f172a);
+        color: white;
+      }
+
+      .reader-topbar {
+        position: fixed;
+        inset-inline: 0;
+        top: 0;
+        z-index: 50;
+        border-bottom: 1px solid var(--border);
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(16px);
+      }
+
+      .reader-topbar-inner {
+        max-width: 72rem;
+        margin: 0 auto;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px;
+        gap: 12px;
+      }
+
+      .reader-top-back {
+        width: 36px;
+        height: 36px;
+        border-radius: 9999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        background: transparent;
+      }
+
+      .reader-top-center {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .reader-top-comic {
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .reader-top-episode {
+        max-width: 240px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .reader-top-pill {
+        width: 36px;
+        height: 36px;
+        border-radius: 9999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.85);
+      }
+
+      .reader-main {
+        max-width: 72rem;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 16px 8px 96px;
+      }
+
+      .reader-pages-wrap {
+        width: 100%;
+        padding-top: 56px;
+      }
+
+      .reader-page-item {
+        width: 100%;
+        max-width: 48rem;
+        margin: 0 auto;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      }
+
+      .reader-page-item img {
+        width: 100%;
+        display: block;
+        height: auto;
+        object-fit: contain;
+      }
+
+      .reader-bottom {
+        position: fixed;
+        inset-inline: 0;
+        bottom: 0;
+        z-index: 50;
+        border-top: 1px solid var(--border);
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(10px);
+      }
+
+      .reader-bottom-inner {
+        max-width: 64rem;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        gap: 12px;
+      }
+
+      .reader-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 44px;
+        padding: 0 16px;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.875rem;
+      }
+
+      .reader-nav {
+        display: flex;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .reader-nav-btn,
+      .reader-nav-disabled {
+        width: 56px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .reader-nav-disabled {
+        color: rgba(255, 255, 255, 0.3);
+      }
+
+      .empty-card {
+        margin-top: 40px;
+        width: 100%;
+        max-width: 28rem;
+        border-radius: 1.5rem;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.05);
+        padding: 32px;
+        text-align: center;
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+      }
+
+      .empty-title {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 600;
+      }
+
+      .empty-desc {
+        margin-top: 8px;
+        font-size: 0.875rem;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .empty-actions {
+        margin-top: 24px;
+      }
+
+      @media (min-width: 640px) {
+        .details-back {
+          left: 24px;
+          top: 24px;
+        }
+
+        .details-hero-media {
+          padding-bottom: 300px;
+        }
+
+        .hero-preview {
+          height: 78vh;
+          min-height: 640px;
+        }
+
+        .details-bottom-panel {
+          padding-left: 24px;
+          padding-right: 24px;
+        }
+
+        .details-title {
+          font-size: 30px;
+        }
+
+        .details-meta {
+          font-size: 0.875rem;
+        }
+
+        .details-age {
+          font-size: 0.75rem;
+        }
+
+        .details-content {
+          padding-left: 24px;
+          padding-right: 24px;
+        }
+
+        .episode-thumb {
+          width: 96px;
+          min-width: 96px;
+          height: 112px;
+        }
+
+        .reader-topbar-inner {
+          height: 80px;
+          padding: 0 16px;
+        }
+
+        .reader-top-back {
+          width: 40px;
+          height: 40px;
+        }
+
+        .reader-top-comic {
+          font-size: 1rem;
+          max-width: 300px;
+        }
+
+        .reader-top-episode {
+          font-size: 0.875rem;
+          max-width: 360px;
+        }
+
+        .reader-main {
+          padding: 24px 16px 24px;
+        }
+
+        .reader-pages-wrap {
+          padding-top: 56px;
+        }
+      }
+
+      @media (min-width: 1024px) {
+        .hero-preview {
+          height: 82vh;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app" class="page-root"></div>
+    <script src="/offline-downloads-shell.js"></script>
+  </body>
+</html>

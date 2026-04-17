@@ -1,15 +1,31 @@
-const CACHE_NAME = "komicats-v6";
-const OFFLINE_HTML_URL = "/profile/avatar/downloads";
+const CACHE_NAME = "komicats-v11";
+const OFFLINE_SHELL_URL = "/offline-downloads-shell.html";
+const DOWNLOADS_ENTRY_URL = "/profile/avatar/downloads";
 
 const PRECACHE_URLS = [
   "/",
-  OFFLINE_HTML_URL,
+  "/offline",
+  OFFLINE_SHELL_URL,
+  "/offline-downloads-shell.js",
   "/manifest.webmanifest",
   "/pwa-icon.png",
   "/pwa-icon-2.png",
   "/BACKGROUND.png",
   "/icons/bg-logo.png",
+  "/icons/Menu.png",
+  "/icons/info.png",
+  "/icons/dl.png",
 ];
+
+async function putInCache(request, response) {
+  if (!response || response.status !== 200) return;
+  const cache = await caches.open(CACHE_NAME);
+  await cache.put(request, response.clone());
+}
+
+function toAbsoluteUrl(pathname) {
+  return new URL(pathname, self.location.origin).toString();
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -44,6 +60,12 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
 
@@ -51,33 +73,70 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(req.url);
   const isSameOrigin = url.origin === self.location.origin;
+  const isDownloadsRoute = url.pathname.startsWith(DOWNLOADS_ENTRY_URL);
+  const accept = req.headers.get("accept") || "";
+  const wantsHtml = accept.includes("text/html");
+  const isNavigationRequest = req.mode === "navigate" || wantsHtml;
 
-  if (req.mode === "navigate") {
+  // If user opens downloads route, always serve the offline shell first.
+  if (isDownloadsRoute && isNavigationRequest) {
+    event.respondWith(
+      (async () => {
+        const shell = await caches.match(OFFLINE_SHELL_URL);
+        if (shell) return shell;
+
+        try {
+          const response = await fetch(OFFLINE_SHELL_URL, {
+            cache: "no-store",
+          });
+
+          if (response.ok) {
+            await putInCache(OFFLINE_SHELL_URL, response.clone());
+            return response;
+          }
+        } catch (error) {
+          console.error("Failed to fetch offline shell:", error);
+        }
+
+        return new Response("Offline shell unavailable", {
+          status: 503,
+          headers: { "Content-Type": "text/plain" },
+        });
+      })(),
+    );
+    return;
+  }
+
+  // If the user is offline and tries to open ANY other page,
+  // automatically redirect them to downloads.
+  if (
+    isNavigationRequest &&
+    self.navigator &&
+    self.navigator.onLine === false
+  ) {
+    event.respondWith(
+      Response.redirect(toAbsoluteUrl(DOWNLOADS_ENTRY_URL), 302),
+    );
+    return;
+  }
+
+  // Normal navigations
+  if (isNavigationRequest && isSameOrigin) {
     event.respondWith(
       (async () => {
         try {
-          const preloadResponse = await event.preloadResponse;
-          if (preloadResponse) return preloadResponse;
-
-          const networkResponse = await fetch(req);
-
-          if (networkResponse && networkResponse.status === 200) {
-            const cache = await caches.open(CACHE_NAME);
-            cache.put(req, networkResponse.clone());
+          const preload = await event.preloadResponse;
+          if (preload) {
+            await putInCache(req, preload.clone());
+            return preload;
           }
 
-          return networkResponse;
+          const network = await fetch(req);
+          await putInCache(req, network.clone());
+          return network;
         } catch (error) {
-          const cachedPage = await caches.match(req);
-          if (cachedPage) return cachedPage;
-
-          const offlineResponse = await caches.match(OFFLINE_HTML_URL);
-          if (offlineResponse) return offlineResponse;
-
-          return new Response("Offline", {
-            status: 503,
-            headers: { "Content-Type": "text/plain" },
-          });
+          // If request fails, send user to downloads automatically.
+          return Response.redirect(toAbsoluteUrl(DOWNLOADS_ENTRY_URL), 302);
         }
       })(),
     );
@@ -91,6 +150,7 @@ self.addEventListener("fetch", (event) => {
       url.pathname === "/pwa-icon.png" ||
       url.pathname === "/pwa-icon-2.png" ||
       url.pathname === "/BACKGROUND.png" ||
+      url.pathname === "/offline-downloads-shell.js" ||
       url.pathname.endsWith(".css") ||
       url.pathname.endsWith(".js") ||
       url.pathname.endsWith(".png") ||
@@ -108,18 +168,17 @@ self.addEventListener("fetch", (event) => {
         if (cached) return cached;
 
         try {
-          const networkResponse = await fetch(req);
+          const network = await fetch(req);
 
           if (
-            networkResponse &&
-            networkResponse.status === 200 &&
-            networkResponse.type === "basic"
+            network &&
+            network.status === 200 &&
+            (network.type === "basic" || network.type === "default")
           ) {
-            const cache = await caches.open(CACHE_NAME);
-            cache.put(req, networkResponse.clone());
+            await putInCache(req, network.clone());
           }
 
-          return networkResponse;
+          return network;
         } catch (error) {
           return new Response("", { status: 504 });
         }

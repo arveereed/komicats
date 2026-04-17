@@ -8,18 +8,28 @@ export default function OfflineWatcher() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (pathname !== "/offline") {
+    const isDownloadsRoute = pathname.startsWith("/profile/avatar/downloads");
+
+    if (navigator.onLine && pathname !== "/offline") {
       sessionStorage.setItem("last-online-path", pathname);
     }
 
-    const redirectToOffline = () => {
-      if (!navigator.onLine && pathname !== "/offline") {
-        router.replace("/offline");
+    const redirectWhenOffline = () => {
+      const currentlyOffline = navigator.onLine === false;
+      const currentPath = window.location.pathname;
+      const alreadyOnDownloads = currentPath.startsWith(
+        "/profile/avatar/downloads",
+      );
+
+      if (currentlyOffline && !alreadyOnDownloads) {
+        router.replace("/profile/avatar/downloads");
       }
     };
 
     const handleOnline = () => {
-      if (pathname === "/offline") {
+      const currentPath = window.location.pathname;
+
+      if (currentPath === "/offline") {
         const lastOnlinePath =
           sessionStorage.getItem("last-online-path") || "/";
         router.replace(lastOnlinePath);
@@ -27,18 +37,20 @@ export default function OfflineWatcher() {
       }
     };
 
-    redirectToOffline();
+    if (!isDownloadsRoute) {
+      redirectWhenOffline();
+    }
 
-    window.addEventListener("offline", redirectToOffline);
+    window.addEventListener("offline", redirectWhenOffline);
     window.addEventListener("online", handleOnline);
-    window.addEventListener("pageshow", redirectToOffline);
-    document.addEventListener("visibilitychange", redirectToOffline);
+    window.addEventListener("pageshow", redirectWhenOffline);
+    document.addEventListener("visibilitychange", redirectWhenOffline);
 
     return () => {
-      window.removeEventListener("offline", redirectToOffline);
+      window.removeEventListener("offline", redirectWhenOffline);
       window.removeEventListener("online", handleOnline);
-      window.removeEventListener("pageshow", redirectToOffline);
-      document.removeEventListener("visibilitychange", redirectToOffline);
+      window.removeEventListener("pageshow", redirectWhenOffline);
+      document.removeEventListener("visibilitychange", redirectWhenOffline);
     };
   }, [pathname, router]);
 
