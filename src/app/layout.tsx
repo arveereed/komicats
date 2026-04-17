@@ -32,7 +32,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} relative min-h-screen overflow-x-hidden bg-[#07141a] text-white antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} relative min-h-screen overflow-x-hidden bg-gradient-to-b from-[#27484e] via-[#11262b] to-[#020507] text-white antialiased`}
         >
           <StartupNetworkGuard />
           <PWARegister />
