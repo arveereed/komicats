@@ -57,7 +57,7 @@ export default async function ProtectedLayout({
   const activeProfileId = user?.activeProfileId ?? null;
 
   return (
-    <main className="relative min-h-screen overflow-hidden text-white">
+    <main className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#27484e] via-[#11262b] to-[#020507] text-white">
       <div className="relative z-10 min-h-screen">
         <Navbar />
         <MobileAppHeader user={user} notificationsCount={notificationsCount} />
