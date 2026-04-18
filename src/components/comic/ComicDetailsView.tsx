@@ -177,13 +177,14 @@ export function ComicDetailsView({
                   )}
 
                   {mode === "online" && onlineButtons ? (
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <>
+                      {/* <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                       <div className="[&>button]:h-12 [&>button]:w-full [&>button]:rounded-[4px] [&>button]:border [&>button]:border-white/10 [&>button]:bg-[#35505b] [&>button]:text-base [&>button]:font-semibold [&>button]:text-white [&>button]:hover:bg-[#40606d]">
                         <ComicDownloadButton
                           comicTitle={onlineButtons.comicTitle}
                           episodes={downloadEpisodes}
                         />
-                      </div>
+                      </div> */}
 
                       <div className="[&>button]:h-12 [&>button]:w-full [&>button]:rounded-[4px] [&>button]:border [&>button]:border-white/10 [&>button]:bg-[#35505b] [&>button]:text-base [&>button]:font-semibold [&>button]:text-white [&>button]:hover:bg-[#40606d]">
                         <ComicOfflineButton
@@ -193,7 +194,7 @@ export function ComicDetailsView({
                           episodes={offlineEpisodes}
                         />
                       </div>
-                    </div>
+                    </>
                   ) : null}
 
                   {mode === "offline" && offlineRemove ? (
