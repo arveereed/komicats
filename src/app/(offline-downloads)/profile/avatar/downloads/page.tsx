@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { ArrowLeft, Download } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { listOfflineComics } from "@/lib/offline-comic-db";
 import { Button } from "@/components/ui/button";
-import Navbar from "@/components/Navbar";
 
 type OfflineComic = {
   comicId: string;
@@ -20,6 +20,22 @@ type OfflineComic = {
 export default function DownloadsPage() {
   const [downloads, setDownloads] = useState<OfflineComic[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isOnline, setIsOnline] = useState(true);
+
+  useEffect(() => {
+    setIsOnline(typeof navigator !== "undefined" ? navigator.onLine : true);
+
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -49,11 +65,25 @@ export default function DownloadsPage() {
     };
   }, []);
 
+  function showNeedInternetToast() {
+    toast.error("Need internet first");
+  }
+
+  function handleProtectedLinkClick(
+    event: React.MouseEvent<HTMLAnchorElement>,
+  ) {
+    if (!isOnline) {
+      event.preventDefault();
+      showNeedInternetToast();
+    }
+  }
+
   return (
     <>
-      <div className="sticky top-0 px-4 z-50 w-full border-b h-16 border-white/10 bg-black/95 backdrop-blur-xl mb-6 flex items-center justify-between gap-3">
-        <Link href="/profile/avatar/profile ">
+      <div className="sticky top-0 z-50 mb-6 flex h-16 w-full items-center justify-between gap-3 border-b border-white/10 bg-black/95 px-4 backdrop-blur-xl">
+        <Link href="/profile/avatar/profile" onClick={handleProtectedLinkClick}>
           <Button
+            type="button"
             variant="ghost"
             size="icon"
             className="h-9 w-9 rounded-full text-white hover:bg-white/10 hover:text-white sm:h-10 sm:w-10"
@@ -62,13 +92,23 @@ export default function DownloadsPage() {
           </Button>
         </Link>
 
-        <div className="flex justify-center items-center space-x-4">
+        <div className="flex items-center justify-center space-x-4">
           <Download className="size-5" />
           <h1 className="text-xl font-semibold">Downloads</h1>
         </div>
+
+        <div className="w-9 sm:w-10" />
       </div>
+
       <section className="min-h-screen px-4 py-6 text-white sm:px-6">
         <div className="mx-auto max-w-5xl">
+          {!isOnline && (
+            <div className="mb-4 rounded-xl border border-yellow-400/20 bg-yellow-400/10 px-4 py-3 text-sm text-yellow-200">
+              You are offline. Only downloaded comics on this device are
+              available.
+            </div>
+          )}
+
           {loading ? (
             <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-white/70">
               Loading downloads...

@@ -1,10 +1,8 @@
-const CACHE_NAME = "komicats-v12";
+const CACHE_NAME = "komicats-v14";
 const OFFLINE_SHELL_URL = "/offline-downloads-shell.html";
 const DOWNLOADS_ENTRY_URL = "/profile/avatar/downloads";
 
 const PRECACHE_URLS = [
-  "/",
-  "/offline",
   OFFLINE_SHELL_URL,
   "/offline-downloads-shell.js",
   "/manifest.webmanifest",
@@ -78,22 +76,17 @@ self.addEventListener("fetch", (event) => {
   const wantsHtml = accept.includes("text/html");
   const isNavigationRequest = req.mode === "navigate" || wantsHtml;
 
-  // Downloads routes:
-  // online -> use real Next.js page
-  // offline/failure -> use offline shell
+  // 1) Downloads routes
+  // online => real Next page
+  // offline => offline shell
   if (isDownloadsRoute && isNavigationRequest) {
     event.respondWith(
       (async () => {
         try {
           const preload = await event.preloadResponse;
-          if (preload) {
-            await putInCache(req, preload.clone());
-            return preload;
-          }
+          if (preload) return preload;
 
-          const network = await fetch(req);
-          await putInCache(req, network.clone());
-          return network;
+          return await fetch(req, { cache: "no-store" });
         } catch (error) {
           const shell = await caches.match(OFFLINE_SHELL_URL);
           if (shell) return shell;
@@ -108,7 +101,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // If offline and opening another page, redirect to downloads
+  // 2) If offline and opening another page, send user to downloads
   if (
     isNavigationRequest &&
     self.navigator &&
@@ -120,24 +113,17 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Normal navigations
+  // 3) Normal app navigations
+  // always fresh online, no HTML caching
   if (isNavigationRequest && isSameOrigin) {
     event.respondWith(
       (async () => {
         try {
           const preload = await event.preloadResponse;
-          if (preload) {
-            await putInCache(req, preload.clone());
-            return preload;
-          }
+          if (preload) return preload;
 
-          const network = await fetch(req);
-          await putInCache(req, network.clone());
-          return network;
+          return await fetch(req, { cache: "no-store" });
         } catch (error) {
-          const cached = await caches.match(req);
-          if (cached) return cached;
-
           return Response.redirect(toAbsoluteUrl(DOWNLOADS_ENTRY_URL), 302);
         }
       })(),
@@ -145,25 +131,16 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  const isStaticAsset =
+  // 4) Only cache simple public assets needed by offline shell
+  const isOfflineShellAsset =
     isSameOrigin &&
-    (url.pathname.startsWith("/_next/static/") ||
-      url.pathname.startsWith("/icons/") ||
+    (url.pathname === "/offline-downloads-shell.js" ||
       url.pathname === "/pwa-icon.png" ||
       url.pathname === "/pwa-icon-2.png" ||
       url.pathname === "/BACKGROUND.png" ||
-      url.pathname === "/offline-downloads-shell.js" ||
-      url.pathname.endsWith(".css") ||
-      url.pathname.endsWith(".js") ||
-      url.pathname.endsWith(".png") ||
-      url.pathname.endsWith(".jpg") ||
-      url.pathname.endsWith(".jpeg") ||
-      url.pathname.endsWith(".svg") ||
-      url.pathname.endsWith(".webp") ||
-      url.pathname.endsWith(".woff") ||
-      url.pathname.endsWith(".woff2"));
+      url.pathname.startsWith("/icons/"));
 
-  if (isStaticAsset) {
+  if (isOfflineShellAsset) {
     event.respondWith(
       (async () => {
         const cached = await caches.match(req);
@@ -171,7 +148,6 @@ self.addEventListener("fetch", (event) => {
 
         try {
           const network = await fetch(req);
-
           if (
             network &&
             network.status === 200 &&
@@ -179,12 +155,19 @@ self.addEventListener("fetch", (event) => {
           ) {
             await putInCache(req, network.clone());
           }
-
           return network;
         } catch (error) {
           return new Response("", { status: 504 });
         }
       })(),
     );
+    return;
+  }
+
+  // 5) IMPORTANT:
+  // Never cache Next.js build assets, always fetch fresh.
+  if (isSameOrigin && url.pathname.startsWith("/_next/")) {
+    event.respondWith(fetch(req, { cache: "no-store" }));
+    return;
   }
 });
