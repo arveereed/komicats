@@ -33,8 +33,8 @@ type EpisodeButtonItem = {
 type OnlineButtonsData = {
   comicId: string;
   comicTitle: string;
-  comicDescription?: string | null;
   coverImage?: string | null;
+  previewVideo?: string | null;
   downloadEpisodes?: EpisodeButtonItem[] | null;
   offlineEpisodes?: EpisodeButtonItem[] | null;
   episodes?: EpisodeButtonItem[] | null;
@@ -158,10 +158,8 @@ export function ComicDetailsView({
                       <ComicOfflineButton
                         comicId={onlineButtons.comicId}
                         comicTitle={onlineButtons.comicTitle}
-                        comicDescription={
-                          onlineButtons.comicDescription ?? null
-                        }
                         coverImage={onlineButtons.coverImage ?? null}
+                        previewVideo={onlineButtons.previewVideo ?? null}
                         episodes={offlineEpisodes}
                       />
                     </div>

@@ -28,7 +28,7 @@
 
   function openOfflineDB() {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open("comic-offline-db", 1);
+      const request = indexedDB.open("comic-offline-db", 2);
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result);
     });
@@ -60,31 +60,27 @@
 
   async function listOfflineComics() {
     const db = await openOfflineDB();
-    const tx = db.transaction(["comics", "pages"], "readonly");
+    const tx = db.transaction(["comics"], "readonly");
     const comicsStore = tx.objectStore("comics");
-    const pagesStore = tx.objectStore("pages");
 
     const comics = await getAll(comicsStore);
     comics.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 
-    const result = [];
-
-    for (const comic of comics) {
-      const rows = await getAllByIndex(pagesStore, "by-comic", comic.comicId);
-      rows.sort((a, b) => {
-        if ((a.episodeIndex || 0) !== (b.episodeIndex || 0)) {
-          return (a.episodeIndex || 0) - (b.episodeIndex || 0);
-        }
-        return (a.pageIndex || 0) - (b.pageIndex || 0);
-      });
-
-      const previewUrl = rows[0]?.blob ? makeBlobUrl(rows[0].blob) : null;
-
-      result.push({
-        ...comic,
-        previewUrl,
-      });
-    }
+    const result = comics.map((comic) => ({
+      comicId: comic.comicId,
+      title: comic.title,
+      coverImage:
+        comic.coverImageBlob != null
+          ? makeBlobUrl(comic.coverImageBlob)
+          : (comic.coverImage ?? null),
+      previewVideo:
+        comic.previewVideoBlob != null
+          ? makeBlobUrl(comic.previewVideoBlob)
+          : (comic.previewVideo ?? null),
+      totalPages: comic.totalPages,
+      cachedPages: comic.cachedPages,
+      updatedAt: comic.updatedAt,
+    }));
 
     db.close();
     return result;
@@ -111,14 +107,9 @@
       return (a.pageIndex || 0) - (b.pageIndex || 0);
     });
 
-    let heroImage = null;
     const episodesMap = new Map();
 
     for (const row of rows) {
-      if (!heroImage && row.blob) {
-        heroImage = makeBlobUrl(row.blob);
-      }
-
       const existing = episodesMap.get(row.episodeId);
 
       if (existing) {
@@ -131,7 +122,10 @@
         title: row.episodeTitle || "Untitled Episode",
         episodeIndex: row.episodeIndex || 0,
         pageCount: 1,
-        previewUrl: row.blob ? makeBlobUrl(row.blob) : null,
+        previewUrl:
+          row.episodePreviewImageBlob != null
+            ? makeBlobUrl(row.episodePreviewImageBlob)
+            : null,
       });
     }
 
@@ -142,8 +136,19 @@
     db.close();
 
     return {
-      ...comic,
-      heroImage,
+      comicId: comic.comicId,
+      title: comic.title,
+      coverImage:
+        comic.coverImageBlob != null
+          ? makeBlobUrl(comic.coverImageBlob)
+          : (comic.coverImage ?? null),
+      previewVideo:
+        comic.previewVideoBlob != null
+          ? makeBlobUrl(comic.previewVideoBlob)
+          : (comic.previewVideo ?? null),
+      totalPages: comic.totalPages,
+      cachedPages: comic.cachedPages,
+      updatedAt: comic.updatedAt,
       episodes,
     };
   }
@@ -233,47 +238,165 @@
     db.close();
   }
 
-  function renderDownloadsIndex() {
-    return listOfflineComics().then((comics) => {
-      APP.innerHTML = `
-        <section class="downloads-page">
-          <div class="container">
-            <div class="downloads-header">
-              <svg class="downloads-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <path d="M7 10l5 5 5-5"/>
-                <path d="M12 15V3"/>
-              </svg>
-              <h1 class="downloads-header-title">Downloads</h1>
-            </div>
+  function setupCardPreviewPlayback() {
+    const cards = document.querySelectorAll("[data-preview-card]");
 
-            ${
-              comics.length === 0
-                ? `
-                  <div class="downloads-empty">
-                    No offline comics on this device yet.
-                  </div>
-                `
-                : `
-                  <div class="downloads-grid">
-                    ${comics
-                      .map(
-                        (comic) => `
-                          <a
-                            class="download-card"
-                            href="/profile/avatar/downloads/${encodeURIComponent(
-                              comic.comicId,
-                            )}"
-                          >
-                            <div class="download-card-cover">
-                              ${
-                                comic.previewUrl
-                                  ? `<img src="${comic.previewUrl}" alt="${escapeHtml(
-                                      comic.title,
-                                    )}" />`
-                                  : ``
-                              }
-                            </div>
+    cards.forEach((card) => {
+      const video = card.querySelector("video");
+      if (!video) return;
+
+      let ready = false;
+      let errored = false;
+
+      const setPlaying = (playing) => {
+        if (!ready || errored) return;
+        card.classList.toggle("playing", playing);
+      };
+
+      video.addEventListener("canplay", () => {
+        ready = true;
+      });
+
+      video.addEventListener("loadeddata", () => {
+        ready = true;
+      });
+
+      video.addEventListener("error", () => {
+        errored = true;
+        card.classList.remove("playing");
+      });
+
+      card.addEventListener("mouseenter", () => {
+        if (errored) return;
+
+        const playPromise = video.play();
+        if (playPromise) {
+          playPromise.then(() => setPlaying(true)).catch(() => {});
+        }
+      });
+
+      card.addEventListener("mouseleave", () => {
+        video.pause();
+        video.currentTime = 0;
+        setPlaying(false);
+      });
+
+      card.addEventListener("touchstart", () => {
+        if (errored) return;
+
+        const playPromise = video.play();
+        if (playPromise) {
+          playPromise.then(() => setPlaying(true)).catch(() => {});
+        }
+      });
+    });
+  }
+
+  function setupHeroPreviewPlayback() {
+    const hero = document.querySelector("[data-hero-preview]");
+    if (!hero) return;
+
+    const video = hero.querySelector("video");
+    if (!video) return;
+
+    let ready = false;
+    let errored = false;
+
+    const tryPlay = () => {
+      if (!ready || errored) return;
+      const playPromise = video.play();
+      if (playPromise) {
+        playPromise
+          .then(() => {
+            hero.classList.add("playing");
+          })
+          .catch(() => {});
+      }
+    };
+
+    video.addEventListener("canplay", () => {
+      ready = true;
+      tryPlay();
+    });
+
+    video.addEventListener("loadeddata", () => {
+      ready = true;
+      tryPlay();
+    });
+
+    video.addEventListener("error", () => {
+      errored = true;
+      hero.classList.remove("playing");
+    });
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || entry.intersectionRatio < 0.2) {
+          video.pause();
+          hero.classList.remove("playing");
+          return;
+        }
+
+        tryPlay();
+      },
+      {
+        threshold: [0, 0.1, 0.2, 0.35, 0.6, 1],
+      },
+    );
+
+    observer.observe(hero);
+  }
+
+  async function renderDownloadsIndex() {
+    const comics = await listOfflineComics();
+
+    APP.innerHTML = `
+      <section class="downloads-page">
+        <div class="container">
+          <div class="downloads-header">
+            <svg class="downloads-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <path d="M7 10l5 5 5-5"/>
+              <path d="M12 15V3"/>
+            </svg>
+            <h1 class="downloads-header-title">Downloads</h1>
+          </div>
+
+          ${
+            comics.length === 0
+              ? `
+                <div class="downloads-empty">
+                  No offline comics on this device yet.
+                </div>
+              `
+              : `
+                <div class="downloads-grid">
+                  ${comics
+                    .map(
+                      (comic) => `
+                        <a
+                          class="download-card"
+                          data-preview-card
+                          href="/profile/avatar/downloads/${encodeURIComponent(
+                            comic.comicId,
+                          )}"
+                        >
+                          <div class="download-card-cover">
+                            ${
+                              comic.coverImage
+                                ? `<img src="${comic.coverImage}" alt="${escapeHtml(
+                                    comic.title,
+                                  )}" />`
+                                : ``
+                            }
+
+                            ${
+                              comic.previewVideo
+                                ? `<video src="${comic.previewVideo}" muted loop playsinline preload="metadata"></video>`
+                                : ``
+                            }
+
+                            <div class="download-card-overlay"></div>
 
                             <div class="download-card-body">
                               <h2 class="download-card-title">${escapeHtml(
@@ -282,17 +405,19 @@
                               <p class="download-card-meta">${comic.cachedPages}/${comic.totalPages} pages cached</p>
                               <p class="download-card-status">Available on this device</p>
                             </div>
-                          </a>
-                        `,
-                      )
-                      .join("")}
-                  </div>
-                `
-            }
-          </div>
-        </section>
-      `;
-    });
+                          </div>
+                        </a>
+                      `,
+                    )
+                    .join("")}
+                </div>
+              `
+          }
+        </div>
+      </section>
+    `;
+
+    setupCardPreviewPlayback();
   }
 
   async function renderComicDetails(comicId) {
@@ -332,14 +457,21 @@
             </div>
 
             <div class="details-hero-media">
-              <div class="hero-preview">
+              <div class="hero-preview" data-hero-preview>
                 ${
-                  comic.heroImage
-                    ? `<img src="${comic.heroImage}" alt="${escapeHtml(
+                  comic.coverImage
+                    ? `<img src="${comic.coverImage}" alt="${escapeHtml(
                         comic.title,
                       )}" />`
                     : ""
                 }
+
+                ${
+                  comic.previewVideo
+                    ? `<video src="${comic.previewVideo}" muted loop playsinline preload="metadata"></video>`
+                    : ""
+                }
+
                 <div class="hero-preview-overlay-1"></div>
                 <div class="hero-preview-overlay-2"></div>
               </div>
@@ -430,6 +562,8 @@
         </div>
       </section>
     `;
+
+    setupHeroPreviewPlayback();
 
     const removeButton = document.getElementById("remove-download-btn");
 

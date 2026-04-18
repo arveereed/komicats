@@ -21,15 +21,15 @@ type OfflineComic = {
 
 function OfflineComicHoverCard({ comic }: { comic: OfflineComic }) {
   const [hovered, setHovered] = useState(false);
-  const [canPlay, setCanPlay] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !comic.previewVideo) return;
+    if (!video || !comic.previewVideo || videoError) return;
 
     if (hovered) {
-      setCanPlay(true);
       const playPromise = video.play();
       if (playPromise) {
         playPromise.catch(() => {});
@@ -37,9 +37,8 @@ function OfflineComicHoverCard({ comic }: { comic: OfflineComic }) {
     } else {
       video.pause();
       video.currentTime = 0;
-      setCanPlay(false);
     }
-  }, [hovered, comic.previewVideo]);
+  }, [hovered, comic.previewVideo, videoError]);
 
   return (
     <Link
@@ -52,34 +51,40 @@ function OfflineComicHoverCard({ comic }: { comic: OfflineComic }) {
         <CardContent className="p-0">
           <div className="relative aspect-[3/4] overflow-hidden">
             {comic.coverImage ? (
-              <>
-                <img
-                  src={comic.coverImage}
-                  alt={comic.title}
-                  className={`h-full w-full object-cover transition-all duration-500 ${
-                    hovered && comic.previewVideo
-                      ? "scale-105 opacity-0"
-                      : "scale-100 opacity-100 group-hover:scale-105"
-                  }`}
-                />
-
-                {comic.previewVideo ? (
-                  <video
-                    ref={videoRef}
-                    src={comic.previewVideo}
-                    muted
-                    loop
-                    playsInline
-                    preload="metadata"
-                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${
-                      canPlay ? "opacity-100" : "opacity-0"
-                    }`}
-                  />
-                ) : null}
-              </>
+              <img
+                src={comic.coverImage}
+                alt={comic.title}
+                className={`h-full w-full object-cover transition-all duration-500 ${
+                  comic.previewVideo && videoReady && !videoError && hovered
+                    ? "scale-105 opacity-0"
+                    : "scale-100 opacity-100 group-hover:scale-105"
+                }`}
+              />
             ) : (
               <div className="absolute inset-0 bg-white/[0.05]" />
             )}
+
+            {comic.previewVideo ? (
+              <video
+                ref={videoRef}
+                src={comic.previewVideo}
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                onCanPlay={() => setVideoReady(true)}
+                onLoadedData={() => setVideoReady(true)}
+                onError={() => {
+                  setVideoError(true);
+                  setVideoReady(false);
+                }}
+                className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
+                  videoReady && !videoError && hovered
+                    ? "opacity-100"
+                    : "opacity-0"
+                }`}
+              />
+            ) : null}
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-transparent" />
 

@@ -5,23 +5,24 @@ import { DBSchema, IDBPDatabase, openDB } from "idb";
 type OfflineEpisodeInput = {
   id: string;
   title: string;
-  description?: string | null;
   images: { imageUrl: string }[];
 };
 
 type OfflineComicInput = {
   comicId: string;
   title: string;
-  description?: string | null;
   coverImage?: string | null;
+  previewVideo?: string | null;
   episodes: OfflineEpisodeInput[];
 };
 
 type StoredComicRow = {
   comicId: string;
   title: string;
-  description?: string | null;
   coverImage?: string | null;
+  coverImageBlob?: Blob | null;
+  previewVideo?: string | null;
+  previewVideoBlob?: Blob | null;
   totalPages: number;
   cachedPages: number;
   updatedAt: number;
@@ -32,8 +33,7 @@ type StoredPageRow = {
   comicId: string;
   episodeId: string;
   episodeTitle: string;
-  episodeDescription?: string | null;
-  episodePreviewImage?: string | null;
+  episodePreviewImageBlob?: Blob | null;
   episodeIndex: number;
   episodeKey: string;
   pageIndex: number;
@@ -85,6 +85,25 @@ async function getDB() {
   return dbPromise;
 }
 
+async function fetchBlobThroughProxy(url: string) {
+  const response = await fetch(
+    `/api/offline-image?url=${encodeURIComponent(url)}`,
+    {
+      method: "GET",
+      cache: "no-store",
+    },
+  );
+
+  if (!response.ok) {
+    const message = await response.text().catch(() => "");
+    throw new Error(
+      `Failed to cache media (${response.status}): ${message || url}`,
+    );
+  }
+
+  return response.blob();
+}
+
 export async function hasOfflineComic(comicId: string) {
   const db = await getDB();
   const comic = await db.get("comics", comicId);
@@ -104,11 +123,32 @@ export async function saveComicOffline(
 
   let cachedPages = 0;
 
+  let coverImageBlob: Blob | null = null;
+  let previewVideoBlob: Blob | null = null;
+
+  try {
+    if (payload.coverImage) {
+      coverImageBlob = await fetchBlobThroughProxy(payload.coverImage);
+    }
+  } catch (error) {
+    console.error("Failed to cache cover image:", error);
+  }
+
+  try {
+    if (payload.previewVideo) {
+      previewVideoBlob = await fetchBlobThroughProxy(payload.previewVideo);
+    }
+  } catch (error) {
+    console.error("Failed to cache preview video:", error);
+  }
+
   await db.put("comics", {
     comicId: payload.comicId,
     title: payload.title,
-    description: payload.description ?? null,
     coverImage: payload.coverImage ?? null,
+    coverImageBlob,
+    previewVideo: payload.previewVideo ?? null,
+    previewVideoBlob,
     totalPages,
     cachedPages: 0,
     updatedAt: Date.now(),
@@ -121,33 +161,28 @@ export async function saveComicOffline(
   ) {
     const episode = payload.episodes[episodeIndex];
 
-    for (let pageIndex = 0; pageIndex < episode.images.length; pageIndex++) {
-      const imageUrl = episode.images[pageIndex].imageUrl;
+    let episodePreviewImageBlob: Blob | null = null;
 
-      const response = await fetch(
-        `/api/offline-image?url=${encodeURIComponent(imageUrl)}`,
-        {
-          method: "GET",
-          cache: "no-store",
-        },
-      );
-
-      if (!response.ok) {
-        const message = await response.text().catch(() => "");
-        throw new Error(
-          `Failed to cache image (${response.status}): ${message || imageUrl}`,
+    try {
+      if (episode.images[0]?.imageUrl) {
+        episodePreviewImageBlob = await fetchBlobThroughProxy(
+          episode.images[0].imageUrl,
         );
       }
+    } catch (error) {
+      console.error("Failed to cache episode preview image:", error);
+    }
 
-      const blob = await response.blob();
+    for (let pageIndex = 0; pageIndex < episode.images.length; pageIndex++) {
+      const imageUrl = episode.images[pageIndex].imageUrl;
+      const blob = await fetchBlobThroughProxy(imageUrl);
 
       await db.put("pages", {
         id: `${payload.comicId}:${episode.id}:${pageIndex}`,
         comicId: payload.comicId,
         episodeId: episode.id,
         episodeTitle: episode.title || `Episode ${episodeIndex + 1}`,
-        episodeDescription: episode.description ?? null,
-        episodePreviewImage: episode.images[0]?.imageUrl ?? null,
+        episodePreviewImageBlob,
         episodeIndex,
         episodeKey: `${payload.comicId}:${episode.id}`,
         pageIndex,
@@ -159,8 +194,10 @@ export async function saveComicOffline(
       await db.put("comics", {
         comicId: payload.comicId,
         title: payload.title,
-        description: payload.description ?? null,
         coverImage: payload.coverImage ?? null,
+        coverImageBlob,
+        previewVideo: payload.previewVideo ?? null,
+        previewVideoBlob,
         totalPages,
         cachedPages,
         updatedAt: Date.now(),
@@ -191,7 +228,6 @@ export async function getOfflineComicById(comicId: string) {
     {
       episodeId: string;
       title: string;
-      description?: string | null;
       previewImage?: string | null;
       episodeIndex: number;
       pageCount: number;
@@ -209,8 +245,10 @@ export async function getOfflineComicById(comicId: string) {
     episodesMap.set(row.episodeId, {
       episodeId: row.episodeId,
       title: row.episodeTitle || `Episode ${row.episodeIndex + 1}`,
-      description: row.episodeDescription ?? null,
-      previewImage: row.episodePreviewImage ?? null,
+      previewImage:
+        row.episodePreviewImageBlob != null
+          ? URL.createObjectURL(row.episodePreviewImageBlob)
+          : null,
       episodeIndex: row.episodeIndex ?? 0,
       pageCount: 1,
     });
@@ -221,7 +259,19 @@ export async function getOfflineComicById(comicId: string) {
   );
 
   return {
-    ...comic,
+    comicId: comic.comicId,
+    title: comic.title,
+    coverImage:
+      comic.coverImageBlob != null
+        ? URL.createObjectURL(comic.coverImageBlob)
+        : (comic.coverImage ?? null),
+    previewVideo:
+      comic.previewVideoBlob != null
+        ? URL.createObjectURL(comic.previewVideoBlob)
+        : (comic.previewVideo ?? null),
+    totalPages: comic.totalPages,
+    cachedPages: comic.cachedPages,
+    updatedAt: comic.updatedAt,
     episodes,
   };
 }
@@ -263,5 +313,21 @@ export async function removeOfflineComic(comicId: string) {
 
 export async function listOfflineComics() {
   const db = await getDB();
-  return db.getAll("comics");
+  const comics = await db.getAll("comics");
+
+  return comics.map((comic) => ({
+    comicId: comic.comicId,
+    title: comic.title,
+    coverImage:
+      comic.coverImageBlob != null
+        ? URL.createObjectURL(comic.coverImageBlob)
+        : (comic.coverImage ?? null),
+    previewVideo:
+      comic.previewVideoBlob != null
+        ? URL.createObjectURL(comic.previewVideoBlob)
+        : (comic.previewVideo ?? null),
+    totalPages: comic.totalPages,
+    cachedPages: comic.cachedPages,
+    updatedAt: comic.updatedAt,
+  }));
 }
