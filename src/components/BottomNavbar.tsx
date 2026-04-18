@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Plus, Home, ShoppingBag, Gamepad2, UserCircle2 } from "lucide-react";
+import {
+  Plus,
+  Home,
+  ShoppingBag,
+  Gamepad2,
+  UserCircle2,
+  Download,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useUser } from "@clerk/nextjs";
 import { useIsInstalledApp } from "@/hooks/useIsInstalledApp";
@@ -12,6 +19,7 @@ const navItems = [
   { label: "Games", href: "/profile/avatar/my-coins", icon: Gamepad2 },
   { label: "Shop", href: "/profile/avatar/shop", icon: ShoppingBag },
   { label: "My List", href: "/profile/avatar/my-list", icon: Plus },
+  { label: "Downloads", href: "/profile/avatar/downloads", icon: Download },
 ];
 
 type Profiles = Awaited<
