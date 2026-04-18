@@ -20,12 +20,14 @@ import { warmOfflineComicRoutes } from "@/lib/offline-route-cache";
 type EpisodeInput = {
   id: string;
   title: string;
+  description?: string | null;
   images: { imageUrl: string }[];
 };
 
 type Props = {
   comicId: string;
   comicTitle: string;
+  comicDescription?: string | null;
   coverImage?: string | null;
   previewVideo?: string | null;
   episodes: EpisodeInput[];
@@ -35,6 +37,7 @@ type Props = {
 export function ComicOfflineButton({
   comicId,
   comicTitle,
+  comicDescription,
   coverImage,
   previewVideo,
   episodes,
@@ -106,6 +109,7 @@ export function ComicOfflineButton({
           {
             comicId,
             title: comicTitle,
+            description: comicDescription ?? null,
             coverImage,
             previewVideo,
             episodes,

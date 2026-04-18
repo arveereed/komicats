@@ -76,6 +76,7 @@ export default async function ComicDetailsPage({ params }: PageProps) {
   const downloadEpisodes = comic.episodes.map((episode) => ({
     id: episode.id,
     title: episode.title,
+    description: episode.description ?? null,
     images: episode.images.map((image) => ({
       imageUrl: image.imageUrl,
     })),
@@ -86,6 +87,7 @@ export default async function ComicDetailsPage({ params }: PageProps) {
     .map((episode) => ({
       id: episode.id,
       title: episode.title,
+      description: episode.description ?? null,
       images: episode.images.map((image) => ({
         imageUrl: image.imageUrl,
       })),

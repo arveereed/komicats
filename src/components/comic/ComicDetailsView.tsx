@@ -158,6 +158,7 @@ export function ComicDetailsView({
                       <ComicOfflineButton
                         comicId={onlineButtons.comicId}
                         comicTitle={onlineButtons.comicTitle}
+                        comicDescription={description ?? null}
                         coverImage={onlineButtons.coverImage ?? null}
                         previewVideo={onlineButtons.previewVideo ?? null}
                         episodes={offlineEpisodes}

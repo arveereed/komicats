@@ -12,6 +12,7 @@ import {
 type OfflineComic = {
   comicId: string;
   title: string;
+  description?: string | null;
   coverImage?: string | null;
   totalPages: number;
   cachedPages: number;
@@ -19,6 +20,7 @@ type OfflineComic = {
   episodes: {
     episodeId: string;
     title: string;
+    description?: string | null;
     episodeIndex: number;
     pageCount: number;
   }[];
@@ -100,7 +102,7 @@ export default function OfflineEpisodePage() {
         episodes: typedComic.episodes.map((episode) => ({
           id: episode.episodeId,
           title: episode.title,
-          description: "Available offline.",
+          description: episode.description ?? null,
           imageCount: episode.pageCount,
         })),
         pages: urls.map((url, index) => ({
@@ -141,7 +143,10 @@ export default function OfflineEpisodePage() {
       comicTitle={data.comicTitle}
       episodeId={params.episodeId}
       episodeTitle={data.episodeTitle}
-      episodeDescription="Saved for offline reading."
+      episodeDescription={
+        data.episodes.find((episode) => episode.id === params.episodeId)
+          ?.description ?? null
+      }
       episodeNumber={data.episodeNumber}
       pages={data.pages}
       episodes={data.episodes}
