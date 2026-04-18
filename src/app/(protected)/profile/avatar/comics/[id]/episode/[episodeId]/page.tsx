@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getComicById } from "@/actions/comic.action";
 import EpisodeReader from "@/components/comic/EpisodeReader";
 import { getCommentsCount } from "@/actions/comment.action";
@@ -11,32 +11,40 @@ type PageProps = {
   }>;
 };
 
+const FREE_EPISODE_LIMIT = 5;
+
 export default async function EpisodePage({ params }: PageProps) {
   const { id, episodeId } = await params;
 
   const comic = await getComicById(id);
-  const comments = await getCommentsCount(episodeId);
-  const likeStatus = await getLikeStatus(episodeId);
 
   if (!comic) {
     notFound();
   }
 
-  const currentIndex = comic.episodes.findIndex(
+  const accessibleEpisodes = comic.episodes.filter(
+    (_, index) => index < FREE_EPISODE_LIMIT || comic.isUnlocked,
+  );
+
+  const currentIndex = accessibleEpisodes.findIndex(
     (episode) => episode.id === episodeId,
   );
 
+  // If user tries to open a locked episode directly, send them back to comic details
   if (currentIndex === -1) {
-    notFound();
+    redirect(`/profile/avatar/comics/${comic.id}`);
   }
 
-  const episode = comic.episodes[currentIndex];
+  const episode = accessibleEpisodes[currentIndex];
   const previousEpisode =
-    currentIndex > 0 ? comic.episodes[currentIndex - 1] : null;
+    currentIndex > 0 ? accessibleEpisodes[currentIndex - 1] : null;
   const nextEpisode =
-    currentIndex < comic.episodes.length - 1
-      ? comic.episodes[currentIndex + 1]
+    currentIndex < accessibleEpisodes.length - 1
+      ? accessibleEpisodes[currentIndex + 1]
       : null;
+
+  const comments = await getCommentsCount(episode.id);
+  const likeStatus = await getLikeStatus(episode.id);
 
   return (
     <EpisodeReader
@@ -46,13 +54,13 @@ export default async function EpisodePage({ params }: PageProps) {
       episodeId={episode.id}
       episodeTitle={episode.title}
       episodeDescription={episode.description}
-      episodeNumber={currentIndex + 1}
+      episodeNumber={episode.order ?? currentIndex + 1}
       pages={episode.images || []}
-      previousEpisodeId={previousEpisode?.id}
-      nextEpisodeId={nextEpisode?.id}
+      previousEpisodeId={previousEpisode?.id ?? null}
+      nextEpisodeId={nextEpisode?.id ?? null}
       initialLiked={likeStatus.liked}
       initialLikeCount={likeStatus.count}
-      episodes={comic.episodes.map((ep) => ({
+      episodes={accessibleEpisodes.map((ep) => ({
         id: ep.id,
         title: ep.title,
         description: ep.description,
