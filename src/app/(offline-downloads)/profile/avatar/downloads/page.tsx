@@ -2,20 +2,112 @@
 
 import Link from "next/link";
 import { ArrowLeft, Download } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { listOfflineComics } from "@/lib/offline-comic-db";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 type OfflineComic = {
   comicId: string;
   title: string;
   coverImage?: string | null;
+  previewVideo?: string | null;
   totalPages: number;
   cachedPages: number;
   updatedAt: number;
 };
+
+function OfflineComicHoverCard({ comic }: { comic: OfflineComic }) {
+  const [hovered, setHovered] = useState(false);
+  const [canPlay, setCanPlay] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !comic.previewVideo) return;
+
+    if (hovered) {
+      setCanPlay(true);
+      const playPromise = video.play();
+      if (playPromise) {
+        playPromise.catch(() => {});
+      }
+    } else {
+      video.pause();
+      video.currentTime = 0;
+      setCanPlay(false);
+    }
+  }, [hovered, comic.previewVideo]);
+
+  return (
+    <Link
+      href={`/profile/avatar/downloads/${comic.comicId}`}
+      className="group block"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <Card className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] p-0 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.08] hover:shadow-2xl">
+        <CardContent className="p-0">
+          <div className="relative aspect-[3/4] overflow-hidden">
+            {comic.coverImage ? (
+              <>
+                <img
+                  src={comic.coverImage}
+                  alt={comic.title}
+                  className={`h-full w-full object-cover transition-all duration-500 ${
+                    hovered && comic.previewVideo
+                      ? "scale-105 opacity-0"
+                      : "scale-100 opacity-100 group-hover:scale-105"
+                  }`}
+                />
+
+                {comic.previewVideo ? (
+                  <video
+                    ref={videoRef}
+                    src={comic.previewVideo}
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${
+                      canPlay ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
+                ) : null}
+              </>
+            ) : (
+              <div className="absolute inset-0 bg-white/[0.05]" />
+            )}
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-transparent" />
+
+            <div className="absolute inset-x-0 bottom-0 p-3">
+              <h2
+                className="line-clamp-2 text-sm font-extrabold uppercase leading-tight text-white md:text-base"
+                style={{
+                  textShadow:
+                    "0 2px 10px rgba(0,0,0,0.9), 0 1px 2px rgba(0,0,0,0.8)",
+                }}
+              >
+                {comic.title}
+              </h2>
+
+              <p className="mt-1 text-xs font-medium text-white/80">
+                {comic.cachedPages}/{comic.totalPages} pages cached
+              </p>
+
+              <p className="mt-2 text-[11px] font-medium text-emerald-400">
+                Available on this device
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
 
 export default function DownloadsPage() {
   const [downloads, setDownloads] = useState<OfflineComic[]>([]);
@@ -100,57 +192,35 @@ export default function DownloadsPage() {
         <div className="w-9 sm:w-10" />
       </div>
 
-      <section className="min-h-screen px-4 py-6 text-white sm:px-6">
-        <div className="mx-auto max-w-5xl">
-          {!isOnline && (
-            <div className="mb-4 rounded-xl border border-yellow-400/20 bg-yellow-400/10 px-4 py-3 text-sm text-yellow-200">
-              You are offline. Only downloaded comics on this device are
-              available.
-            </div>
-          )}
+      <section className="relative mx-auto w-full max-w-7xl px-4 py-6 text-white md:px-6 md:py-8">
+        {!isOnline && (
+          <div className="mb-4 rounded-xl border border-yellow-400/20 bg-yellow-400/10 px-4 py-3 text-sm text-yellow-200">
+            You are offline. Only downloaded comics on this device are
+            available.
+          </div>
+        )}
 
-          {loading ? (
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-white/70">
-              Loading downloads...
-            </div>
-          ) : downloads.length === 0 ? (
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-white/70">
-              No offline comics on this device yet.
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {downloads.map((item) => (
-                <Link
-                  key={item.comicId}
-                  href={`/profile/avatar/downloads/${item.comicId}`}
-                  className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 transition hover:bg-white/10"
-                >
-                  <div className="aspect-[16/9] bg-black">
-                    {item.coverImage ? (
-                      <img
-                        src={item.coverImage}
-                        alt={item.title}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : null}
-                  </div>
-
-                  <div className="p-4">
-                    <h2 className="line-clamp-1 text-base font-semibold">
-                      {item.title}
-                    </h2>
-                    <p className="mt-1 text-sm text-white/60">
-                      {item.cachedPages}/{item.totalPages} pages cached
-                    </p>
-                    <p className="mt-2 text-xs text-emerald-400">
-                      Available on this device
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
+        {loading ? (
+          <Card className="border border-white/10 bg-white/[0.03]">
+            <CardContent className="flex min-h-[240px] items-center justify-center">
+              <p className="text-sm text-white/60">Loading downloads...</p>
+            </CardContent>
+          </Card>
+        ) : downloads.length === 0 ? (
+          <Card className="border border-white/10 bg-white/[0.03]">
+            <CardContent className="flex min-h-[240px] items-center justify-center">
+              <p className="text-sm text-white/60">
+                No offline comics on this device yet.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            {downloads.map((comic) => (
+              <OfflineComicHoverCard key={comic.comicId} comic={comic} />
+            ))}
+          </div>
+        )}
       </section>
     </>
   );

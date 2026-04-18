@@ -5,12 +5,14 @@ import { DBSchema, IDBPDatabase, openDB } from "idb";
 type OfflineEpisodeInput = {
   id: string;
   title: string;
+  description?: string | null;
   images: { imageUrl: string }[];
 };
 
 type OfflineComicInput = {
   comicId: string;
   title: string;
+  description?: string | null;
   coverImage?: string | null;
   episodes: OfflineEpisodeInput[];
 };
@@ -18,6 +20,7 @@ type OfflineComicInput = {
 type StoredComicRow = {
   comicId: string;
   title: string;
+  description?: string | null;
   coverImage?: string | null;
   totalPages: number;
   cachedPages: number;
@@ -29,6 +32,7 @@ type StoredPageRow = {
   comicId: string;
   episodeId: string;
   episodeTitle: string;
+  episodeDescription?: string | null;
   episodePreviewImage?: string | null;
   episodeIndex: number;
   episodeKey: string;
@@ -63,7 +67,7 @@ async function getDB() {
   }
 
   if (!dbPromise) {
-    dbPromise = openDB<ComicOfflineDB>("comic-offline-db", 1, {
+    dbPromise = openDB<ComicOfflineDB>("comic-offline-db", 2, {
       upgrade(db) {
         if (!db.objectStoreNames.contains("comics")) {
           db.createObjectStore("comics", { keyPath: "comicId" });
@@ -103,6 +107,7 @@ export async function saveComicOffline(
   await db.put("comics", {
     comicId: payload.comicId,
     title: payload.title,
+    description: payload.description ?? null,
     coverImage: payload.coverImage ?? null,
     totalPages,
     cachedPages: 0,
@@ -141,6 +146,7 @@ export async function saveComicOffline(
         comicId: payload.comicId,
         episodeId: episode.id,
         episodeTitle: episode.title || `Episode ${episodeIndex + 1}`,
+        episodeDescription: episode.description ?? null,
         episodePreviewImage: episode.images[0]?.imageUrl ?? null,
         episodeIndex,
         episodeKey: `${payload.comicId}:${episode.id}`,
@@ -153,6 +159,7 @@ export async function saveComicOffline(
       await db.put("comics", {
         comicId: payload.comicId,
         title: payload.title,
+        description: payload.description ?? null,
         coverImage: payload.coverImage ?? null,
         totalPages,
         cachedPages,
@@ -184,6 +191,7 @@ export async function getOfflineComicById(comicId: string) {
     {
       episodeId: string;
       title: string;
+      description?: string | null;
       previewImage?: string | null;
       episodeIndex: number;
       pageCount: number;
@@ -201,6 +209,7 @@ export async function getOfflineComicById(comicId: string) {
     episodesMap.set(row.episodeId, {
       episodeId: row.episodeId,
       title: row.episodeTitle || `Episode ${row.episodeIndex + 1}`,
+      description: row.episodeDescription ?? null,
       previewImage: row.episodePreviewImage ?? null,
       episodeIndex: row.episodeIndex ?? 0,
       pageCount: 1,

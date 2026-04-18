@@ -13,6 +13,7 @@ import { removeComicOfflineDownload } from "@/actions/comic-offline.action";
 type OfflineComic = {
   comicId: string;
   title: string;
+  description?: string | null;
   coverImage?: string | null;
   totalPages: number;
   cachedPages: number;
@@ -20,6 +21,7 @@ type OfflineComic = {
   episodes: {
     episodeId: string;
     title: string;
+    description?: string | null;
     previewImage?: string | null;
     episodeIndex: number;
     pageCount: number;
@@ -103,7 +105,7 @@ export default function OfflineComicDetailsPage() {
       totalEpisodes={comic.episodes.length}
       heroImage={comic.coverImage ?? null}
       previewVideo={null}
-      description="Saved for offline reading."
+      description={comic.description?.trim() ?? "No description available."}
       readHref={readHref}
       creatorLabel={`Cached ${comic.cachedPages}/${comic.totalPages} pages`}
       offlineRemove={{
@@ -113,7 +115,7 @@ export default function OfflineComicDetailsPage() {
       episodes={comic.episodes.map((episode) => ({
         id: episode.episodeId,
         title: episode.title,
-        description: "Available offline.",
+        description: episode.description || "No description available.",
         imageUrl: episode.previewImage ?? comic.coverImage ?? null,
         pages: episode.pageCount,
         href: `/profile/avatar/downloads/${comicId}/${episode.episodeId}`,

@@ -6,9 +6,8 @@ import { ChevronLeft, Play, Trash2 } from "lucide-react";
 import { LockedEpisodeCard } from "@/components/comic/locked-episode-card";
 import { Button } from "@/components/ui/button";
 import { EpisodeRowCard } from "@/components/comic/EpisodeRowCard";
-import { ComicDownloadButton } from "@/components/comic/ComicDownloadButton";
-import { ComicOfflineButton } from "@/components/comic/ComicOfflineButton";
 import { ComicReactionButtons } from "@/components/comic/ComicReactionButtons";
+import { ComicOfflineButton } from "@/components/comic/ComicOfflineButton";
 import ComicHeroPreview from "@/components/comic/ComicHeroPreview";
 import ExpandableDescription from "@/components/comic/ExpandableDescription";
 
@@ -27,17 +26,17 @@ type EpisodeViewItem = {
 type EpisodeButtonItem = {
   id: string;
   title: string;
+  description?: string | null;
   images: { imageUrl: string }[];
 };
 
 type OnlineButtonsData = {
   comicId: string;
   comicTitle: string;
+  comicDescription?: string | null;
   coverImage?: string | null;
   downloadEpisodes?: EpisodeButtonItem[] | null;
   offlineEpisodes?: EpisodeButtonItem[] | null;
-
-  // old fallback shape
   episodes?: EpisodeButtonItem[] | null;
 };
 
@@ -89,33 +88,11 @@ export function ComicDetailsView({
   reactions,
   offlineRemove,
 }: Props) {
-  const downloadEpisodes = Array.isArray(onlineButtons?.downloadEpisodes)
-    ? onlineButtons.downloadEpisodes
-    : Array.isArray(onlineButtons?.episodes)
-      ? onlineButtons.episodes
-      : [];
-
   const offlineEpisodes = Array.isArray(onlineButtons?.offlineEpisodes)
     ? onlineButtons.offlineEpisodes
     : Array.isArray(onlineButtons?.episodes)
       ? onlineButtons.episodes
       : [];
-
-  function normalizeEpisodeButtons(value: unknown): EpisodeButtonItem[] {
-    if (!Array.isArray(value)) return [];
-
-    return value.filter((item): item is EpisodeButtonItem => {
-      if (!item || typeof item !== "object") return false;
-
-      const candidate = item as EpisodeButtonItem;
-
-      return (
-        typeof candidate.id === "string" &&
-        typeof candidate.title === "string" &&
-        Array.isArray(candidate.images)
-      );
-    });
-  }
 
   return (
     <section className="min-h-screen bg-[#04080b] text-white">
@@ -177,24 +154,17 @@ export function ComicDetailsView({
                   )}
 
                   {mode === "online" && onlineButtons ? (
-                    <>
-                      {/* <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                      <div className="[&>button]:h-12 [&>button]:w-full [&>button]:rounded-[4px] [&>button]:border [&>button]:border-white/10 [&>button]:bg-[#35505b] [&>button]:text-base [&>button]:font-semibold [&>button]:text-white [&>button]:hover:bg-[#40606d]">
-                        <ComicDownloadButton
-                          comicTitle={onlineButtons.comicTitle}
-                          episodes={downloadEpisodes}
-                        />
-                      </div> */}
-
-                      <div className="[&>button]:h-12 [&>button]:w-full [&>button]:rounded-[4px] [&>button]:border [&>button]:border-white/10 [&>button]:bg-[#35505b] [&>button]:text-base [&>button]:font-semibold [&>button]:text-white [&>button]:hover:bg-[#40606d]">
-                        <ComicOfflineButton
-                          comicId={onlineButtons.comicId}
-                          comicTitle={onlineButtons.comicTitle}
-                          coverImage={onlineButtons.coverImage ?? null}
-                          episodes={offlineEpisodes}
-                        />
-                      </div>
-                    </>
+                    <div className="[&>button]:h-12 [&>button]:w-full [&>button]:rounded-[4px] [&>button]:border [&>button]:border-white/10 [&>button]:bg-[#35505b] [&>button]:text-base [&>button]:font-semibold [&>button]:text-white [&>button]:hover:bg-[#40606d]">
+                      <ComicOfflineButton
+                        comicId={onlineButtons.comicId}
+                        comicTitle={onlineButtons.comicTitle}
+                        comicDescription={
+                          onlineButtons.comicDescription ?? null
+                        }
+                        coverImage={onlineButtons.coverImage ?? null}
+                        episodes={offlineEpisodes}
+                      />
+                    </div>
                   ) : null}
 
                   {mode === "offline" && offlineRemove ? (
