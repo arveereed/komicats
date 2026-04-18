@@ -60,6 +60,7 @@ export default function DesktopNavbar({
     pathname.includes("/profile/avatar/notifications") ||
     pathname.includes("/profile/avatar/my-list") ||
     pathname.includes("/profile/avatar/downloads");
+  pathname.includes("(offline-downloads)/profile/avatar/downloads");
 
   const inGamePath = pathname.includes("/profile/avatar/my-coins/game");
 

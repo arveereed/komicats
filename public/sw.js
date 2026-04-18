@@ -1,4 +1,4 @@
-const CACHE_NAME = "komicats-v11";
+const CACHE_NAME = "komicats-v12";
 const OFFLINE_SHELL_URL = "/offline-downloads-shell.html";
 const DOWNLOADS_ENTRY_URL = "/profile/avatar/downloads";
 
@@ -78,37 +78,37 @@ self.addEventListener("fetch", (event) => {
   const wantsHtml = accept.includes("text/html");
   const isNavigationRequest = req.mode === "navigate" || wantsHtml;
 
-  // If user opens downloads route, always serve the offline shell first.
+  // Downloads routes:
+  // online -> use real Next.js page
+  // offline/failure -> use offline shell
   if (isDownloadsRoute && isNavigationRequest) {
     event.respondWith(
       (async () => {
-        const shell = await caches.match(OFFLINE_SHELL_URL);
-        if (shell) return shell;
-
         try {
-          const response = await fetch(OFFLINE_SHELL_URL, {
-            cache: "no-store",
-          });
-
-          if (response.ok) {
-            await putInCache(OFFLINE_SHELL_URL, response.clone());
-            return response;
+          const preload = await event.preloadResponse;
+          if (preload) {
+            await putInCache(req, preload.clone());
+            return preload;
           }
-        } catch (error) {
-          console.error("Failed to fetch offline shell:", error);
-        }
 
-        return new Response("Offline shell unavailable", {
-          status: 503,
-          headers: { "Content-Type": "text/plain" },
-        });
+          const network = await fetch(req);
+          await putInCache(req, network.clone());
+          return network;
+        } catch (error) {
+          const shell = await caches.match(OFFLINE_SHELL_URL);
+          if (shell) return shell;
+
+          return new Response("Offline shell unavailable", {
+            status: 503,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }
       })(),
     );
     return;
   }
 
-  // If the user is offline and tries to open ANY other page,
-  // automatically redirect them to downloads.
+  // If offline and opening another page, redirect to downloads
   if (
     isNavigationRequest &&
     self.navigator &&
@@ -135,7 +135,9 @@ self.addEventListener("fetch", (event) => {
           await putInCache(req, network.clone());
           return network;
         } catch (error) {
-          // If request fails, send user to downloads automatically.
+          const cached = await caches.match(req);
+          if (cached) return cached;
+
           return Response.redirect(toAbsoluteUrl(DOWNLOADS_ENTRY_URL), 302);
         }
       })(),
