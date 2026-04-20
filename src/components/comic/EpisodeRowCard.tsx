@@ -101,7 +101,7 @@ export function EpisodeRowCard({
             </span>
           </div>
         </div>
-
+        {/* 
         <button
           type="button"
           onClick={handleDownload}
@@ -110,7 +110,7 @@ export function EpisodeRowCard({
           className="ml-auto self-center inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Image src="/icons/dl.png" alt="Download" width={24} height={24} />
-        </button>
+        </button> */}
       </div>
     </Link>
   );

@@ -292,6 +292,84 @@
     });
   }
 
+  function showDownloadsToast(message) {
+    let toast = document.querySelector(".downloads-toast");
+
+    if (!toast) {
+      toast = document.createElement("div");
+      toast.className = "downloads-toast";
+      document.body.appendChild(toast);
+    }
+
+    toast.textContent = message;
+    toast.classList.add("is-visible");
+
+    window.clearTimeout(showDownloadsToast._timeoutId);
+    showDownloadsToast._timeoutId = window.setTimeout(() => {
+      toast.classList.remove("is-visible");
+    }, 2200);
+  }
+
+  function setupProtectedOfflineLinks() {
+    const links = document.querySelectorAll("[data-protected-link]");
+
+    links.forEach((link) => {
+      link.addEventListener("click", (event) => {
+        if (navigator.onLine) return;
+        event.preventDefault();
+        showDownloadsToast("Need internet first");
+      });
+    });
+  }
+
+  function renderDownloadsState(message, stateClass) {
+    const showOfflineNotice = !navigator.onLine;
+
+    APP.innerHTML = `
+      <section class="downloads-shell">
+        <header class="downloads-shell-header">
+          <div class="container downloads-shell-header-inner">
+            <a
+              class="downloads-shell-back"
+              href="/profile/avatar/profile"
+              aria-label="Back"
+              data-protected-link
+            >
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
+            </a>
+
+            <div class="downloads-shell-title-wrap">
+              <svg class="downloads-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <path d="M7 10l5 5 5-5"/>
+                <path d="M12 15V3"/>
+              </svg>
+              <h1 class="downloads-header-title">Downloads</h1>
+            </div>
+
+            <div class="downloads-shell-spacer" aria-hidden="true"></div>
+          </div>
+        </header>
+
+        <section class="downloads-page">
+          ${
+            showOfflineNotice
+              ? `<div class="downloads-notice">You are offline. Only downloaded comics on this device are available.</div>`
+              : ""
+          }
+
+          <div class="${stateClass}">
+            ${escapeHtml(message)}
+          </div>
+        </section>
+      </section>
+    `;
+
+    setupProtectedOfflineLinks();
+  }
+
   function setupHeroPreviewPlayback() {
     const hero = document.querySelector("[data-hero-preview]");
     if (!hero) return;
@@ -348,19 +426,45 @@
   }
 
   async function renderDownloadsIndex() {
+    renderDownloadsState("Loading downloads...", "downloads-loading");
+
     const comics = await listOfflineComics();
+    const showOfflineNotice = !navigator.onLine;
 
     APP.innerHTML = `
-      <section class="downloads-page">
-        <div class="container">
-          <div class="downloads-header">
-            <svg class="downloads-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <path d="M7 10l5 5 5-5"/>
-              <path d="M12 15V3"/>
-            </svg>
-            <h1 class="downloads-header-title">Downloads</h1>
+      <section class="downloads-shell">
+        <header class="downloads-shell-header">
+          <div class="container downloads-shell-header-inner">
+            <a
+              class="downloads-shell-back"
+              href="/profile/avatar/profile"
+              aria-label="Back"
+              data-protected-link
+            >
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
+            </a>
+
+            <div class="downloads-shell-title-wrap">
+              <svg class="downloads-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <path d="M7 10l5 5 5-5"/>
+                <path d="M12 15V3"/>
+              </svg>
+              <h1 class="downloads-header-title">Downloads</h1>
+            </div>
+
+            <div class="downloads-shell-spacer" aria-hidden="true"></div>
           </div>
+        </header>
+
+        <section class="downloads-page">
+          ${
+            showOfflineNotice
+              ? `<div class="downloads-notice">You are offline. Only downloaded comics on this device are available.</div>`
+              : ""
+          }
 
           ${
             comics.length === 0
@@ -387,7 +491,7 @@
                                 ? `<img src="${comic.coverImage}" alt="${escapeHtml(
                                     comic.title,
                                   )}" />`
-                                : ``
+                                : `<div class="download-card-cover-placeholder"></div>`
                             }
 
                             ${
@@ -413,10 +517,11 @@
                 </div>
               `
           }
-        </div>
+        </section>
       </section>
     `;
 
+    setupProtectedOfflineLinks();
     setupCardPreviewPlayback();
   }
 
@@ -425,14 +530,41 @@
 
     if (!comic) {
       APP.innerHTML = `
-        <section class="downloads-page">
-          <div class="container">
+        <section class="downloads-shell">
+          <header class="downloads-shell-header">
+            <div class="container downloads-shell-header-inner">
+              <a
+                class="downloads-shell-back"
+                href="/profile/avatar/profile"
+                aria-label="Back"
+                data-protected-link
+              >
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 18l-6-6 6-6"/>
+                </svg>
+              </a>
+
+              <div class="downloads-shell-title-wrap">
+                <svg class="downloads-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <path d="M7 10l5 5 5-5"/>
+                  <path d="M12 15V3"/>
+                </svg>
+                <h1 class="downloads-header-title">Downloads</h1>
+              </div>
+
+              <div class="downloads-shell-spacer" aria-hidden="true"></div>
+            </div>
+          </header>
+
+          <section class="downloads-page">
             <div class="downloads-empty">
               Offline comic not found on this device.
             </div>
-          </div>
+          </section>
         </section>
       `;
+      setupProtectedOfflineLinks();
       return;
     }
 
