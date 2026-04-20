@@ -56,15 +56,17 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   ]);
 
   return (
-    <ShopComponent
-      stats={{
-        coins: coins?.coins ?? 0,
-        purchased: totalPurchasedCoins,
-        played: totalPlayed,
-      }}
-      plans={plans}
-      paymentStatus={params.status}
-      referenceNumber={params.ref}
-    />
+    <div className="relative pb-24 z-10 max-w-7xl mx-auto px-4">
+      <ShopComponent
+        stats={{
+          coins: coins?.coins ?? 0,
+          purchased: totalPurchasedCoins,
+          played: totalPlayed,
+        }}
+        plans={plans}
+        paymentStatus={params.status}
+        referenceNumber={params.ref}
+      />
+    </div>
   );
 }
