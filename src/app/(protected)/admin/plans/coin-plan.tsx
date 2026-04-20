@@ -34,7 +34,7 @@ export default function CoinPlan({ plans }: { plans: any }) {
   }, [userLoaded, isGuest, isAdmin, router]);
 
   return (
-    <section className="space-y-8 p-6">
+    <section className="space-y-8 p-6 mx-auto max-w-7xl ">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Coin Plan Admin</h1>

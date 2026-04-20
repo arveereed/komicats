@@ -15,7 +15,7 @@ export default async function AdminPage() {
   }
 
   return (
-    <section className="space-y-8 p-6">
+    <section className="space-y-8 p-6 mx-auto max-w-7xl  px-4 py-4 lg:px-6">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Admin</h1>
