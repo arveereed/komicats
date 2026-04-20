@@ -1,4 +1,4 @@
-const CACHE_NAME = "komicats-v14";
+const CACHE_NAME = "komicats-v15";
 const OFFLINE_SHELL_URL = "/offline-downloads-shell.html";
 const DOWNLOADS_ENTRY_URL = "/profile/avatar/downloads";
 
@@ -76,6 +76,33 @@ self.addEventListener("fetch", (event) => {
   const wantsHtml = accept.includes("text/html");
   const isNavigationRequest = req.mode === "navigate" || wantsHtml;
 
+  if (isSameOrigin && url.pathname === "/offline-downloads-shell.html") {
+    event.respondWith(
+      (async () => {
+        try {
+          const network = await fetch(req, { cache: "no-store" });
+          if (
+            network &&
+            network.status === 200 &&
+            (network.type === "basic" || network.type === "default")
+          ) {
+            await putInCache(req, network.clone());
+          }
+          return network;
+        } catch (error) {
+          const cached = await caches.match(req);
+          if (cached) return cached;
+
+          return new Response("Offline shell unavailable", {
+            status: 503,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }
+      })(),
+    );
+    return;
+  }
+
   // 1) Downloads routes
   // online => real Next page
   // offline => offline shell
@@ -134,7 +161,8 @@ self.addEventListener("fetch", (event) => {
   // 4) Only cache simple public assets needed by offline shell
   const isOfflineShellAsset =
     isSameOrigin &&
-    (url.pathname === "/offline-downloads-shell.js" ||
+    (url.pathname === "/offline-downloads-shell.html" ||
+      url.pathname === "/offline-downloads-shell.js" ||
       url.pathname === "/pwa-icon.png" ||
       url.pathname === "/pwa-icon-2.png" ||
       url.pathname === "/BACKGROUND.png" ||
