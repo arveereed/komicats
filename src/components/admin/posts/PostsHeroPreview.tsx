@@ -49,6 +49,7 @@ export default function PostsHeroPreview({
               <span className="bg-red-600 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
                 Komicats
               </span>
+
               <h1 className="mt-4 text-5xl font-black uppercase leading-[0.9] tracking-tighter text-white drop-shadow-2xl md:text-7xl lg:text-8xl">
                 {hero?.title || "Mistaken Idea Of Denouncing Pleasure"}
               </h1>
@@ -62,6 +63,7 @@ export default function PostsHeroPreview({
                   <PostCard
                     image={post.image}
                     date={post.date}
+                    soon={post.soon}
                     title={post.title}
                     index={idx}
                   />

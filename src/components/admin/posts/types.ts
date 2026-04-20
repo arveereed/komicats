@@ -3,6 +3,7 @@ export type Post = {
   title: string;
   date: string;
   image: string;
+  soon: string;
   imagePublicId: string;
   userId: string;
   createdAt: Date;
@@ -22,6 +23,7 @@ export type PostFormState = {
   postId: string;
   title: string;
   date: string;
+  soon: string;
   image: string;
   imagePublicId: string;
 };
@@ -37,6 +39,7 @@ export const initialPostForm: PostFormState = {
   postId: "",
   title: "",
   date: "",
+  soon: "SOON",
   image: "",
   imagePublicId: "",
 };

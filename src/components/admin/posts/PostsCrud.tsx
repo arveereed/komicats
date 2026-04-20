@@ -116,6 +116,7 @@ export default function PostsCrud({ posts, hero }: Props) {
       postId: post.id,
       title: post.title,
       date: post.date,
+      soon: post.soon || "SOON",
       image: post.image,
       imagePublicId: post.imagePublicId,
     });
@@ -157,6 +158,7 @@ export default function PostsCrud({ posts, hero }: Props) {
     formData.append("postId", postForm.postId);
     formData.append("title", postForm.title);
     formData.append("date", postForm.date);
+    formData.append("soon", postForm.soon.trim() || "SOON");
     formData.append("image", postForm.image);
     formData.append("imagePublicId", postForm.imagePublicId);
 

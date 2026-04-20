@@ -38,6 +38,7 @@ model User {
 
 model Post {
   id            String   @id @default(cuid())
+  soon          String   @default("SOON")
   title         String
   date          String
   image         String

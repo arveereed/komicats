@@ -16,10 +16,11 @@ export async function createPostAction(formData: FormData) {
     throw new Error("Unauthorized");
   }
 
-  const title = getString(formData.get("title"));
-  const date = getString(formData.get("date"));
-  const image = getString(formData.get("image"));
-  const imagePublicId = getString(formData.get("imagePublicId"));
+  const title = String(formData.get("title") ?? "").trim();
+  const date = String(formData.get("date") ?? "").trim();
+  const soon = String(formData.get("soon") ?? "SOON").trim() || "SOON";
+  const image = String(formData.get("image") ?? "").trim();
+  const imagePublicId = String(formData.get("imagePublicId") ?? "").trim();
 
   if (!title) {
     throw new Error("Title is required");
@@ -41,6 +42,7 @@ export async function createPostAction(formData: FormData) {
     data: {
       title,
       date,
+      soon,
       image,
       imagePublicId,
       userId: dbUserId,
@@ -58,11 +60,12 @@ export async function updatePostAction(formData: FormData) {
       return { ok: false, message: "You must be signed in." };
     }
 
-    const postId = getString(formData.get("postId"));
-    const title = getString(formData.get("title"));
-    const date = getString(formData.get("date"));
-    const image = getString(formData.get("image"));
-    const imagePublicId = getString(formData.get("imagePublicId"));
+    const postId = String(formData.get("postId") ?? "");
+    const title = String(formData.get("title") ?? "").trim();
+    const date = String(formData.get("date") ?? "").trim();
+    const soon = String(formData.get("soon") ?? "SOON").trim() || "SOON";
+    const image = String(formData.get("image") ?? "").trim();
+    const imagePublicId = String(formData.get("imagePublicId") ?? "").trim();
 
     if (!postId) return { ok: false, message: "Post ID is required." };
     if (!title) return { ok: false, message: "Title is required." };
@@ -88,6 +91,7 @@ export async function updatePostAction(formData: FormData) {
       data: {
         title,
         date,
+        soon,
         image,
         imagePublicId,
       },

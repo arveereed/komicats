@@ -113,6 +113,30 @@ export default function PostDialog({
 
             <form onSubmit={onSubmit} className="space-y-4">
               <div className="space-y-2">
+                <label
+                  htmlFor="soon"
+                  className="text-xs font-medium uppercase tracking-[0.2em] text-white/60"
+                >
+                  Soon Label
+                </label>
+
+                <input
+                  id="soon"
+                  type="text"
+                  value={postForm.soon}
+                  onChange={(e) => {
+                    setPostError("");
+                    setPostForm((prev) => ({
+                      ...prev,
+                      soon: e.target.value,
+                    }));
+                  }}
+                  placeholder="SOON"
+                  className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-white outline-none transition placeholder:text-white/30 focus:border-orange-500/50"
+                />
+              </div>
+
+              <div className="space-y-2">
                 <label className="text-sm text-white/60">Title</label>
                 <input
                   type="text"
