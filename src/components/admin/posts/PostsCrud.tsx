@@ -30,6 +30,8 @@ import {
   initialPostForm,
   initialHeroForm,
 } from "@/components/admin/posts/types";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 type Props = {
   posts: Post[];
@@ -257,6 +259,14 @@ export default function PostsCrud({ posts, hero }: Props) {
 
   return (
     <div className="min-h-screen bg-black text-white font-sans">
+      <Link
+        href="/admin"
+        className="inline-flex items-center  mx-4 mt-4 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+      >
+        <ArrowLeft className="size-4 mr-2" />
+        Back to Admin
+      </Link>
+
       <div className="mx-auto max-w-[1600px] px-4 py-4 lg:px-6">
         <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between">
           <div>

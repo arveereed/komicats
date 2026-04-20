@@ -6,6 +6,7 @@ import AdminCreatePlanComponent from "@/components/admin/AdminCreatePlanComponen
 import { useUser } from "@clerk/nextjs";
 import { useEffect } from "react";
 import { notFound, useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 export default function CoinPlan({ plans }: { plans: any }) {
   const { isSignedIn, isLoaded: userLoaded, user: clerkUser } = useUser();
@@ -44,8 +45,9 @@ export default function CoinPlan({ plans }: { plans: any }) {
 
         <Link
           href="/admin"
-          className="inline-flex items-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+          className="inline-flex items-center  mx-4 mt-4 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
         >
+          <ArrowLeft className="size-4 mr-2" />
           Back to Admin
         </Link>
       </div>

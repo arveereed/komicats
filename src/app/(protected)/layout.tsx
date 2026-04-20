@@ -14,10 +14,10 @@ export default async function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const authData = await auth();
   let userId: string | null = null;
 
   try {
-    const authData = await auth();
     userId = authData.userId;
   } catch (error) {
     console.error("Clerk auth failed in protected layout:", error);
