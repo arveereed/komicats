@@ -2,18 +2,31 @@
 
 import { useEffect, useState } from "react";
 import { Download, Plus, Share2, X } from "lucide-react";
+import { useIsInstalledApp } from "@/hooks/useIsInstalledApp";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 };
 
-type NavigatorWithStandalone = Navigator & { standalone?: boolean };
+type RelatedApp = {
+  id?: string;
+  platform?: string;
+  url?: string;
+};
+
+type NavigatorWithPwaSupport = Navigator & {
+  standalone?: boolean;
+  getInstalledRelatedApps?: () => Promise<RelatedApp[]>;
+};
 
 export default function InstallButton() {
+  const isInstalledApp = useIsInstalledApp();
+
   const [promptEvent, setPromptEvent] =
     useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [didInstallThisSession, setDidInstallThisSession] = useState(false);
+  const [isRelatedAppInstalled, setIsRelatedAppInstalled] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -26,37 +39,20 @@ export default function InstallButton() {
     setIsAndroid(/Android/i.test(ua));
     setIsIOS(/iPhone|iPad|iPod/i.test(ua));
 
-    const mediaQuery = window.matchMedia("(display-mode: standalone)");
-
-    const checkInstalled = () => {
-      const standalone =
-        mediaQuery.matches ||
-        (window.navigator as NavigatorWithStandalone).standalone === true;
-
-      setIsInstalled(standalone);
-
-      if (standalone) {
-        setPromptEvent(null);
-        setShowHelp(false);
-      }
-    };
-
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setPromptEvent(e as BeforeInstallPromptEvent);
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setPromptEvent(event as BeforeInstallPromptEvent);
     };
 
     const handleAppInstalled = () => {
-      setIsInstalled(true);
+      setDidInstallThisSession(true);
+      setIsRelatedAppInstalled(true);
       setPromptEvent(null);
       setShowHelp(false);
     };
 
-    checkInstalled();
-
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     window.addEventListener("appinstalled", handleAppInstalled);
-    mediaQuery.addEventListener("change", checkInstalled);
 
     return () => {
       window.removeEventListener(
@@ -64,32 +60,100 @@ export default function InstallButton() {
         handleBeforeInstallPrompt,
       );
       window.removeEventListener("appinstalled", handleAppInstalled);
-      mediaQuery.removeEventListener("change", checkInstalled);
     };
   }, []);
 
-  const onInstall = async () => {
-    if (promptEvent) {
-      await promptEvent.prompt();
-      const choice = await promptEvent.userChoice;
+  useEffect(() => {
+    let cancelled = false;
 
-      setPromptEvent(null);
-
-      if (choice.outcome === "accepted") {
-        setIsInstalled(true);
+    const detectInstalledRelatedApp = async () => {
+      if (isInstalledApp) {
+        if (!cancelled) {
+          setIsRelatedAppInstalled(true);
+        }
+        return;
       }
 
-      return;
-    }
+      const nav = window.navigator as NavigatorWithPwaSupport;
 
-    if (isAndroid || isIOS) {
-      setShowHelp((prev) => !prev);
+      if (typeof nav.getInstalledRelatedApps !== "function") {
+        if (!cancelled) {
+          setIsRelatedAppInstalled(false);
+        }
+        return;
+      }
+
+      try {
+        const apps = await nav.getInstalledRelatedApps();
+        if (!cancelled) {
+          setIsRelatedAppInstalled(apps.length > 0);
+        }
+      } catch {
+        if (!cancelled) {
+          setIsRelatedAppInstalled(false);
+        }
+      }
+    };
+
+    const refreshInstalledState = () => {
+      void detectInstalledRelatedApp();
+    };
+
+    void detectInstalledRelatedApp();
+
+    window.addEventListener("focus", refreshInstalledState);
+    window.addEventListener("pageshow", refreshInstalledState);
+    document.addEventListener("visibilitychange", refreshInstalledState);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", refreshInstalledState);
+      window.removeEventListener("pageshow", refreshInstalledState);
+      document.removeEventListener("visibilitychange", refreshInstalledState);
+    };
+  }, [isInstalledApp]);
+
+  useEffect(() => {
+    if (isInstalledApp || isRelatedAppInstalled || didInstallThisSession) {
+      setPromptEvent(null);
+      setShowHelp(false);
+    }
+  }, [isInstalledApp, isRelatedAppInstalled, didInstallThisSession]);
+
+  const onInstall = async () => {
+    try {
+      if (promptEvent) {
+        await promptEvent.prompt();
+        const choice = await promptEvent.userChoice;
+
+        setPromptEvent(null);
+
+        if (choice.outcome === "accepted") {
+          setDidInstallThisSession(true);
+          setShowHelp(false);
+        }
+
+        return;
+      }
+
+      if (isAndroid || isIOS) {
+        setShowHelp((prev) => !prev);
+      }
+    } catch (error) {
+      console.error("Install prompt failed:", error);
+      setPromptEvent(null);
     }
   };
 
-  if (!mounted || isInstalled) return null;
+  const isHidden =
+    !mounted ||
+    isInstalledApp ||
+    isRelatedAppInstalled ||
+    didInstallThisSession;
 
-  const canPrompt = !!promptEvent;
+  if (isHidden) return null;
+
+  const canPrompt = Boolean(promptEvent);
   const shouldShowButton = canPrompt || isAndroid || isIOS;
 
   if (!shouldShowButton) return null;
@@ -179,6 +243,7 @@ export default function InstallButton() {
       )}
 
       <button
+        type="button"
         onClick={onInstall}
         className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-xl transition hover:scale-[1.02] hover:from-cyan-400 hover:to-blue-500 active:scale-[0.98]"
       >

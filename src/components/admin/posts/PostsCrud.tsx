@@ -3,7 +3,6 @@
 import { useEffect, useState, useTransition } from "react";
 import { notFound, useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import InstallButton from "@/components/pwa/install-button";
 
 import {
   createPostAction,
@@ -321,8 +320,6 @@ export default function PostsCrud({ posts, hero }: Props) {
           onEditPost={handleEditPost}
           onDeletePost={handleDeletePost}
         />
-
-        <InstallButton />
       </div>
     </div>
   );

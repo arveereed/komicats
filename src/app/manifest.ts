@@ -1,8 +1,8 @@
-// app/manifest.ts
 import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: "/",
     name: "Komicats",
     short_name: "Komicats",
     description: "Powered by Next JS",
@@ -10,6 +10,13 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     background_color: "#07141a",
     theme_color: "#07141a",
+    related_applications: [
+      {
+        platform: "webapp",
+        url: "/manifest.webmanifest",
+        id: "/",
+      },
+    ],
     icons: [
       {
         src: "/pwa-icon.png",
