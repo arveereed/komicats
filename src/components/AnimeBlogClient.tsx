@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import PostCard from "@/components/PostCard";
 import InstallButton from "@/components/pwa/install-button";
-import Loading from "./Loading";
+import Loading from "@/app/(protected)/loading";
 
 type Post = {
   id: string;
