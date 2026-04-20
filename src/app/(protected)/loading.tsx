@@ -23,26 +23,6 @@ export default function Loading() {
             </div>
           </div>
         </div>
-
-        <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, idx) => (
-            <div
-              key={idx}
-              className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-xl backdrop-blur-sm"
-            >
-              <div className="aspect-[16/10] animate-pulse bg-white/10" />
-
-              <div className="space-y-3 p-4">
-                <div className="h-3 w-20 animate-pulse rounded bg-white/10" />
-                <div className="h-6 w-full animate-pulse rounded bg-white/15" />
-                <div className="h-6 w-4/5 animate-pulse rounded bg-white/15" />
-                <div className="pt-2">
-                  <div className="h-3 w-16 animate-pulse rounded bg-red-500/20" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
       <div className="pointer-events-none absolute left-0 top-0 h-1/3 w-1/3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-600/10 blur-[120px]" />
