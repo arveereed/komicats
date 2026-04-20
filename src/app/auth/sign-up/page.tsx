@@ -116,8 +116,9 @@ export default function SignupForm() {
       if (signUpAttempt.status === "complete") {
         await setActive({ session: signUpAttempt.createdSessionId });
 
-        if (emailAddress === adminEmail) window.location.href = "/admin";
-        else window.location.href = "/profile/avatar";
+        const target =
+          emailAddress === adminEmail ? "/admin" : "/profile/avatar";
+        router.replace(target);
 
         setIsLoading(false);
       } else {

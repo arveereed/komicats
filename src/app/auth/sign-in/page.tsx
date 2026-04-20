@@ -65,11 +65,8 @@ export default function SigninForm() {
 
     await setActive({ session: sessionId });
 
-    if (emailAddress === adminEmail) {
-      window.location.href = "/admin";
-    } else {
-      window.location.href = "/profile/avatar";
-    }
+    const target = emailAddress === adminEmail ? "/admin" : "/profile/avatar";
+    router.replace(target);
   };
 
   const onSignInPress = async () => {
@@ -222,7 +219,8 @@ export default function SigninForm() {
     }
   };
 
-  /*   const onFacebookSignIn = async () => {
+  /* 
+  const onFacebookSignIn = async () => {
     if (!isLoaded || !signIn) return;
 
     try {
@@ -237,6 +235,10 @@ export default function SigninForm() {
         strategy: "oauth_facebook",
         redirectUrl: "/auth/sso-callback",
         redirectUrlComplete: path,
+        signInForceRedirectUrl: path,
+        signUpForceRedirectUrl: path,
+        signInFallbackRedirectUrl: path,
+        signUpFallbackRedirectUrl: path,
       });
     } catch (err: any) {
       console.error("Facebook sign in error:", err);
