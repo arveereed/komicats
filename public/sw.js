@@ -1,4 +1,4 @@
-const CACHE_NAME = "komicats-v15";
+const CACHE_NAME = "komicats-v16";
 const OFFLINE_SHELL_URL = "/offline-downloads-shell.html";
 const DOWNLOADS_ENTRY_URL = "/profile/avatar/downloads";
 
