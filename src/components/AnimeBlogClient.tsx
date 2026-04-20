@@ -14,6 +14,7 @@ type Post = {
   id: string;
   title: string;
   date: string;
+  soon?: string;
   image: string;
   imagePublicId: string;
   userId: string;
@@ -62,32 +63,33 @@ export default function AnimeBlogClient({ posts, hero }: Props) {
         <div className="absolute inset-0 bg-gradient-to-t from-orange-950/25 via-transparent to-transparent" />
       </div>
 
-      <div className="relative z-10 flex flex-col min-h-screen px-6 lg:px-16 py-12 justify-between">
+      <div className="relative z-10 flex min-h-screen flex-col justify-between px-6 py-12 lg:px-16">
         <div />
 
-        <div className="flex flex-col lg:flex-row justify-between items-center w-full">
+        <div className="flex w-full flex-col items-center justify-between lg:flex-row">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="max-w-2xl"
           >
-            <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-1 tracking-widest uppercase">
+            <span className="bg-red-600 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
               Komicats
             </span>
-            <h1 className="mt-4 text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[0.9] tracking-tighter uppercase drop-shadow-2xl">
+            <h1 className="mt-4 text-5xl font-black uppercase leading-[0.9] tracking-tighter text-white drop-shadow-2xl md:text-7xl lg:text-8xl">
               {hero?.title || "Mistaken Idea Of Denouncing Pleasure"}
             </h1>
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-12">
+        <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {posts.length > 0 ? (
             posts.map((post, idx) => (
               <PostCard
                 key={post.id}
                 image={post.image}
                 date={post.date}
+                soon={post.soon ?? "SOON"}
                 title={post.title}
                 index={idx}
               />
@@ -102,7 +104,7 @@ export default function AnimeBlogClient({ posts, hero }: Props) {
 
       <InstallButton />
 
-      <div className="absolute top-0 left-0 w-1/3 h-1/3 bg-red-600/10 blur-[120px] rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+      <div className="pointer-events-none absolute top-0 left-0 h-1/3 w-1/3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-600/10 blur-[120px]" />
     </main>
   );
 }
