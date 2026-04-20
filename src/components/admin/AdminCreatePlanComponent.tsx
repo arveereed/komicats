@@ -35,29 +35,35 @@ export default function AdminCreatePlanComponent() {
   const generatedSlug = useMemo(() => slugify(name), [name]);
 
   return (
-    <Card className="rounded-[28px] border border-slate-700/60 bg-slate-950/80 text-slate-100 shadow-2xl backdrop-blur-xl">
-      <CardHeader>
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-400/20 bg-cyan-400/10">
-            <Coins className="h-5 w-5 text-cyan-300" />
+    <Card className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[#375055]/80 text-white shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-2xl">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-16 top-0 h-40 w-40 rounded-full bg-cyan-400/10 blur-3xl" />
+        <div className="absolute -right-10 bottom-0 h-44 w-44 rounded-full bg-teal-400/10 blur-3xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0.015)_100%)]" />
+      </div>
+
+      <CardHeader className="relative z-10 border-b border-white/10 pb-6">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 shadow-inner shadow-cyan-200/10">
+            <Coins className="h-5 w-5 text-cyan-200" />
           </div>
 
           <div>
-            <CardTitle className="text-xl font-semibold text-white">
+            <CardTitle className="text-2xl font-semibold tracking-tight text-white">
               Create Coin Plan
             </CardTitle>
-            <p className="mt-1 text-sm text-slate-400">
-              Add a new coin pack for the shop.
+            <p className="mt-1 text-sm text-white/65">
+              Add a new coin pack that matches the Komicats shop theme.
             </p>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent>
-        <form action={formAction} className="space-y-5">
+      <CardContent className="relative z-10 pt-6">
+        <form action={formAction} className="space-y-6">
           <div className="grid gap-5 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-slate-200">
+              <Label htmlFor="name" className="text-white/85">
                 Plan Name
               </Label>
               <Input
@@ -66,13 +72,13 @@ export default function AdminCreatePlanComponent() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Starter Pack"
-                className="border-slate-700 bg-slate-900/80 text-white placeholder:text-slate-500 focus-visible:border-cyan-400 focus-visible:ring-cyan-400/30"
+                className="h-12 rounded-2xl border-white/10 bg-black/20 text-white placeholder:text-white/35 focus-visible:border-cyan-300/50 focus-visible:ring-2 focus-visible:ring-cyan-300/20"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="slug" className="text-slate-200">
+              <Label htmlFor="slug" className="text-white/85">
                 Slug
               </Label>
               <Input
@@ -80,10 +86,10 @@ export default function AdminCreatePlanComponent() {
                 name="slug"
                 defaultValue={generatedSlug}
                 placeholder="starter-pack"
-                className="border-slate-700 bg-slate-900/80 text-white placeholder:text-slate-500 focus-visible:border-cyan-400 focus-visible:ring-cyan-400/30"
+                className="h-12 rounded-2xl border-white/10 bg-black/20 text-white placeholder:text-white/35 focus-visible:border-cyan-300/50 focus-visible:ring-2 focus-visible:ring-cyan-300/20"
                 required
               />
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-white/45">
                 Suggested: {generatedSlug || "starter-pack"}
               </p>
             </div>
@@ -91,7 +97,7 @@ export default function AdminCreatePlanComponent() {
 
           <div className="grid gap-5 md:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="coins" className="text-slate-200">
+              <Label htmlFor="coins" className="text-white/85">
                 Coins
               </Label>
               <Input
@@ -100,13 +106,13 @@ export default function AdminCreatePlanComponent() {
                 type="number"
                 min={0}
                 placeholder="20"
-                className="border-slate-700 bg-slate-900/80 text-white placeholder:text-slate-500 focus-visible:border-cyan-400 focus-visible:ring-cyan-400/30"
+                className="h-12 rounded-2xl border-white/10 bg-black/20 text-white placeholder:text-white/35 focus-visible:border-cyan-300/50 focus-visible:ring-2 focus-visible:ring-cyan-300/20"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bonusCoins" className="text-slate-200">
+              <Label htmlFor="bonusCoins" className="text-white/85">
                 Bonus Coins
               </Label>
               <Input
@@ -115,12 +121,12 @@ export default function AdminCreatePlanComponent() {
                 type="number"
                 min={0}
                 placeholder="2"
-                className="border-slate-700 bg-slate-900/80 text-white placeholder:text-slate-500 focus-visible:border-cyan-400 focus-visible:ring-cyan-400/30"
+                className="h-12 rounded-2xl border-white/10 bg-black/20 text-white placeholder:text-white/35 focus-visible:border-cyan-300/50 focus-visible:ring-2 focus-visible:ring-cyan-300/20"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="priceAmount" className="text-slate-200">
+              <Label htmlFor="priceAmount" className="text-white/85">
                 Price Amount (centavos)
               </Label>
               <Input
@@ -129,14 +135,14 @@ export default function AdminCreatePlanComponent() {
                 type="number"
                 min={1}
                 placeholder="199"
-                className="border-slate-700 bg-slate-900/80 text-white placeholder:text-slate-500 focus-visible:border-cyan-400 focus-visible:ring-cyan-400/30"
+                className="h-12 rounded-2xl border-white/10 bg-black/20 text-white placeholder:text-white/35 focus-visible:border-cyan-300/50 focus-visible:ring-2 focus-visible:ring-cyan-300/20"
                 required
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="features" className="text-slate-200">
+            <Label htmlFor="features" className="text-white/85">
               Features
             </Label>
             <Textarea
@@ -146,27 +152,36 @@ export default function AdminCreatePlanComponent() {
               placeholder={`Bonus Coins every month
 Ad-free reading in Originals and Browsing
 KOMICATS SHOP coupon`}
-              className="border-slate-700 bg-slate-900/80 text-white placeholder:text-slate-500 focus-visible:border-cyan-400 focus-visible:ring-cyan-400/30"
+              className="min-h-[132px] rounded-2xl border-white/10 bg-black/20 text-white placeholder:text-white/35 focus-visible:border-cyan-300/50 focus-visible:ring-2 focus-visible:ring-cyan-300/20"
             />
-            <p className="text-xs text-slate-500">Put one feature per line.</p>
+            <p className="text-xs text-white/45">Put one feature per line.</p>
           </div>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2">
-              <Checkbox id="isPopular" name="isPopular" />
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+              <Checkbox
+                id="isPopular"
+                name="isPopular"
+                className="border-white/30 data-[state=checked]:border-cyan-300 data-[state=checked]:bg-cyan-300 data-[state=checked]:text-slate-950"
+              />
               <Label
                 htmlFor="isPopular"
-                className="cursor-pointer text-slate-200"
+                className="cursor-pointer text-sm font-medium text-white/85"
               >
                 Mark as popular
               </Label>
             </div>
 
-            <div className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2">
-              <Checkbox id="isActive" name="isActive" defaultChecked />
+            <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+              <Checkbox
+                id="isActive"
+                name="isActive"
+                defaultChecked
+                className="border-white/30 data-[state=checked]:border-cyan-300 data-[state=checked]:bg-cyan-300 data-[state=checked]:text-slate-950"
+              />
               <Label
                 htmlFor="isActive"
-                className="cursor-pointer text-slate-200"
+                className="cursor-pointer text-sm font-medium text-white/85"
               >
                 Active in shop
               </Label>
@@ -177,8 +192,8 @@ KOMICATS SHOP coupon`}
             <div
               className={`rounded-2xl border px-4 py-3 text-sm ${
                 state.success
-                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-                  : "border-rose-500/30 bg-rose-500/10 text-rose-300"
+                  ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-200"
+                  : "border-rose-400/25 bg-rose-400/10 text-rose-200"
               }`}
             >
               {state.message}
@@ -188,7 +203,7 @@ KOMICATS SHOP coupon`}
           <Button
             type="submit"
             disabled={pending}
-            className="w-full rounded-xl bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 font-medium text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:brightness-110"
+            className="h-12 w-full rounded-2xl bg-gradient-to-r from-cyan-300 via-sky-300 to-teal-300 font-semibold text-slate-950 shadow-[0_16px_40px_rgba(34,211,238,0.22)] transition hover:brightness-110 disabled:opacity-70"
           >
             {pending ? (
               "Creating plan..."
